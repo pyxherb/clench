@@ -1,0 +1,21 @@
+# Build artifacts
+out/
+build/
+CMakeFiles/
+CMakeScripts/
+_deps
+
+*.vzx
+
+# Development artifacts
+.vs/
+.vscode/
+.idea/
+.cache/
+CMakePresets.json
+CMakeSettings.json
+*.user
+
+# Runtime artifacts
+*.log
+*.lock

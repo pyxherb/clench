@@ -1,0 +1,59 @@
+* text=auto
+
+#
+# Images
+#
+*.bmp	binary
+*.jpg	binary
+*.jpeg	binary
+*.jfif	binary
+*.tiff	binary
+*.tif	binary
+*.png	binary
+*.gif	binary
+*.webp	binary
+*.eps	binary
+*.psd	binary
+*.xcf	binary
+
+#
+# Audios
+#
+*.wav	binary
+*.flac	binary
+*.ogg	binary
+*.mp3	binary
+*.mid	binary
+
+#
+# Soundbanks
+#
+*.sf	binary
+*.sf2	binary
+*.sf3	binary
+*.sfz	binary
+*.sfArk	binary
+*.sfark	binary
+
+#
+# Videos
+#
+*.flv	binary
+*.mp4	binary
+*.webm	binary
+
+#
+# Fonts
+#
+*.fon	binary
+*.ttf	binary
+*.otf	binary
+*.eot	binary
+*.woff	binary
+*.woff2s	binary
+
+#
+# Miscellaneous
+#
+*.bin	binary
+*.hex	binary
