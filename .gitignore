@@ -1,0 +1,11 @@
+# Development Artifacts
+.vscode
+.vs
+CMakePresets.json
+
+# Build Artifacts
+build/
+out/
+*.exe
+*.dll
+*.elf
