@@ -5,7 +5,7 @@
 #include <Windows.h>
 #include <map>
 
-#define CLCWSI_WNDCLASS_NAME "CLENCH"
+#define CLENCH_WNDCLASS_NAME "CLENCH"
 
 namespace clench {
 	namespace wsi {

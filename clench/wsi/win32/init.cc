@@ -1,6 +1,6 @@
 #include <clench/wsi/init.h>
 
-#define CLENCH_WNDCLASS_NAME "CLENCH "
+#define CLENCH_WNDCLASS_NAME "CLENCH"
 
 CLCWSI_API void clench::wsi::init() {
 	WNDCLASS wndClass = {};

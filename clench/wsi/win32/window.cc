@@ -1,5 +1,6 @@
 #include "window.h"
 #include "keymap.h"
+#include <clench/utils/logger.h>
 
 #include <locale>
 #include <map>
@@ -137,7 +138,7 @@ CLCWSI_API Window::Window(
 		style &= ~WS_THICKFRAME;
 
 	if (!(nativeHandle = CreateWindow(
-			  CLCWSI_WNDCLASS_NAME,
+			  CLENCH_WNDCLASS_NAME,
 			  title,
 			  style,
 			  x == DEFAULT_WINDOW_POS ? CW_USEDEFAULT : x,

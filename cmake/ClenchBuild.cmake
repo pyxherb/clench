@@ -33,7 +33,7 @@ endfunction()
 function(clench_add_user_module module_name target_name_out)
     set(library_name "clcum_${module_name}")
 
-    if(${CLENCH_BUILD_TYPE} STREQUAL "development")
+    if(${CLENCH_BUILD_MODE} STREQUAL "development")
         add_library(${library_name} SHARED)
 
         set_target_properties(${library_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
@@ -41,7 +41,7 @@ function(clench_add_user_module module_name target_name_out)
         get_property(USER_MODULE_SO_PATH_LIST GLOBAL PROPERTY _CLENCH_USER_MODULE_SO_PATH_LIST)
         list(APPEND USER_MODULE_SO_PATH_LIST $<TARGET_FILE:${library_name}>)
         set_property(GLOBAL PROPERTY _CLENCH_USER_MODULE_SO_PATH_LIST ${USER_MODULE_SO_PATH_LIST})
-    elseif(${CLENCH_BUILD_TYPE} STREQUAL "release")
+    elseif(${CLENCH_BUILD_MODE} STREQUAL "release")
         add_library(${library_name} STATIC)
     endif()
 

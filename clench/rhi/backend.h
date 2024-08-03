@@ -2,6 +2,7 @@
 #define _CLENCH_RHI_BACKEND_H_
 
 #include "basedefs.h"
+#include <stdexcept>
 #include <string>
 #include <unordered_map>
 #include <memory>
@@ -22,11 +23,17 @@ namespace clench {
 			virtual RHIDevice* createDevice() = 0;
 		};
 
+		class RHIError : public std::runtime_error {
+		public:
+			CLCRHI_API RHIError(const char *msg);
+			CLCRHI_API virtual ~RHIError();
+		};
+
 		CLCRHI_API extern std::unordered_map<std::string, std::unique_ptr<RHIBackend>> g_registeredRHIBackends;
 
 		CLCRHI_API void registerRHIBackend(RHIBackend* backend);
-		CLCRHI_API void unregisterRHIBackend(const std::string& id);
-		CLCRHI_API RHIBackend* getRHIBackend(const std::string& id);
+		CLCRHI_API void unregisterRHIBackend(const char* id);
+		CLCRHI_API RHIBackend* getRHIBackend(const char* id);
 
 		CLCRHI_API void registerBuiltinRHIBackends();
 

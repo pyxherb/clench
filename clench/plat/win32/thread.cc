@@ -1,4 +1,5 @@
 #include <clench/plat/thread.h>
+#include <clench/utils/assert.h>
 
 using namespace clench;
 using namespace clench::plat;
