@@ -110,23 +110,27 @@ CLCMOD_API void clench::mod::unregisterModule(const char *name) {
 }
 
 struct ModuleValidityCheckContext {
-	std::set<Module *> walkedModulesToLoad;
+	std::vector<Module *> &walkedModulesToLoad;
 };
 
 static bool _verifyModule(ModuleValidityCheckContext &context, Module *pModule) {
-	if (context.walkedModulesToLoad.count(pModule)) {
-		// Cyclic dependency detected.
-		return false;
+	for (auto i : context.walkedModulesToLoad) {
+		if (i == pModule) {
+			// Cyclic dependency detected.
+			return false;
+		}
 	}
 
-	context.walkedModulesToLoad.insert(pModule);
+	context.walkedModulesToLoad.push_back(pModule);
 
 	for (auto &i : pModule->dependencies) {
 		if (auto it = g_registeredModules.find(i); it != g_registeredModules.end()) {
-			ModuleValidityCheckContext newContext = context;
+			size_t nWalkedModulesToLoad = context.walkedModulesToLoad.size();
 
-			if (!_verifyModule(newContext, it->second.get()))
+			if (!_verifyModule(context, it->second.get()))
 				return false;
+
+			context.walkedModulesToLoad.resize(nWalkedModulesToLoad);
 		} else {
 			// Dependency not found.
 			return false;
@@ -137,7 +141,9 @@ static bool _verifyModule(ModuleValidityCheckContext &context, Module *pModule) 
 }
 
 bool clench::mod::verifyModule(Module *module) {
-	ModuleValidityCheckContext context;
+	std::vector<Module *> walkedModulesToLoad;
+
+	ModuleValidityCheckContext context{walkedModulesToLoad};
 
 	return _verifyModule(context, module);
 }
