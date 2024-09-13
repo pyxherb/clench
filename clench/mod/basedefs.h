@@ -3,6 +3,10 @@
 
 #include <clench/base/basedefs.h>
 
-#define CLCMOD_API CLENCH_API
+#if CLCMOD_BUILDING
+#define CLCMOD_API DLLEXPORT
+#else
+#define CLCMOD_API DLLIMPORT
+#endif
 
 #endif

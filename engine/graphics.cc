@@ -1,4 +1,4 @@
 #include "graphics.h"
 
-std::unique_ptr<clench::rhi::RHIDevice> clench::engine::g_mainRhiDevice;
-std::unique_ptr<clench::rhi::RHIDeviceContext> clench::engine::g_mainRhiDeviceContext;
+std::unique_ptr<clench::ghal::GHALDevice> clench::engine::g_mainGhalDevice;
+std::unique_ptr<clench::ghal::GHALDeviceContext> clench::engine::g_mainGhalDeviceContext;

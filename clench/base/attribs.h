@@ -23,10 +23,4 @@
 
 #endif
 
-#if CLENCH_IS_USER_MODULE
-#define CLENCH_API DLLIMPORT
-#else
-#define CLENCH_API DLLEXPORT
-#endif
-
 #endif

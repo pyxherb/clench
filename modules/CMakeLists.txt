@@ -1,1 +1,2 @@
-add_subdirectory("test")
+add_subdirectory("dftboot")
+add_subdirectory("world3d")

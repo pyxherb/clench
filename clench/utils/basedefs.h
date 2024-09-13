@@ -4,6 +4,10 @@
 #include <clench/base/attribs.h>
 #include <clench/base/clsmacro.h>
 
-#define CLCUTILS_API CLENCH_API
+#ifdef CLCUTILS_BUILDING
+#define CLCUTILS_API DLLEXPORT
+#else
+#define CLCUTILS_API DLLIMPORT
+#endif
 
 #endif

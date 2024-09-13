@@ -31,17 +31,18 @@ namespace clench {
 			}
 		};
 
-		template<typename T>
+		template <typename T>
 		class RcObjectPtr {
 		private:
-			T* _ptr;
+			T *_ptr = nullptr;
 
-			FORCEINLINE void _setAndIncRef(T* _ptr) {
+			FORCEINLINE void _setAndIncRef(T *_ptr) {
 				this->_ptr = _ptr;
 				_ptr->incRef();
 			}
 
 		public:
+			static_assert(std::is_base_of_v<RcObject, T>);
 
 			FORCEINLINE void reset() {
 				if (_ptr)
@@ -49,25 +50,32 @@ namespace clench {
 				_ptr = nullptr;
 			}
 
-			FORCEINLINE RcObjectPtr(T* _ptr = nullptr) : _ptr(_ptr) {}
-			FORCEINLINE RcObjectPtr(const RcObjectPtr<T>& other) {
-				_setAndIncRef(_ptr);
+			FORCEINLINE RcObjectPtr(T *ptr = nullptr) {
+				if (ptr)
+					_setAndIncRef(ptr);
+			}
+			FORCEINLINE RcObjectPtr(const RcObjectPtr<T> &other) {
+				_setAndIncRef(other._ptr);
+			}
+			FORCEINLINE RcObjectPtr(RcObjectPtr<T> &&other) {
+				_ptr = other._ptr;
+				other._ptr = nullptr;
 			}
 			FORCEINLINE ~RcObjectPtr() {
 				reset();
 			}
 
-			FORCEINLINE RcObjectPtr<T>& operator=(T* _ptr) noexcept {
+			FORCEINLINE RcObjectPtr<T> &operator=(T *_ptr) noexcept {
 				reset();
 				_setAndIncRef(_ptr);
 				return *this;
 			}
-			FORCEINLINE RcObjectPtr<T>& operator=(const RcObjectPtr<T>& other) noexcept {
+			FORCEINLINE RcObjectPtr<T> &operator=(const RcObjectPtr<T> &other) noexcept {
 				reset();
 				_setAndIncRef(other._ptr);
 				return *this;
 			}
-			FORCEINLINE RcObjectPtr<T>& operator=(RcObjectPtr<T>&& other) noexcept {
+			FORCEINLINE RcObjectPtr<T> &operator=(RcObjectPtr<T> &&other) noexcept {
 				reset();
 				_ptr = other._ptr;
 				other._ptr = nullptr;
@@ -75,11 +83,15 @@ namespace clench {
 				return *this;
 			}
 
-			FORCEINLINE T* get() {
+			FORCEINLINE T *get() {
 				return _ptr;
 			}
-			FORCEINLINE T* operator->() {
+			FORCEINLINE T *operator->() {
 				return _ptr;
+			}
+
+			FORCEINLINE bool operator<(const RcObjectPtr<T> &rhs) const {
+				return _ptr < rhs._ptr;
 			}
 		};
 	}

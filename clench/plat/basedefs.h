@@ -3,6 +3,10 @@
 
 #include <clench/base/basedefs.h>
 
-#define CLCPLAT_API CLENCH_API
+#if CLCPLAT_BUILDING
+#define CLCPLAT_API DLLEXPORT
+#else
+#define CLCPLAT_API DLLIMPORT
+#endif
 
 #endif

@@ -6,7 +6,7 @@ using namespace clench::utils;
 
 Logger clench::utils::g_logger = defaultLogger;
 
-CLCUTILS_API void clench::utils::defaultLogger(LogLevel level, const char* message, va_list varArgs) {
+CLCUTILS_API void clench::utils::defaultLogger(LogLevel level, const char *source, const char *message, va_list varArgs) {
 	switch (level) {
 		case LogLevel::Fatal:
 			fputs("[Fatal]", stdout);
@@ -29,17 +29,20 @@ CLCUTILS_API void clench::utils::defaultLogger(LogLevel level, const char* messa
 		default:
 			break;
 	}
+	printf("(%s)", source);
 
 	vprintf(message, varArgs);
+
+	putchar('\n');
 }
 
-CLCUTILS_API void clench::utils::doLogging(LogLevel level, const char *message, ...) {
+CLCUTILS_API void clench::utils::doLogging(LogLevel level, const char *source, const char *message, ...) {
 	va_list ap;
 
 	va_start(ap, message);
 
 	if (g_logger)
-		g_logger(level, message, ap);
+		g_logger(level, source, message, ap);
 
 	va_end(ap);
 }

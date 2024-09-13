@@ -1,0 +1,5 @@
+if(${CLENCH_LINK_MODE} STREQUAL "shared")
+    add_subdirectory("shared_link")
+elseif(${CLENCH_LINK_MODE} STREQUAL "static")
+    add_subdirectory("static_link")
+endif()
