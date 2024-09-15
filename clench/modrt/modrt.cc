@@ -3,6 +3,10 @@
 using namespace clench;
 using namespace clench::mod;
 
+#if _WIN32
+static HMODULE _getCurrentModule();
+#endif
+
 ModuleEntry::ModuleEntry(
 	const char *name,
 	size_t nDependencies,
@@ -19,11 +23,32 @@ ModuleEntry::ModuleEntry(
 		moduleRegistry.next = g_builtinModuleRegistries;
 		moduleRegistry.autoLoad = autoLoad;
 
+#ifdef _WIN32
+		moduleRegistry.nativeHandle = _getCurrentModule();
+#endif
+
 		g_builtinModuleRegistries = &moduleRegistry;
 	} else {
-		registerModule(name, nDependencies, dependencies, moduleInit, moduleDeinit);
+		Module *pModule = registerModule(name, nDependencies, dependencies, moduleInit, moduleDeinit);
 
-		if (autoLoad)
-			loadModule(name);
+#ifdef _WIN32
+		pModule->nativeHandle = _getCurrentModule();
+#endif
+
+		if (pModule) {
+			if (autoLoad)
+				loadModule(name);
+		}
 	}
 }
+
+#if _WIN32
+static HMODULE _getCurrentModule() {
+	HMODULE hModule;
+	GetModuleHandleEx(
+		GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+		(LPCTSTR)_getCurrentModule,
+		&hModule);
+	return hModule;
+}
+#endif

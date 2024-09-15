@@ -6,7 +6,7 @@ using namespace clench::mod;
 CLCMOD_API BuiltinModuleRegistry *clench::mod::g_builtinModuleRegistries = nullptr;
 CLCMOD_API std::unordered_map<std::string, std::unique_ptr<Module>> clench::mod::g_registeredModules;
 
-static bool _g_isBuiltinModulesInited = false;
+CLCMOD_API bool clench::mod::g_isBuiltinModulesInited = false;
 
 CLCMOD_API Module::Module(
 	const char *name,
@@ -45,7 +45,7 @@ CLCMOD_API bool clench::mod::initBuiltinModules() {
 		}
 	}
 
-	_g_isBuiltinModulesInited = true;
+	g_isBuiltinModulesInited = true;
 
 	return true;
 }
@@ -71,7 +71,7 @@ CLCMOD_API void clench::mod::deinitModules() {
 }
 
 CLCMOD_API bool clench::mod::isBuiltinModulesInited() {
-	return _g_isBuiltinModulesInited;
+	return g_isBuiltinModulesInited;
 }
 
 CLCMOD_API Module *clench::mod::registerModule(
@@ -143,7 +143,7 @@ static bool _verifyModule(ModuleValidityCheckContext &context, Module *pModule) 
 bool clench::mod::verifyModule(Module *module) {
 	std::vector<Module *> walkedModulesToLoad;
 
-	ModuleValidityCheckContext context{walkedModulesToLoad};
+	ModuleValidityCheckContext context{ walkedModulesToLoad };
 
 	return _verifyModule(context, module);
 }
@@ -204,5 +204,35 @@ CLCMOD_API void clench::mod::unloadModule(const char *name, UnloadModuleFlags fl
 		for (auto &i : pModule->dependencies)
 			unloadModule(i.c_str(), UNLMOD_DEPENDENCY);
 		pModule->isInited = false;
+
+#ifdef _WIN32
+		if (pModule->nativeHandle)
+			FreeLibrary(pModule->nativeHandle);
+#endif
 	}
+}
+
+CLCMOD_API Module *clench::mod::registerExternalModule(const char *name) {
+#if CLENCH_DYNAMIC_LINK
+	CLENCH_ASSERT(!isModuleRegistered(name), "The module is already registered");
+	#ifdef _WIN32
+	std::string fullDllName = (std::string) "./clcm_" + name + ".dll";
+
+	HMODULE hModule = LoadLibraryA(fullDllName.c_str());
+
+	if (!hModule)
+		return nullptr;
+
+	for (auto &i : g_registeredModules) {
+		if (i.second->nativeHandle == hModule)
+			return i.second.get();
+	}
+
+	return nullptr;
+	#else
+	return nullptr;
+	#endif
+#else
+	throw std::logic_error("Cannot register dynamic external modules while using static linking");
+#endif
 }

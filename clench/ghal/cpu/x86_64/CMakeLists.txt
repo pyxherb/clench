@@ -14,5 +14,5 @@ else()
     set(SRC ${SRC_SYSV})
 endif()
 
-target_sources(clcghal_targets PUBLIC ${HEADERS} ${SRC})
-target_compile_definitions(clcghal_targets PRIVATE CLCGHAL_TEXCONV_OPTIMIZED_CODE=1)
+target_sources(clcghal PRIVATE ${HEADERS} ${SRC})
+target_compile_definitions(clcghal PRIVATE CLCGHAL_TEXCONV_OPTIMIZED_CODE=1)

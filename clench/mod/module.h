@@ -29,9 +29,14 @@ namespace clench {
 			ModuleInit moduleInit;
 			ModuleDeinit moduleDeinit;
 			bool autoLoad;
+
+#ifdef _WIN32
+			HMODULE nativeHandle;
+#endif
 		};
 
 		CLCMOD_API extern BuiltinModuleRegistry *g_builtinModuleRegistries;
+		CLCMOD_API extern bool g_isBuiltinModulesInited;
 
 		class Module final {
 		public:
@@ -43,7 +48,12 @@ namespace clench {
 			bool isBuiltin;
 			bool isInited = false;
 			bool isManuallyLoaded = false;
+			bool isExternal = false;
 			std::unordered_set<std::string> dependencies;
+
+#ifdef _WIN32
+			HMODULE nativeHandle = NULL;
+#endif
 
 			CLCMOD_API Module(
 				const char *name,
@@ -84,6 +94,8 @@ namespace clench {
 		constexpr static UnloadModuleFlags
 			UNLMOD_DEPENDENCY = 0x01;
 		CLCMOD_API void unloadModule(const char *name, UnloadModuleFlags flags = 0);
+
+		CLCMOD_API Module *registerExternalModule(const char *name);
 	}
 }
 

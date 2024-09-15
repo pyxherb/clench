@@ -3,8 +3,8 @@ file(GLOB SRC *.cc)
 
 clench_add_component(clcplat)
 
-target_sources(clcplat_targets PUBLIC ${HEADERS} ${SRC})
-target_compile_definitions(clcplat_targets PRIVATE CLCPLAT_BUILDING=1)
+target_sources(clcplat PRIVATE ${HEADERS} ${SRC})
+target_compile_definitions(clcplat PRIVATE CLCPLAT_BUILDING=1)
 
 if(WIN32)
 	add_subdirectory("win32")

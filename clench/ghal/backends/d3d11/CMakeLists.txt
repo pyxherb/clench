@@ -4,10 +4,10 @@ find_package(file2c REQUIRED)
 file(GLOB HEADERS *.h)
 file(GLOB SRC *.cc)
 
-target_sources(clcghal_targets PUBLIC ${HEADERS} ${SRC})
+target_sources(clcghal PRIVATE ${HEADERS} ${SRC})
 
-target_compile_definitions(clcghal_targets PUBLIC CLCGHAL_HAS_D3D11_BACKEND=1)
-target_link_libraries(clcghal_targets PUBLIC d3d11)
+target_compile_definitions(clcghal PUBLIC CLCGHAL_HAS_D3D11_BACKEND=1)
+target_link_libraries(clcghal PUBLIC d3d11)
 
 fxc_compile_shader(
     clcghal_d3d11_clear_rtv_vert_shader
@@ -45,6 +45,6 @@ add_file2c_target(
     PREFIXES "CLCGHAL_API"
 )
 
-target_sources(clcghal_targets PRIVATE
+target_sources(clcghal PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}/shaders/clear_rtv_vert.cc
     ${CMAKE_CURRENT_BINARY_DIR}/shaders/clear_rtv_frag.cc)

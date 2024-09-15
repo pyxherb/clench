@@ -5,14 +5,8 @@
 
 namespace clench {
 	namespace mod {
-		extern const char *g_moduleName;
-		extern ModuleInit g_moduleInit;
-		extern ModuleDeinit g_moduleDeinit;
-
 		struct ModuleEntry {
-#if CLENCH_STATIC_LINK
 			BuiltinModuleRegistry moduleRegistry;
-#endif
 
 			ModuleEntry(
 				const char *name,

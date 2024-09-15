@@ -4,10 +4,14 @@
 #include <clench/wsal.h>
 #include <clench/ghal.h>
 
-#ifdef CLCVWC_BUILDING
-#define CLCVWC_API DLLEXPORT
+#if CLENCH_DYNAMIC_LINK
+	#ifdef CLCVWC_BUILDING
+		#define CLCVWC_API DLLEXPORT
+	#else
+		#define CLCVWC_API DLLIMPORT
+	#endif
 #else
-#define CLCVWC_API DLLIMPORT
+	#define CLCVWC_API DLLEXPORT
 #endif
 
 #endif

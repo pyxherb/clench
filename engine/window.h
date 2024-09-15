@@ -11,19 +11,19 @@ namespace clench {
 		public:
 			std::set<uint32_t> keyboardPressedKeys;
 
-			CLCWSAL_API MainWindow();
-			CLCWSAL_API virtual ~MainWindow();
+			MainWindow();
+			virtual ~MainWindow();
 
-			CLCWSAL_API virtual void onResize(int width, int height) override;
-			CLCWSAL_API virtual void onMove(int x, int y) override;
-			CLCWSAL_API virtual bool onClose() override;
-			CLCWSAL_API virtual void onMouseButtonPress(wsal::MouseButton button, int x, int y) override;
-			CLCWSAL_API virtual void onMouseButtonRelease(wsal::MouseButton button, int x, int y) override;
-			CLCWSAL_API virtual void onMouseHover(int x, int y) override;
-			CLCWSAL_API virtual void onMouseLeave() override;
-			CLCWSAL_API virtual void onMouseMove(int x, int y) override;
+			virtual void onResize(int width, int height) override;
+			virtual void onMove(int x, int y) override;
+			virtual bool onClose() override;
+			virtual void onMouseButtonPress(wsal::MouseButton button, int x, int y) override;
+			virtual void onMouseButtonRelease(wsal::MouseButton button, int x, int y) override;
+			virtual void onMouseHover(int x, int y) override;
+			virtual void onMouseLeave() override;
+			virtual void onMouseMove(int x, int y) override;
 
-			CLCWSAL_API virtual bool isKeyDown(wsal::KeyboardKeyCode keyCode) const;
+			virtual bool isKeyDown(wsal::KeyboardKeyCode keyCode) const;
 		};
 
 		extern std::unique_ptr<MainWindow> g_mainWindow;

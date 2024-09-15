@@ -4,10 +4,14 @@
 #include <clench/base/basedefs.h>
 #include <clench/base/clsmacro.h>
 
-#if CLCGHAL_BUILDING
-	#define CLCGHAL_API DLLEXPORT
+#if CLENCH_DYNAMIC_LINK
+	#if CLCGHAL_BUILDING
+		#define CLCGHAL_API DLLEXPORT
+	#else
+		#define CLCGHAL_API DLLIMPORT
+	#endif
 #else
-	#define CLCGHAL_API DLLIMPORT
+	#define CLCGHAL_API DLLEXPORT
 #endif
 
 #endif

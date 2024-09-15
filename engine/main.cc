@@ -37,6 +37,11 @@ int main(int argc, char **argv) {
 
 	mod::initBuiltinModules();
 
+#if CLENCH_DYNAMIC_LINK
+	if (!mod::registerExternalModule("world3d"))
+		assert(false);
+#endif
+
 	g_mainGhalDevice = std::unique_ptr<ghal::GHALDevice>(ghal::createGHALDevice());
 
 	if (!g_mainGhalDevice)

@@ -3,27 +3,23 @@
 
 #include <clench/ghal.h>
 
-namespace clench {
-	namespace world3d {
-		struct WorldContext {
+namespace world3d {
+	struct WorldContext {
+	};
 
-		};
+	class WorldObject {
+	public:
+		void render(WorldContext &context);
+	};
 
-		class WorldObject {
-		public:
-			void render(WorldContext &context);
-		};
+	class World {
+	};
 
-		class World {
-
-		};
-
-		class WorldRenderer {
-		public:
-			utils::RcObjectPtr<ghal::Texture2D> renderOutputTexture;
-			World *world;
-		};
-	}
+	class WorldRenderer {
+	public:
+		clench::utils::RcObjectPtr<clench::ghal::Texture2D> renderOutputTexture;
+		World *world;
+	};
 }
 
 #endif

@@ -4,10 +4,14 @@
 #include <clench/base/attribs.h>
 #include <clench/base/clsmacro.h>
 
-#ifdef CLCWSAL_BUILDING
-#define CLCWSAL_API DLLEXPORT
+#if CLENCH_DYNAMIC_LINK
+	#ifdef CLCWSAL_BUILDING
+		#define CLCWSAL_API DLLEXPORT
+	#else
+		#define CLCWSAL_API DLLIMPORT
+	#endif
 #else
-#define CLCWSAL_API DLLIMPORT
+	#define CLCWSAL_API DLLEXPORT
 #endif
 
 #endif

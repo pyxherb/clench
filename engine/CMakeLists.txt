@@ -1,8 +1,16 @@
 file(GLOB SRC *.h *.cc)
 add_executable(clcngine ${SRC})
 set_target_properties(clcngine PROPERTIES CXX_STANDARD 17)
-target_link_libraries(clcngine PUBLIC clcutils clcwsal clcghal clcvwc clcmod)
+clench_add_basic_definitions(clcngine)
+
+clench_add_component_dependency_to_target(clcngine clcutils)
+clench_add_component_dependency_to_target(clcngine clcwsal)
+clench_add_component_dependency_to_target(clcngine clcghal)
+clench_add_component_dependency_to_target(clcngine clcvwc)
+clench_add_component_dependency_to_target(clcngine clcmod)
+
+get_target_property(_target_binary_dir clcngine BINARY_DIR)
 
 foreach(i ${CLENCH_ENABLED_MODULES})
-    target_link_libraries(clcngine PUBLIC "clcm_${i}")
+    clench_add_module_dependency_to_target(clcngine ${i})
 endforeach()
