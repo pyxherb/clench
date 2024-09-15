@@ -11,7 +11,7 @@
 		#define CLCWSAL_API DLLIMPORT
 	#endif
 #else
-	#define CLCWSAL_API DLLEXPORT
+	#define CLCWSAL_API
 #endif
 
 #endif

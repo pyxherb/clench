@@ -11,7 +11,7 @@
 		#define CLCGHAL_API DLLIMPORT
 	#endif
 #else
-	#define CLCGHAL_API DLLEXPORT
+	#define CLCGHAL_API
 #endif
 
 #endif

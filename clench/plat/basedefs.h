@@ -10,7 +10,7 @@
 		#define CLCPLAT_API DLLIMPORT
 	#endif
 #else
-	#define CLCPLAT_API DLLEXPORT
+	#define CLCPLAT_API
 #endif
 
 #endif

@@ -10,7 +10,7 @@
 		#define WORLD3D_API DLLIMPORT
 	#endif
 #else
-	#define WORLD3D_API DLLEXPORT
+	#define WORLD3D_API
 #endif
 
 #endif

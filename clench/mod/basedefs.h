@@ -10,7 +10,7 @@
 		#define CLCMOD_API DLLIMPORT
 	#endif
 #else
-	#define CLCMOD_API DLLEXPORT
+	#define CLCMOD_API
 #endif
 
 #endif

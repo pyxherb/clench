@@ -11,7 +11,7 @@
 		#define CLCMATH_API DLLIMPORT
 	#endif
 #else
-	#define CLCMATH_API DLLEXPORT
+	#define CLCMATH_API
 #endif
 
 #define CLCMATH_INDEX_ASSERT(index, maxIndex) CLENCH_ASSERT(index < maxIndex, "Out of range");

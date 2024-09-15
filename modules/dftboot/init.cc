@@ -1,4 +1,5 @@
 #include <clench/modrt/modrt.h>
+#include "basedefs.h"
 
 namespace dftboot {
 	bool moduleInit() {
@@ -13,5 +14,5 @@ namespace dftboot {
 		"world3d"
 	};
 
-	static clench::mod::ModuleEntry moduleEntry("dftboot", std::size(dependencies), dependencies, moduleInit, moduleDeinit, true);
+	DFTBOOT_API clench::mod::ModuleEntry moduleEntry("dftboot", std::size(dependencies), dependencies, moduleInit, moduleDeinit, true);
 }

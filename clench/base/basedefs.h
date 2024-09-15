@@ -11,7 +11,7 @@
 		#define CLCBASE_API DLLIMPORT
 	#endif
 #else
-	#define CLCBASE_API DLLEXPORT
+	#define CLCBASE_API
 #endif
 
 #endif

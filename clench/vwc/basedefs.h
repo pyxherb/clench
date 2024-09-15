@@ -11,7 +11,7 @@
 		#define CLCVWC_API DLLIMPORT
 	#endif
 #else
-	#define CLCVWC_API DLLEXPORT
+	#define CLCVWC_API
 #endif
 
 #endif

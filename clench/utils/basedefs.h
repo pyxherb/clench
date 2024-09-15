@@ -11,7 +11,7 @@
 		#define CLCUTILS_API DLLIMPORT
 	#endif
 #else
-	#define CLCUTILS_API DLLEXPORT
+	#define CLCUTILS_API
 #endif
 
 #endif
