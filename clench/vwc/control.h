@@ -28,7 +28,7 @@ namespace clench {
 			CLCVWC_API virtual void onResize(int width, int height) override;
 			CLCVWC_API virtual void onExpose() override;
 
-			CLCWSAL_API virtual const wsal::LayoutAttributes *getLayoutAttributes() const;
+			CLCVWC_API virtual const wsal::LayoutAttributes *getLayoutAttributes() const;
 
 			CLCVWC_API void redrawChildWindows();
 			CLCVWC_API void repositionChildWindowsByLayout();

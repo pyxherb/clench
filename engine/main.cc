@@ -51,6 +51,74 @@ int main(int argc, char **argv) {
 
 	g_mainGhalDeviceContext = std::unique_ptr<ghal::GHALDeviceContext>(g_mainGhalDevice->createDeviceContextForWindow(g_mainWindow.get()));
 
+	clench::utils::RcObjectPtr<clench::ghal::VertexShader> vertexShader;
+	clench::utils::RcObjectPtr<clench::ghal::FragmentShader> fragmentShader;
+	{
+		std::ifstream is("test_vertex.cso");
+
+		is.seekg(0, std::ios::end);
+		size_t size = is.tellg();
+		is.seekg(0, std::ios::beg);
+
+		std::unique_ptr<char[]> vsSrc(std::make_unique<char[]>(size));
+		is.read(vsSrc.get(), size);
+
+		vertexShader = g_mainGhalDevice->createVertexShader(vsSrc.get(), size, nullptr);
+	}
+	{
+		std::ifstream is("test_pixel.cso");
+
+		is.seekg(0, std::ios::end);
+		size_t size = is.tellg();
+		is.seekg(0, std::ios::beg);
+
+		std::unique_ptr<char[]> fsSrc(std::make_unique<char[]>(size));
+		is.read(fsSrc.get(), size);
+
+		fragmentShader = g_mainGhalDevice->createFragmentShader(fsSrc.get(), size, nullptr);
+	}
+
+	clench::utils::RcObjectPtr<clench::ghal::VertexArray> vertexArray;
+	{
+		clench::ghal::VertexArrayElementDesc descs[] = {
+			{ clench::ghal::InputVertexShaderSemanticType::Position,
+				0,
+				0,
+				3,
+				clench::ghal::VertexDataType::Float,
+				sizeof(float) * 4 + sizeof(float) * 3,
+				0 },
+			{ clench::ghal::InputVertexShaderSemanticType::Color,
+				0,
+				0,
+				4,
+				clench::ghal::VertexDataType::Float,
+				sizeof(float) * 4 + sizeof(float) * 3,
+				sizeof(float) * 3 }
+		};
+
+		vertexArray = g_mainGhalDevice->createVertexArray(descs, std::size(descs), vertexShader.get());
+	}
+
+	clench::utils::RcObjectPtr<clench::ghal::Buffer> vertexBuffer, indexBuffer;
+	{
+		clench::ghal::BufferDesc vertexBufferDesc, indexBufferDesc;
+
+		vertexBufferDesc.size = sizeof(vertices);
+		vertexBufferDesc.usage = clench::ghal::BufferUsage::Static;
+		vertexBufferDesc.proposedTarget = clench::ghal::BufferTarget::Vertex;
+		vertexBufferDesc.cpuReadable = false;
+		vertexBufferDesc.cpuWritable = true;
+		vertexBuffer = g_mainGhalDevice->createBuffer(vertexBufferDesc, vertices);
+
+		indexBufferDesc.size = sizeof(indices);
+		indexBufferDesc.usage = clench::ghal::BufferUsage::Static;
+		indexBufferDesc.proposedTarget = clench::ghal::BufferTarget::Index;
+		indexBufferDesc.cpuReadable = false;
+		indexBufferDesc.cpuWritable = true;
+		indexBuffer = g_mainGhalDevice->createBuffer(indexBufferDesc, indices);
+	}
+
 	g_mainWindow->show();
 
 	while (!g_mainWindow->isClosed()) {
@@ -62,12 +130,24 @@ int main(int argc, char **argv) {
 		g_mainGhalDeviceContext->clearDepth(nullptr, 1.0f);
 		g_mainGhalDeviceContext->clearStencil(nullptr, 0);
 
-		g_mainGhalDeviceContext->drawIndexed();
+		g_mainGhalDeviceContext->bindVertexArray(vertexArray.get());
+		g_mainGhalDeviceContext->bindVertexBuffer(vertexBuffer.get(), sizeof(float) * 3 + sizeof(float) * 4);
+		g_mainGhalDeviceContext->bindIndexBuffer(indexBuffer.get());
+
+		g_mainGhalDeviceContext->setVertexShader(vertexShader.get());
+		g_mainGhalDeviceContext->setFragmentShader(fragmentShader.get());
+
+		g_mainGhalDeviceContext->drawIndexed(6);
 
 		g_mainGhalDeviceContext->present();
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 60));
 	}
+	indexBuffer.reset();
+	vertexBuffer.reset();
+	vertexArray.reset();
+	fragmentShader.reset();
+	vertexShader.reset();
 
 	mod::deinitModules();
 

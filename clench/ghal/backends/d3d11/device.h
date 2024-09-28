@@ -160,7 +160,7 @@ namespace clench {
 				float &minDepthOut,
 				float &maxDepthOut) override;
 
-			CLCGHAL_API virtual void drawIndexed() override;
+			CLCGHAL_API virtual void drawIndexed(unsigned int nIndices) override;
 
 			CLCGHAL_API virtual void begin() override;
 			CLCGHAL_API virtual void end() override;

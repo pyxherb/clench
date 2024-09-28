@@ -725,9 +725,9 @@ CLCGHAL_API void D3D11GHALDeviceContext::getViewport(
 	maxDepthOut = maxDepthOut;
 }
 
-CLCGHAL_API void D3D11GHALDeviceContext::drawIndexed() {
+CLCGHAL_API void D3D11GHALDeviceContext::drawIndexed(unsigned int nIndices) {
 	d3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	d3dDeviceContext->DrawIndexed(6, 0, 0);
+	d3dDeviceContext->DrawIndexed(nIndices, 0, 0);
 }
 
 CLCGHAL_API void D3D11GHALDeviceContext::begin() {
