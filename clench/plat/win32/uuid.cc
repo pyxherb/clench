@@ -1,7 +1,6 @@
 #include <clench/plat/uuid.h>
 #include <ctime>
 #include <memory>
-#include <Windows.h>
 #include <WinSock2.h>
 #include <iphlpapi.h>
 
@@ -32,15 +31,15 @@ static uint64_t _fetchSystemTime() {
 
 static uint64_t _fetchSystemNode() {
 	ULONG outBufLen = sizeof(IP_ADAPTER_ADDRESSES);
-	std::unique_ptr<IP_ADAPTER_ADDRESSES> pAddress = std::make_unique<IP_ADAPTER_ADDRESSES>(outBufLen);
+	std::unique_ptr<IP_ADAPTER_ADDRESSES> pAddress((IP_ADAPTER_ADDRESSES*)new char[outBufLen]);
 
 	if (GetAdaptersAddresses(AF_UNSPEC, 0, nullptr, pAddress.get(), &outBufLen)) {
 		pAddress.reset();
-		pAddress = std::make_unique<IP_ADAPTER_ADDRESSES>(outBufLen);
+		pAddress = std::unique_ptr<IP_ADAPTER_ADDRESSES>((IP_ADAPTER_ADDRESSES *) new char[outBufLen]);
 	}
 
 	if (GetAdaptersAddresses(AF_UNSPEC, 0, nullptr, pAddress.get(), &outBufLen) == NO_ERROR) {
-		for (PIP_ADAPTER_ADDRESSES i = pAddress.get(); i = i->Next) {
+		for (PIP_ADAPTER_ADDRESSES i = pAddress.get();; i = i->Next) {
 			if (i->PhysicalAddressLength != 6)
 				continue;
 
