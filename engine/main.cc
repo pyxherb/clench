@@ -31,25 +31,7 @@ uint32_t indices[] = {
 	1, 2, 3
 };
 
-class CoroutineTestRunnable : public clench::plat::Runnable {
-public:
-	virtual ~CoroutineTestRunnable() {}
-	virtual void run() {
-		for (int i = 0; i < 100; ++i) {
-			CLENCH_YIELD;
-		}
-	}
-};
-
 int main(int argc, char **argv) {
-	CoroutineTestRunnable testRunnable;
-
-	clench::plat::NativeCoroutine nativeCoroutine(4096, &testRunnable);
-
-	while (nativeCoroutine.state != clench::plat::ThreadState::Done) {
-		nativeCoroutine.resume();
-	}
-
 	wsal::init();
 
 	ghal::registerBuiltinGHALBackends();
