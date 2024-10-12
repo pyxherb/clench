@@ -8,7 +8,7 @@ CLCMOD_API BuiltinModuleRegistry *clench::mod::g_builtinModuleRegistries = nullp
 CLCMOD_API std::unordered_map<std::string, std::unique_ptr<Module>> clench::mod::g_registeredModules;
 
 CLCMOD_API bool clench::mod::g_isBuiltinModulesInited = false;
-CLCMOD_API size_t g_moduleRegisterCounter = 0;
+CLCMOD_API size_t clench::mod::g_moduleRegisterCounter = 0;
 
 CLCMOD_API Module::Module(
 	const char *name,

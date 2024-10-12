@@ -7,7 +7,6 @@
 #include <fstream>
 #include <clench/vwc/button.h>
 #include <clench/mod/module.h>
-#include <clench/plat/coroutine.h>
 
 using namespace clench;
 using namespace clench::engine;
@@ -54,6 +53,7 @@ int main(int argc, char **argv) {
 
 	clench::utils::RcObjectPtr<clench::ghal::VertexShader> vertexShader;
 	clench::utils::RcObjectPtr<clench::ghal::FragmentShader> fragmentShader;
+	clench::utils::RcObjectPtr<clench::ghal::ShaderProgram> shaderProgram;
 	{
 		std::ifstream is("test_vertex.cso");
 
@@ -78,6 +78,8 @@ int main(int argc, char **argv) {
 
 		fragmentShader = g_mainGhalDevice->createFragmentShader(fsSrc.get(), size, nullptr);
 	}
+	clench::ghal::Shader *shaders[] = { vertexShader.get(), fragmentShader.get() };
+	shaderProgram = g_mainGhalDevice->linkShaderProgram(shaders, std::size(shaders));
 
 	clench::utils::RcObjectPtr<clench::ghal::VertexArray> vertexArray;
 	{
@@ -135,8 +137,7 @@ int main(int argc, char **argv) {
 		g_mainGhalDeviceContext->bindVertexBuffer(vertexBuffer.get(), sizeof(float) * 3 + sizeof(float) * 4);
 		g_mainGhalDeviceContext->bindIndexBuffer(indexBuffer.get());
 
-		g_mainGhalDeviceContext->setVertexShader(vertexShader.get());
-		g_mainGhalDeviceContext->setFragmentShader(fragmentShader.get());
+		g_mainGhalDeviceContext->setShaderProgram(shaderProgram.get());
 
 		g_mainGhalDeviceContext->drawIndexed(6);
 
@@ -147,6 +148,7 @@ int main(int argc, char **argv) {
 	indexBuffer.reset();
 	vertexBuffer.reset();
 	vertexArray.reset();
+	shaderProgram.reset();
 	fragmentShader.reset();
 	vertexShader.reset();
 

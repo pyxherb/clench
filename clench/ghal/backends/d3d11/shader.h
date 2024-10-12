@@ -35,6 +35,16 @@ namespace clench {
 			CLCGHAL_API D3D11GeometryShader(GHALDevice *ownedDevice, ID3D11GeometryShader *shader);
 			CLCGHAL_API virtual ~D3D11GeometryShader();
 		};
+
+		class D3D11ShaderProgram : public ShaderProgram {
+		public:
+			utils::RcObjectPtr<D3D11VertexShader> vertexShader;
+			utils::RcObjectPtr<D3D11FragmentShader> fragmentShader;
+
+			CLCGHAL_API D3D11ShaderProgram(
+				GHALDevice *ownerDevice);
+			CLCGHAL_API virtual ~D3D11ShaderProgram();
+		};
 	}
 }
 

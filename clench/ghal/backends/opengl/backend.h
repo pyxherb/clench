@@ -3,9 +3,9 @@
 
 #include <clench/ghal/backend.h>
 #if _WIN32
-#include <Windows.h>
+	#include <Windows.h>
 #elif __unix__
-#include <EGL/egl.h>
+	#include <EGL/egl.h>
 #endif
 #include <glad/gl.h>
 #include <climits>
@@ -20,10 +20,14 @@ namespace clench {
 			CLCGHAL_API GLGHALBackend();
 			CLCGHAL_API virtual ~GLGHALBackend();
 
-			CLCGHAL_API virtual GHALDevice* createDevice() override;
+			CLCGHAL_API virtual GHALDevice *createDevice() override;
 		};
 
+#if _WIN32
+		CLCGHAL_API extern HMODULE g_hOpenGL32Dll;
+#elif __unix__
 		CLCGHAL_API extern std::map<EGLDisplay, size_t> g_initializedEglDisplays;
+#endif
 		CLCGHAL_API extern bool g_glInitialized;
 
 		CLCGHAL_API void *_loadGlProc(const char *name);

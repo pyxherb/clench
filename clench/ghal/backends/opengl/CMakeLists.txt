@@ -26,6 +26,7 @@ target_compile_definitions(clcghal PUBLIC CLCGHAL_HAS_OPENGL_BACKEND=1)
 target_link_libraries(clcghal PUBLIC glad)
 
 if(WIN32)
+    target_link_libraries(clcghal PUBLIC opengl32)
 else()
     target_link_libraries(clcghal PUBLIC GL EGL)
 endif()

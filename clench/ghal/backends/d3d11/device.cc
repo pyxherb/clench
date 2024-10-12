@@ -294,6 +294,33 @@ CLCGHAL_API GeometryShader *D3D11GHALDevice::createGeometryShader(const char *so
 	return new D3D11GeometryShader(this, shader.Get());
 }
 
+CLCGHAL_API ShaderProgram *D3D11GHALDevice::linkShaderProgram(Shader **shaders, size_t nShaders) {
+	std::unique_ptr<
+		D3D11ShaderProgram,
+		utils::RcObjectUniquePtrDeleter<D3D11ShaderProgram>> program(new D3D11ShaderProgram(this));
+
+	for (size_t i = 0; i < nShaders; ++i) {
+		Shader *curShader = shaders[i];
+
+		switch (curShader->shaderType) {
+			case ShaderType::Vertex:
+				if (program->vertexShader)
+					throw std::runtime_error("The vertex shader is already set");
+				program->vertexShader = (D3D11VertexShader *)curShader;
+				break;
+			case ShaderType::Fragment:
+				if (program->fragmentShader)
+					throw std::runtime_error("The vertex shader is already set");
+				program->fragmentShader = (D3D11FragmentShader *)curShader;
+				break;
+			default:
+				throw std::runtime_error("Invalid shader type");
+		}
+	}
+
+	return program.release();
+}
+
 CLCGHAL_API Buffer *D3D11GHALDevice::createBuffer(const BufferDesc &bufferDesc, const void *initialData) {
 	D3D11_BUFFER_DESC desc;
 	ComPtr<ID3D11Buffer> buffer;
@@ -668,12 +695,9 @@ CLCGHAL_API void D3D11GHALDeviceContext::setData(Buffer *buffer, const void *dat
 	d3dDeviceContext->Unmap(d3dBuffer, 0);
 }
 
-CLCGHAL_API void D3D11GHALDeviceContext::setVertexShader(VertexShader *vertexShader) {
-	d3dDeviceContext->VSSetShader(((D3D11VertexShader *)vertexShader)->shader.Get(), nullptr, 0);
-}
-
-CLCGHAL_API void D3D11GHALDeviceContext::setFragmentShader(FragmentShader *vertexShader) {
-	d3dDeviceContext->PSSetShader(((D3D11FragmentShader *)vertexShader)->shader.Get(), nullptr, 0);
+CLCGHAL_API void D3D11GHALDeviceContext::setShaderProgram(ShaderProgram *shaderProgram) {
+	d3dDeviceContext->VSSetShader(((D3D11ShaderProgram *)shaderProgram)->vertexShader->shader.Get(), nullptr, 0);
+	d3dDeviceContext->PSSetShader(((D3D11ShaderProgram *)shaderProgram)->fragmentShader->shader.Get(), nullptr, 0);
 }
 
 CLCGHAL_API void D3D11GHALDeviceContext::setRenderTarget(

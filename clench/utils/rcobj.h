@@ -91,6 +91,10 @@ namespace clench {
 			FORCEINLINE bool operator<(const RcObjectPtr<T> &rhs) const {
 				return _ptr < rhs._ptr;
 			}
+
+			FORCEINLINE operator bool() const {
+				return _ptr;
+			}
 		};
 
 		template<typename T>

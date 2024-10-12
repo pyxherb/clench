@@ -29,3 +29,7 @@ CLCGHAL_API D3D11GeometryShader::D3D11GeometryShader(GHALDevice *ownedDevice, ID
 
 CLCGHAL_API D3D11GeometryShader::~D3D11GeometryShader() {
 }
+
+CLCGHAL_API D3D11ShaderProgram::D3D11ShaderProgram(
+	GHALDevice *ownerDevice) : ShaderProgram(ownerDevice) {}
+CLCGHAL_API D3D11ShaderProgram::~D3D11ShaderProgram() {}

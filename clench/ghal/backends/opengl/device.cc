@@ -26,7 +26,7 @@ CLCGHAL_API GHALDeviceContext *GLGHALDevice::createDeviceContextForWindow(clench
 	int width, height;
 	window->getSize(width, height);
 #ifdef _WIN32
-	HWND hWnd = *(HWND *)window->getNativeHandle();
+	HWND hWnd = *(HWND *)window->nativeHandle;
 	HDC hdc = GetDC(hWnd);
 	{
 		PIXELFORMATDESCRIPTOR pfd = { 0 };
@@ -454,8 +454,8 @@ CLCGHAL_API GLGHALDeviceContext::GLGHALDeviceContext(
 
 CLCGHAL_API GLGHALDeviceContext::~GLGHALDeviceContext() {
 #if _WIN32
-	wglDeleteContext(_wglContext);
-	ReleaseDC(_hWnd, _hdc);
+	wglDeleteContext(wglContext);
+	ReleaseDC(hWnd, hdc);
 #else
 	if (eglContext != EGL_NO_CONTEXT) {
 		eglDestroyContext(eglDisplay, eglContext);
@@ -488,7 +488,7 @@ CLCGHAL_API void GLGHALDeviceContext::onResize(int width, int height) {
 	windowWidth = width;
 	windowHeight = height;
 
-	if(eglSurface != EGL_NO_SURFACE)
+	if (eglSurface != EGL_NO_SURFACE)
 		eglDestroySurface(eglDisplay, eglSurface);
 
 	eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, eglWindow, nullptr);
@@ -510,7 +510,7 @@ CLCGHAL_API void GLGHALDeviceContext::clearRenderTargetView(
 		glBindFramebuffer(GL_FRAMEBUFFER, prevRenderTarget);
 	});
 
-	if(!renderTargetView)
+	if (!renderTargetView)
 		renderTargetView = defaultRenderTargetView.get();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, ((GLRenderTargetView *)renderTargetView)->frameBufferHandle);
@@ -675,22 +675,29 @@ CLCGHAL_API void GLGHALDeviceContext::end() {
 
 CLCGHAL_API void GLGHALDeviceContext::present() {
 #ifdef _WIN32
-	SwapBuffers(_hdc);
+	SwapBuffers(hdc);
 #else
 	eglSwapBuffers(eglDisplay, eglSurface);
 #endif
 }
 
 CLCGHAL_API NativeGLContext GLGHALDeviceContext::saveContextCurrent() {
+#if _WIN32
+	return {
+		wglGetCurrentContext(),
+		wglGetCurrentDC()
+	};
+#else
 	return { eglGetCurrentDisplay(),
 		eglGetCurrentSurface(EGL_DRAW),
 		eglGetCurrentSurface(EGL_READ),
 		eglGetCurrentContext() };
+#endif
 }
 
 CLCGHAL_API bool GLGHALDeviceContext::restoreContextCurrent(const NativeGLContext &context) {
 #if _WIN32
-	return wglMakeCurrent(hdc, wglContext);
+	return wglMakeCurrent(context.hdc, context.wglContext);
 #else
 	return eglMakeCurrent(context.eglDisplay, context.eglDrawSurface, context.eglReadSurface, context.eglContext);
 #endif

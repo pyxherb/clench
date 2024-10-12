@@ -12,6 +12,8 @@ namespace clench {
 
 		struct NativeGLContext {
 #ifdef _WIN32
+			HGLRC wglContext;
+			HDC hdc;
 #else
 			EGLDisplay eglDisplay;
 			EGLSurface eglReadSurface;
@@ -61,6 +63,9 @@ namespace clench {
 			utils::RcObjectPtr<GLRenderTargetView> defaultRenderTargetView;
 
 #ifdef _WIN32
+			HGLRC wglContext;
+			HWND hWnd;
+			HDC hdc;
 #else
 			EGLDisplay eglDisplay = EGL_NO_DISPLAY;
 			EGLSurface eglSurface = EGL_NO_SURFACE;

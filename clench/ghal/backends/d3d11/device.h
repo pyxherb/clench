@@ -65,6 +65,8 @@ namespace clench {
 			CLCGHAL_API virtual FragmentShader *createFragmentShader(const char *sources, size_t size, ShaderSourceInfo *sourceInfo) override;
 			CLCGHAL_API virtual GeometryShader *createGeometryShader(const char *sources, size_t size, ShaderSourceInfo *sourceInfo) override;
 
+			CLCGHAL_API virtual ShaderProgram *linkShaderProgram(Shader **shaders, size_t nShaders) override;
+
 			CLCGHAL_API virtual Buffer *createBuffer(const BufferDesc &bufferDesc, const void *initialData) override;
 
 			CLCGHAL_API virtual Texture1D *createTexture1D(const char *data, size_t size, const Texture1DDesc &desc) override;
@@ -138,8 +140,7 @@ namespace clench {
 
 			CLCGHAL_API virtual void setData(Buffer *buffer, const void *data) override;
 
-			CLCGHAL_API virtual void setVertexShader(VertexShader *vertexShader) override;
-			CLCGHAL_API virtual void setFragmentShader(FragmentShader *vertexShader) override;
+			CLCGHAL_API virtual void setShaderProgram(ShaderProgram *shaderProgram) override;
 
 			CLCGHAL_API virtual void setRenderTarget(
 				RenderTargetView *renderTargetView,
