@@ -9,9 +9,9 @@
 using namespace clench;
 using namespace clench::wsal;
 
-CLCWSAL_API Window::Window() {}
+CLCWSAL_API wsal::Window::Window() {}
 
-CLCWSAL_API Window::~Window() {
+CLCWSAL_API wsal::Window::~Window() {
 }
 
 CLCWSAL_API VirtualWindow::VirtualWindow(
@@ -79,7 +79,7 @@ CLCWSAL_API void VirtualWindow::setParent(Window *window) {
 	_parent = window;
 }
 
-CLCWSAL_API Window *VirtualWindow::getParent() const {
+CLCWSAL_API wsal::Window *VirtualWindow::getParent() const {
 	return _parent;
 }
 
@@ -169,7 +169,7 @@ CLCWSAL_API const LayoutAttributes *VirtualWindow::getLayoutAttributes() const {
 	return nullptr;
 }
 
-CLCWSAL_API Window *wsal::getRootNativeWindow(Window *childWindow) {
+CLCWSAL_API wsal::Window *wsal::getRootNativeWindow(Window *childWindow) {
 	Window *i = childWindow;
 	WindowProperties windowProperties;
 

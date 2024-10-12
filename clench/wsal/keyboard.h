@@ -3,11 +3,6 @@
 
 #include <cstdint>
 
-#ifdef None
-#define _None None
-#undef None
-#endif
-
 namespace clench {
 	namespace wsal {
 		enum class KeyboardKeyCode : uint32_t {
@@ -95,10 +90,5 @@ namespace clench {
 		};
 	}
 }
-
-#ifdef _None
-#define None _None
-#undef _None
-#endif
 
 #endif

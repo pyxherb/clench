@@ -7,7 +7,7 @@ using namespace clench::engine;
 std::unique_ptr<MainWindow> clench::engine::g_mainWindow;
 
 CLCWSAL_API clench::engine::MainWindow::MainWindow()
-	: RootWindow(
+	: VWCRootWindow(
 		  wsal::CREATEWINDOW_MIN |
 			  wsal::CREATEWINDOW_MAX |
 			  wsal::CREATEWINDOW_RESIZE,

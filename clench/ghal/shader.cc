@@ -34,3 +34,8 @@ CLCGHAL_API GeometryShader::GeometryShader(GHALDevice* ownedDevice)
 
 CLCGHAL_API GeometryShader::~GeometryShader() {
 }
+
+CLCGHAL_API ShaderProgram::ShaderProgram(GHALDevice *ownerDevice) : GHALDeviceResource(ownerDevice) {}
+
+CLCGHAL_API ShaderProgram::~ShaderProgram() {
+}

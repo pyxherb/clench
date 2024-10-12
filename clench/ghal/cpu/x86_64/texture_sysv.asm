@@ -1,10 +1,11 @@
 [BITS 64]
+section .code
 ;
 ; rdx - src
 ; rcx - srcSize
 ; r8 - bufferOut
 ;
-.global _clcghalConvertTextureRGB8ToRGBA8
+global _clcghalConvertTextureRGB8ToRGBA8
 
 _clcghalConvertTextureRGB8ToRGBA8:
 RGB8ToRGBA8_move:

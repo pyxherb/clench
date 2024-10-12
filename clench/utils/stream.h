@@ -3,7 +3,7 @@
 
 #include "basedefs.h"
 #include <cstddef>
-#include <climits>
+#include <cstdint>
 
 namespace clench {
 	namespace utils {

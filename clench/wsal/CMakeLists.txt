@@ -9,6 +9,6 @@ target_link_libraries(clcwsal PUBLIC clcutils)
 
 if(WIN32)
 	add_subdirectory("win32")
-elseif(unix)
+elseif(UNIX)
 	add_subdirectory("unix")
 endif()

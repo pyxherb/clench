@@ -2,6 +2,7 @@
 #define _CLENCH_UTILS_ASSERT_H_
 
 #include "basedefs.h"
+#include <cstddef>
 
 namespace clench {
 	namespace utils {

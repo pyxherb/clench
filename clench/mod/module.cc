@@ -1,4 +1,5 @@
 #include "module.h"
+#include <vector>
 
 using namespace clench;
 using namespace clench::mod;
@@ -7,6 +8,7 @@ CLCMOD_API BuiltinModuleRegistry *clench::mod::g_builtinModuleRegistries = nullp
 CLCMOD_API std::unordered_map<std::string, std::unique_ptr<Module>> clench::mod::g_registeredModules;
 
 CLCMOD_API bool clench::mod::g_isBuiltinModulesInited = false;
+CLCMOD_API size_t g_moduleRegisterCounter = 0;
 
 CLCMOD_API Module::Module(
 	const char *name,
@@ -94,6 +96,8 @@ CLCMOD_API Module *clench::mod::registerModule(
 	}
 
 	Module *pModuleRawPtr = pModule.get();
+
+	pModule->moduleRegisterCounterValue = g_moduleRegisterCounter++;
 
 	g_registeredModules[name] = std::move(pModule);
 
@@ -208,11 +212,15 @@ CLCMOD_API void clench::mod::unloadModule(const char *name, UnloadModuleFlags fl
 #ifdef _WIN32
 		if (pModule->nativeHandle)
 			FreeLibrary(pModule->nativeHandle);
+#elif __unix__
+		if (pModule->nativeHandle)
+			dlclose(pModule->nativeHandle);
 #endif
 	}
 }
 
 CLCMOD_API Module *clench::mod::registerExternalModule(const char *name) {
+	size_t curModuleCounter = g_moduleRegisterCounter;
 #if CLENCH_DYNAMIC_LINK
 	CLENCH_ASSERT(!isModuleRegistered(name), "The module is already registered");
 	#ifdef _WIN32
@@ -226,6 +234,22 @@ CLCMOD_API Module *clench::mod::registerExternalModule(const char *name) {
 	for (auto &i : g_registeredModules) {
 		if (i.second->nativeHandle == hModule)
 			return i.second.get();
+	}
+
+	return nullptr;
+	#elif __unix__
+	std::string fullDllName = (std::string) "./libclcm_" + name + ".so";
+
+	void* handle = dlopen(fullDllName.c_str(), RTLD_NOW);
+
+	if (!handle)
+		return nullptr;
+
+	for (auto &i : g_registeredModules) {
+		if (i.second->moduleRegisterCounterValue == curModuleCounter) {
+			i.second->nativeHandle = handle;
+			return i.second.get();
+		}
 	}
 
 	return nullptr;

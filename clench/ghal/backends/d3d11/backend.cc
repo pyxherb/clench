@@ -1,6 +1,5 @@
 #include "backend.h"
 #include "device.h"
-#include <d3dcompiler.h>
 
 using namespace clench;
 using namespace clench::ghal;

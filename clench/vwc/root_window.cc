@@ -3,7 +3,7 @@
 using namespace clench;
 using namespace clench::vwc;
 
-CLCVWC_API RootWindow::RootWindow(
+CLCVWC_API VWCRootWindow::VWCRootWindow(
 	wsal::CreateWindowFlags createWindowFlags,
 	ghal::GHALDevice *ghalDevice,
 	NativeWindow *parent,
@@ -22,22 +22,22 @@ CLCVWC_API RootWindow::RootWindow(
 	ghalDeviceContext = std::unique_ptr<ghal::GHALDeviceContext>(ghalDevice->createDeviceContextForWindow(this));
 }
 
-CLCVWC_API RootWindow::~RootWindow() {
+CLCVWC_API VWCRootWindow::~VWCRootWindow() {
 }
 
-CLCVWC_API void RootWindow::addChildWindow(Window *window) {
+CLCVWC_API void VWCRootWindow::addChildWindow(Window *window) {
 	childWindows.insert(window);
 }
 
-CLCVWC_API void RootWindow::removeChildWindow(Window *window) {
+CLCVWC_API void VWCRootWindow::removeChildWindow(Window *window) {
 	childWindows.erase(window);
 }
 
-CLCVWC_API bool RootWindow::hasChildWindow(Window *window) const {
+CLCVWC_API bool VWCRootWindow::hasChildWindow(Window *window) const {
 	return childWindows.count(window);
 }
 
-CLCVWC_API void RootWindow::onResize(int width, int height) {
+CLCVWC_API void VWCRootWindow::onResize(int width, int height) {
 	ghalDeviceContext->onResize(width, height);
 
 	wsal::WindowProperties windowProperties;
@@ -72,20 +72,20 @@ CLCVWC_API void RootWindow::onResize(int width, int height) {
 	}
 }
 
-CLCVWC_API void RootWindow::onMove(int x, int y) {
+CLCVWC_API void VWCRootWindow::onMove(int x, int y) {
 }
 
-CLCVWC_API bool RootWindow::onClose() {
+CLCVWC_API bool VWCRootWindow::onClose() {
 	return false;
 }
 
-CLCVWC_API void RootWindow::onKeyDown(wsal::KeyboardKeyCode keyCode) {
+CLCVWC_API void VWCRootWindow::onKeyDown(wsal::KeyboardKeyCode keyCode) {
 }
 
-CLCVWC_API void RootWindow::onKeyUp(wsal::KeyboardKeyCode keyCode) {
+CLCVWC_API void VWCRootWindow::onKeyUp(wsal::KeyboardKeyCode keyCode) {
 }
 
-CLCVWC_API void RootWindow::onMouseButtonPress(wsal::MouseButton button, int x, int y) {
+CLCVWC_API void VWCRootWindow::onMouseButtonPress(wsal::MouseButton button, int x, int y) {
 	if (auto capturedWindow = wsal::getMouseCapture(); capturedWindow) {
 		int xOffset, yOffset;
 		wsal::getAbsoluteOffsetToRootNativeWindow(capturedWindow, xOffset, yOffset);
@@ -102,7 +102,7 @@ CLCVWC_API void RootWindow::onMouseButtonPress(wsal::MouseButton button, int x, 
 	}
 }
 
-CLCVWC_API void RootWindow::onMouseButtonRelease(wsal::MouseButton button, int x, int y) {
+CLCVWC_API void VWCRootWindow::onMouseButtonRelease(wsal::MouseButton button, int x, int y) {
 	if (auto capturedWindow = wsal::getMouseCapture(); capturedWindow) {
 		int xOffset, yOffset;
 		wsal::getAbsoluteOffsetToRootNativeWindow(capturedWindow, xOffset, yOffset);
@@ -119,7 +119,7 @@ CLCVWC_API void RootWindow::onMouseButtonRelease(wsal::MouseButton button, int x
 	}
 }
 
-CLCVWC_API void RootWindow::onMouseHover(int x, int y) {
+CLCVWC_API void VWCRootWindow::onMouseHover(int x, int y) {
 	if (auto capturedWindow = wsal::getMouseCapture(); capturedWindow) {
 		int xOffset, yOffset;
 		wsal::getAbsoluteOffsetToRootNativeWindow(capturedWindow, xOffset, yOffset);
@@ -136,7 +136,7 @@ CLCVWC_API void RootWindow::onMouseHover(int x, int y) {
 	}
 }
 
-CLCVWC_API void RootWindow::onMouseLeave() {
+CLCVWC_API void VWCRootWindow::onMouseLeave() {
 	/*
 	for (auto i : hoveredChildWindows) {
 		i->onMouseLeave();
@@ -145,7 +145,7 @@ CLCVWC_API void RootWindow::onMouseLeave() {
 	hoveredChildWindows.clear();*/
 }
 
-CLCVWC_API void RootWindow::onMouseMove(int x, int y) {
+CLCVWC_API void VWCRootWindow::onMouseMove(int x, int y) {
 	if (auto capturedWindow = wsal::getMouseCapture(); capturedWindow) {
 		int xOffset, yOffset;
 		wsal::getAbsoluteOffsetToRootNativeWindow(capturedWindow, xOffset, yOffset);
@@ -199,7 +199,7 @@ CLCVWC_API void RootWindow::onMouseMove(int x, int y) {
 	}
 }
 
-CLCVWC_API void RootWindow::onDraw() {
+CLCVWC_API void VWCRootWindow::onDraw() {
 	ghalDeviceContext->begin();
 
 	int width, height;
@@ -229,13 +229,13 @@ CLCVWC_API void RootWindow::onDraw() {
 	ghalDeviceContext->present();
 }
 
-CLCVWC_API void RootWindow::redrawChildWindows() {
+CLCVWC_API void VWCRootWindow::redrawChildWindows() {
 	for (auto i : childWindows) {
 		i->onExpose();
 	}
 }
 
-CLCVWC_API void RootWindow::findWindowsAtPos(int x, int y, std::map<Window *, std::pair<int, int>> &childWindowsOut) {
+CLCVWC_API void VWCRootWindow::findWindowsAtPos(int x, int y, std::map<Window *, std::pair<int, int>> &childWindowsOut) {
 	for (auto i : childWindows) {
 		int windowX, windowY, windowWidth, windowHeight;
 		wsal::getAbsoluteOffsetToRootNativeWindow(i.get(), windowX, windowY);

@@ -1,4 +1,6 @@
 #include <clench/wsal/window.h>
+#include <clench/utils/logger.h>
+#include <clench/utils/scope_guard.h>
 
 #include <locale>
 #include <map>
@@ -8,6 +10,8 @@
 
 using namespace clench;
 using namespace clench::wsal;
+
+static std::map<XID, NativeWindow *> _g_createdWindows;
 
 CLCWSAL_API NativeWindow::NativeWindow(
 	CreateWindowFlags flags,
@@ -45,12 +49,16 @@ CLCWSAL_API NativeWindow::NativeWindow(
 			EnterWindowMask | LeaveWindowMask |
 			PointerMotionMask |
 			ResizeRedirectMask |
-			ExposeMask |
+			ExposureMask |
 			StructureNotifyMask |
 			PropertyChangeMask);
+
+	_g_createdWindows[nativeHandle] = this;
 }
 
 CLCWSAL_API NativeWindow::~NativeWindow() {
+	_g_createdWindows.erase(nativeHandle);
+
 	XDestroyWindow(display, nativeHandle);
 	XCloseDisplay(display);
 }
@@ -102,8 +110,7 @@ CLCWSAL_API void NativeWindow::pollEvents() {
 				}
 				break;
 			}
-			case ButtonPress:
-			case ButtonRelease: {
+			case ButtonPress: {
 				auto button = ev.xbutton.button;
 
 				MouseButton mappedButton;
@@ -124,6 +131,27 @@ CLCWSAL_API void NativeWindow::pollEvents() {
 
 				break;
 			}
+			case ButtonRelease: {
+				auto button = ev.xbutton.button;
+
+				MouseButton mappedButton;
+
+				switch (button) {
+					case 1:
+						mappedButton = MouseButton::Left;
+						break;
+					case 2:
+						mappedButton = MouseButton::Middle;
+						break;
+					case 3:
+						mappedButton = MouseButton::Right;
+						break;
+				}
+
+				onMouseButtonRelease(mappedButton, ev.xbutton.x, ev.xbutton.y);
+
+				break;
+			}
 			case MotionNotify: {
 				onMouseMove(ev.xbutton.x, ev.xbutton.y);
 				break;
@@ -132,7 +160,7 @@ CLCWSAL_API void NativeWindow::pollEvents() {
 				onMouseHover(ev.xcrossing.x, ev.xcrossing.y);
 				break;
 			case LeaveNotify:
-				onMouseLeave(ev.xcrossing.x, ev.xcrossing.y);
+				onMouseLeave();
 				break;
 			case ConfigureNotify: {
 				/*if (ev.xconfigure.width != _width ||
@@ -220,11 +248,210 @@ CLCWSAL_API void NativeWindow::getSize(int &widthOut, int &heightOut) const {
 	heightOut = attribs.height;
 }
 
-void NativeWindow::setTitle(std::string_view title) {
+CLCWSAL_API void NativeWindow::setTitle(const char *title) {
 	XmbSetWMProperties(
 		display,
 		nativeHandle,
-		title.data(), title.data(),
+		title, title,
 		nullptr, 0,
 		nullptr, nullptr, nullptr);
+}
+
+CLCWSAL_API void NativeWindow::setParent(Window *window) {
+	WindowProperties windowProperties;
+	window->getWindowProperties(windowProperties);
+
+	if (!windowProperties.isNative)
+		throw std::logic_error("Cannot set parent of a native window to a non-native window");
+
+	XReparentWindow(
+		((NativeWindow *)window)->display,
+		nativeHandle,
+		((NativeWindow *)window)->nativeHandle,
+		0,
+		0);
+}
+
+CLCWSAL_API wsal::Window *NativeWindow::getParent() const {
+	::Window rootWindow, parentWindow, *children;
+	unsigned int nChildren;
+
+	if (XQueryTree(display, nativeHandle, &rootWindow, &parentWindow, &children, &nChildren))
+		return nullptr;
+
+	XFree(children);
+
+	if (auto it = _g_createdWindows.find(parentWindow); it != _g_createdWindows.end())
+		return it->second;
+
+	return nullptr;
+}
+
+CLCWSAL_API void NativeWindow::addChildWindow(wsal::Window *window) {
+	WindowProperties windowProperties;
+	window->getWindowProperties(windowProperties);
+
+	if (!windowProperties.isNative)
+		throw std::logic_error("Native window accepts native child windows only by default");
+}
+
+CLCWSAL_API void NativeWindow::removeChildWindow(wsal::Window *window) {
+	WindowProperties windowProperties;
+	window->getWindowProperties(windowProperties);
+
+	if (!windowProperties.isNative)
+		return;
+
+	NativeWindow *nativeWindow = ((NativeWindow *)window);
+
+	if (nativeWindow->getParent() != this)
+		return;
+
+	::Window rootWindow, parentWindow, *children;
+	unsigned int nChildren;
+
+	if (XQueryTree(display, nativeHandle, &rootWindow, &parentWindow, &children, &nChildren))
+		return;
+
+	XFree(children);
+
+	XReparentWindow(display, nativeWindow->nativeHandle, rootWindow, 0, 0);
+}
+
+CLCWSAL_API bool NativeWindow::hasChildWindow(wsal::Window *window) const {
+	WindowProperties windowProperties;
+	window->getWindowProperties(windowProperties);
+
+	if (!windowProperties.isNative)
+		return false;
+
+	return ((NativeWindow *)window)->getParent() == this;
+}
+
+CLCWSAL_API void NativeWindow::enumChildWindows(ChildWindowEnumer &&enumer) {
+	::Window rootWindow, parentWindow, *children;
+	unsigned int nChildren;
+
+	if (XQueryTree(display, nativeHandle, &rootWindow, &parentWindow, &children, &nChildren))
+		return;
+
+	utils::ScopeGuard freeChildrenGuard([children]() {
+		XFree(children);
+	});
+
+	for (unsigned int i = 0; i < nChildren; ++i) {
+		if (auto it = _g_createdWindows.find(children[i]);
+			it != _g_createdWindows.end()) {
+			enumer(it->second);
+		}
+	}
+}
+
+CLCWSAL_API void NativeWindow::getWindowProperties(WindowProperties &propertiesOut) const {
+	propertiesOut = {};
+	propertiesOut.isNative = true;
+}
+
+CLCWSAL_API void NativeWindow::invalidate() {
+	onExpose();
+}
+
+CLCWSAL_API void NativeWindow::onResize(int width, int height) {
+}
+
+CLCWSAL_API void NativeWindow::onMove(int x, int y) {
+}
+
+CLCWSAL_API bool NativeWindow::onClose() {
+	return false;
+}
+
+CLCWSAL_API void NativeWindow::onKeyDown(KeyboardKeyCode keyCode) {
+}
+
+CLCWSAL_API void NativeWindow::onKeyUp(KeyboardKeyCode keyCode) {
+}
+
+CLCWSAL_API void NativeWindow::onMouseButtonPress(MouseButton button, int x, int y) {
+}
+
+CLCWSAL_API void NativeWindow::onMouseButtonRelease(MouseButton button, int x, int y) {
+}
+
+CLCWSAL_API void NativeWindow::onMouseHover(int x, int y) {
+}
+
+CLCWSAL_API void NativeWindow::onMouseLeave() {
+}
+
+CLCWSAL_API void NativeWindow::onMouseMove(int x, int y) {
+}
+
+CLCWSAL_API void NativeWindow::onExpose() {
+	onDraw();
+}
+
+CLCWSAL_API void NativeWindow::onDraw() {
+}
+
+static wsal::Window *_g_curMouseCapturedWindow = nullptr;
+static NativeWindow *_g_curMouseCapturedTopLevelWindow = nullptr;
+
+CLCWSAL_API void clench::wsal::setMouseCapture(Window *window) {
+	CLENCH_DEBUG_LOG("WSAL", "Setting mouse capture for window: %p", window);
+	if (_g_curMouseCapturedWindow)
+		releaseMouseCapture();
+
+	WindowProperties windowProperties;
+
+	window->getWindowProperties(windowProperties);
+
+	Window *i = window->getParent();
+
+	while (i) {
+		i->getWindowProperties(windowProperties);
+
+		if (windowProperties.isNative) {
+			_g_curMouseCapturedTopLevelWindow = (NativeWindow *)i;
+			XGrabPointer(
+				((NativeWindow *)i)->display,
+				((NativeWindow *)i)->nativeHandle,
+				true,
+				ButtonPressMask | ButtonReleaseMask | PointerMotionMask | FocusChangeMask | EnterWindowMask | LeaveWindowMask,
+				GrabModeAsync,
+				GrabModeAsync,
+				X11_None,
+				X11_None,
+				CurrentTime);
+			((NativeWindow *)i)->curCapturedWindow = i == window ? nullptr : window;
+			goto foundTopLevelWindow;
+		}
+
+		i = i->getParent();
+	}
+
+	throw std::logic_error("Window to be captured must have a native parent window on the window chain");
+
+foundTopLevelWindow:
+
+	_g_curMouseCapturedWindow = window;
+}
+
+CLCWSAL_API void clench::wsal::releaseMouseCapture() {
+	CLENCH_DEBUG_LOG("WSAL", "Releasing mouse capture");
+
+	XUngrabPointer(_g_curMouseCapturedTopLevelWindow->display, CurrentTime);
+	_releaseMouseCapture();
+}
+
+CLCWSAL_API wsal::Window *wsal::getMouseCapture() {
+	return _g_curMouseCapturedWindow;
+}
+
+CLCWSAL_API void wsal::_releaseMouseCapture() {
+	if (_g_curMouseCapturedTopLevelWindow) {
+		_g_curMouseCapturedTopLevelWindow->curCapturedWindow = nullptr;
+		_g_curMouseCapturedTopLevelWindow = nullptr;
+	}
+	_g_curMouseCapturedWindow = nullptr;
 }

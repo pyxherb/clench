@@ -2,18 +2,33 @@
 #define _CLENCH_GHAL_BACKENDS_OPENGL_BACKEND_H_
 
 #include <clench/ghal/backend.h>
+#if _WIN32
+#include <Windows.h>
+#elif __unix__
+#include <EGL/egl.h>
+#endif
+#include <glad/gl.h>
+#include <climits>
+#include <map>
 
 namespace clench {
 	namespace ghal {
-		class GLGHALBackend {
+		class GLGHALBackend : public GHALBackend {
 		public:
 			NO_COPY_MOVE_METHODS(GLGHALBackend);
 
+			CLCGHAL_API GLGHALBackend();
 			CLCGHAL_API virtual ~GLGHALBackend();
 
-			virtual const char* getBackendId() = 0;
-			virtual GHALBackend* createDevice() = 0;
+			CLCGHAL_API virtual GHALDevice* createDevice() override;
 		};
+
+		CLCGHAL_API extern std::map<EGLDisplay, size_t> g_initializedEglDisplays;
+		CLCGHAL_API extern bool g_glInitialized;
+
+		CLCGHAL_API void *_loadGlProc(const char *name);
+
+		class GLGHALDevice;
 	}
 }
 

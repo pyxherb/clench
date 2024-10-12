@@ -2,6 +2,7 @@
 #define _CLENCH_GHAL_SHADER_H_
 
 #include "resource.h"
+#include <string>
 
 namespace clench {
 	namespace ghal {
@@ -78,6 +79,14 @@ namespace clench {
 		public:
 			CLCGHAL_API GeometryShader(GHALDevice* ownedDevice);
 			CLCGHAL_API virtual ~GeometryShader();
+		};
+
+		class ShaderProgram : public GHALDeviceResource {
+		public:
+			CLCGHAL_API ShaderProgram(
+				GHALDevice *ownerDevice
+			);
+			CLCGHAL_API virtual ~ShaderProgram();
 		};
 	}
 }

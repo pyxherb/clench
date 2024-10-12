@@ -1,0 +1,730 @@
+#include "device.h"
+#include "vertex_array.h"
+#include "shader.h"
+#include "buffer.h"
+#include "views.h"
+#include "texture.h"
+#include <clench/utils/scope_guard.h>
+
+using namespace clench;
+using namespace clench::ghal;
+
+CLCGHAL_API GLGHALDevice::GLGHALDevice(GLGHALBackend *backend)
+	: GHALDevice(),
+	  backend(backend),
+	  defaultContext(new GLGHALDeviceContext(this)) {
+}
+
+CLCGHAL_API GLGHALDevice::~GLGHALDevice() {
+}
+
+CLCGHAL_API GHALBackend *GLGHALDevice::getBackend() {
+	return backend;
+}
+
+CLCGHAL_API GHALDeviceContext *GLGHALDevice::createDeviceContextForWindow(clench::wsal::NativeWindow *window) {
+	int width, height;
+	window->getSize(width, height);
+#ifdef _WIN32
+	HWND hWnd = *(HWND *)window->getNativeHandle();
+	HDC hdc = GetDC(hWnd);
+	{
+		PIXELFORMATDESCRIPTOR pfd = { 0 };
+		pfd.nSize = sizeof(pfd);
+		pfd.nVersion = 1;
+		pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+		pfd.iPixelType = PFD_TYPE_RGBA;
+		pfd.cColorBits = 24;
+
+		auto pxFmt = ChoosePixelFormat(hdc, &pfd);
+		if (!pxFmt)
+			throw std::runtime_error("Incompatible ghal device");
+
+		SetPixelFormat(hdc, pxFmt, &pfd);
+	}
+
+	HGLRC wglContext;
+
+	if (!(wglContext = wglCreateContext(hdc)))
+		throw std::runtime_error("Error creating WGL context");
+#else
+	std::unique_ptr<
+		GLGHALDeviceContext,
+		utils::RcObjectUniquePtrDeleter<GLGHALDeviceContext>>
+		deviceContext(new GLGHALDeviceContext(this));
+
+	static const EGLint configAttribs[] = {
+		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+		EGL_BLUE_SIZE, 8,
+		EGL_GREEN_SIZE, 8,
+		EGL_RED_SIZE, 8,
+		EGL_DEPTH_SIZE, 8,
+		EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
+		EGL_NONE
+	};
+
+	EGLint eglMinor, eglMajor;
+
+	deviceContext->eglDisplay = eglGetDisplay((EGLNativeDisplayType)window->display);
+	if (auto it = g_initializedEglDisplays.find(deviceContext->eglDisplay); it != g_initializedEglDisplays.end()) {
+		++it->second;
+	} else {
+		eglInitialize(deviceContext->eglDisplay, &eglMajor, &eglMinor);
+		g_initializedEglDisplays[deviceContext->eglDisplay] = 1;
+	}
+
+	deviceContext->eglWindow = (EGLNativeWindowType)window->nativeHandle;
+
+	EGLint nConfigs;
+	eglChooseConfig(deviceContext->eglDisplay, configAttribs, &deviceContext->eglConfig, 1, &nConfigs);
+
+	deviceContext->eglSurface = eglCreateWindowSurface(
+		deviceContext->eglDisplay,
+		deviceContext->eglConfig,
+		deviceContext->eglWindow,
+		nullptr);
+	if (deviceContext->eglSurface == EGL_NO_SURFACE)
+		throw std::runtime_error("Error creating EGL surface");
+
+	eglBindAPI(EGL_OPENGL_API);
+
+	static EGLint contextAttribs[] = {
+		EGL_CONTEXT_CLIENT_VERSION, 2,
+		EGL_NONE
+	};
+	deviceContext->eglContext = eglCreateContext(deviceContext->eglDisplay, deviceContext->eglConfig, EGL_NO_CONTEXT, contextAttribs);
+
+	NativeGLContext prevContext = GLGHALDeviceContext::saveContextCurrent();
+	utils::ScopeGuard restoreContextGuard([&prevContext]() {
+		GLGHALDeviceContext::restoreContextCurrent(prevContext);
+	});
+	deviceContext->makeContextCurrent();
+
+	if (!g_glInitialized) {
+		int version = gladLoadGL((GLADloadfunc)_loadGlProc);
+		if (!version)
+			throw std::runtime_error("Error initializing GLAD");
+		g_glInitialized = true;
+	}
+
+	GLint defaultFramebuffer;
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *)&defaultFramebuffer);
+	deviceContext->defaultRenderTargetView = new GLRenderTargetView(this, RenderTargetViewType::Buffer, defaultFramebuffer);
+
+	deviceContext->onResize(width, height);
+
+	return deviceContext.release();
+#endif
+}
+
+CLCGHAL_API VertexArray *GLGHALDevice::createVertexArray(
+	VertexArrayElementDesc *elementDescs,
+	size_t nElementDescs,
+	VertexShader *vertexShader) {
+	GLuint vao;
+	glGenVertexArrays(1, &vao);
+
+	utils::ScopeGuard deleteVaoGuard([&vao]() {
+		glDeleteVertexArrays(1, &vao);
+	});
+
+	GLint prevVao;
+	glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &prevVao);
+	utils::ScopeGuard restoreTextureGuard([prevVao]() {
+		glBindVertexArray(prevVao);
+	});
+
+	GLVertexArray *vertexArray = new GLVertexArray(this, vao);
+
+	for (size_t i = 0; i < nElementDescs; ++i) {
+		VertexArrayElementDesc &curDesc = elementDescs[i];
+
+		glEnableVertexArrayAttrib(vao, i);
+
+		size_t sizePerElement;
+		GLenum glType;
+		switch (curDesc.dataType) {
+			case VertexDataType::Int:
+				sizePerElement = sizeof(GLint);
+				glType = GL_INT;
+				break;
+			case VertexDataType::UInt:
+				sizePerElement = sizeof(GLuint);
+				glType = GL_UNSIGNED_INT;
+				break;
+			case VertexDataType::Short:
+				sizePerElement = sizeof(GLshort);
+				glType = GL_SHORT;
+				break;
+			case VertexDataType::UShort:
+				sizePerElement = sizeof(GLushort);
+				glType = GL_UNSIGNED_SHORT;
+				break;
+			case VertexDataType::Float:
+				sizePerElement = sizeof(GLfloat);
+				glType = GL_FLOAT;
+				break;
+			case VertexDataType::Double:
+				sizePerElement = sizeof(GLdouble);
+				glType = GL_DOUBLE;
+				break;
+			case VertexDataType::Boolean:
+				sizePerElement = sizeof(GLboolean);
+				glType = GL_BOOL;
+				break;
+		}
+
+		glVertexAttribPointer(i, sizePerElement * curDesc.nElements, glType, false, curDesc.stride, (void *)curDesc.off);
+	}
+
+	deleteVaoGuard.release();
+
+	return vertexArray;
+}
+
+CLCGHAL_API VertexShader *GLGHALDevice::createVertexShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo) {
+	GLuint shader = glCreateShader(GL_VERTEX_SHADER);
+	utils::ScopeGuard deleteShaderGuard([shader]() {
+		glDeleteShader(shader);
+	});
+
+	glShaderSource(shader, 1, &source, (GLint *)&size);
+	glCompileShader(shader);
+
+	GLint success;
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+	if (!success) {
+		char log[1024 + 1];
+		log[1024] = '\0';
+		GLsizei size = 1024;
+		glGetShaderInfoLog(shader, 1024, &size, log);
+		throw std::runtime_error("Error compiling shader: " + std::string(log));
+	}
+
+	GLVertexShader *vertexShader = new GLVertexShader(this, shader);
+
+	deleteShaderGuard.release();
+
+	return vertexShader;
+}
+
+CLCGHAL_API FragmentShader *GLGHALDevice::createFragmentShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo) {
+	GLuint shader = glCreateShader(GL_FRAGMENT_SHADER);
+	utils::ScopeGuard deleteShaderGuard([shader]() {
+		glDeleteShader(shader);
+	});
+
+	glShaderSource(shader, 1, &source, (GLint *)&size);
+	glCompileShader(shader);
+
+	GLint success;
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+	if (!success) {
+		char log[1024 + 1];
+		log[1024] = '\0';
+		GLsizei size = 1024;
+		glGetShaderInfoLog(shader, 1024, &size, log);
+		throw std::runtime_error("Error compiling shader: " + std::string(log));
+	}
+
+	GLFragmentShader *fragmentShader = new GLFragmentShader(this, shader);
+
+	deleteShaderGuard.release();
+
+	return fragmentShader;
+}
+
+CLCGHAL_API GeometryShader *GLGHALDevice::createGeometryShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo) {
+	return nullptr;
+}
+
+CLCGHAL_API ShaderProgram *GLGHALDevice::linkShaderProgram(Shader **shaders, size_t nShaders) {
+	GLVertexShader *vertexShader = nullptr;
+	GLFragmentShader *fragmentShader = nullptr;
+
+	for (size_t i = 0; i < nShaders; ++i) {
+		Shader *curShader = shaders[i];
+
+		switch (curShader->shaderType) {
+			case ShaderType::Vertex: {
+				if (vertexShader) {
+					throw std::runtime_error("Duplicated vertex shader");
+				}
+				vertexShader = (GLVertexShader *)curShader;
+				break;
+			}
+			case ShaderType::Fragment: {
+				if (fragmentShader) {
+					throw std::runtime_error("Duplicated fragment shader");
+				}
+				fragmentShader = (GLFragmentShader *)curShader;
+				break;
+			}
+			default:
+				break;
+		}
+	}
+
+	if (!vertexShader)
+		throw std::logic_error("Missing vertex shader");
+
+	if (!fragmentShader)
+		throw std::logic_error("Missing fragment shader");
+
+	GLuint program = glCreateProgram();
+	utils::ScopeGuard deleteProgramGuard([program]() {
+		glDeleteProgram(program);
+	});
+
+	glAttachShader(program, vertexShader->shaderHandle);
+	glAttachShader(program, fragmentShader->shaderHandle);
+
+	GLint success;
+	glLinkProgram(program);
+	glGetProgramiv(program, GL_LINK_STATUS, &success);
+	if (!success) {
+		char log[1024 + 1];
+		log[1024] = '\0';
+		GLsizei size = 1024;
+		glGetProgramInfoLog(program, 1024, &size, log);
+		throw std::runtime_error("Error linking shaders: " + std::string(log));
+	}
+
+	GLShaderProgram *shaderProgram = new GLShaderProgram(this, program);
+
+	deleteProgramGuard.release();
+
+	return shaderProgram;
+}
+
+CLCGHAL_API Buffer *GLGHALDevice::createBuffer(const BufferDesc &bufferDesc, const void *initialData) {
+	GLuint buffer;
+	glGenBuffers(1, &buffer);
+	utils::ScopeGuard deleteBufferGuard([buffer]() {
+		glDeleteBuffers(1, &buffer);
+	});
+
+	std::unique_ptr<GLBuffer> glBuffer = std::make_unique<GLBuffer>(this, bufferDesc, buffer);
+
+	deleteBufferGuard.release();
+
+	defaultContext->setData(glBuffer.get(), initialData);
+
+	return glBuffer.release();
+}
+
+CLCGHAL_API Texture1D *GLGHALDevice::createTexture1D(const char *data, size_t size, const Texture1DDesc &desc) {
+	GLenum glType;
+	GLenum glTextureFormat = toGLTextureFormat(desc.format, glType);
+	if (glTextureFormat == GL_INVALID_ENUM)
+		throw std::runtime_error("Invalid texture format");
+
+	GLuint texture;
+	glGenTextures(1, &texture);
+	utils::ScopeGuard deleteTextureGuard([texture]() {
+		glDeleteTextures(1, &texture);
+	});
+
+	GLint savedTexture;
+	glGetIntegerv(GL_TEXTURE_1D, &savedTexture);
+	utils::ScopeGuard restoreTextureGuard([savedTexture]() {
+		glBindTexture(GL_TEXTURE_1D, savedTexture);
+	});
+
+	glBindTexture(GL_TEXTURE_1D, texture);
+
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glTexImage1D(
+		GL_TEXTURE_1D,
+		0,
+		glTextureFormat,
+		desc.width,
+		0,
+		glTextureFormat,
+		glType,
+		data);
+
+	GLTexture1D *texture1d = new GLTexture1D(this, desc, texture);
+
+	deleteTextureGuard.release();
+
+	return texture1d;
+}
+
+CLCGHAL_API Texture2D *GLGHALDevice::createTexture2D(const char *data, size_t size, const Texture2DDesc &desc) {
+	GLenum glType;
+	GLenum glTextureFormat = toGLTextureFormat(desc.format, glType);
+	if (glTextureFormat == GL_INVALID_ENUM)
+		throw std::runtime_error("Invalid texture format");
+
+	GLuint texture;
+	glGenTextures(1, &texture);
+	utils::ScopeGuard deleteTextureGuard([texture]() {
+		glDeleteTextures(1, &texture);
+	});
+
+	GLint savedTexture;
+	glGetIntegerv(GL_TEXTURE_2D, &savedTexture);
+	utils::ScopeGuard restoreTextureGuard([savedTexture]() {
+		glBindTexture(GL_TEXTURE_2D, savedTexture);
+	});
+
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glTexImage2D(
+		GL_TEXTURE_2D,
+		0,
+		glTextureFormat,
+		desc.width,
+		desc.height,
+		0,
+		glTextureFormat,
+		glType,
+		data);
+
+	GLTexture2D *texture2d = new GLTexture2D(this, desc, texture);
+
+	deleteTextureGuard.release();
+
+	return texture2d;
+}
+
+CLCGHAL_API Texture3D *GLGHALDevice::createTexture3D(const char *data, size_t size, const Texture3DDesc &desc) {
+	GLenum glType;
+	GLenum glTextureFormat = toGLTextureFormat(desc.format, glType);
+	if (glTextureFormat == GL_INVALID_ENUM)
+		throw std::runtime_error("Invalid texture format");
+
+	GLuint texture;
+	glGenTextures(1, &texture);
+	utils::ScopeGuard deleteTextureGuard([texture]() {
+		glDeleteTextures(1, &texture);
+	});
+
+	GLuint savedTexture;
+	glGetIntegerv(GL_TEXTURE_3D, (GLint *)&savedTexture);
+	utils::ScopeGuard restoreTextureGuard([savedTexture]() {
+		glBindTexture(GL_TEXTURE_3D, savedTexture);
+	});
+
+	glBindTexture(GL_TEXTURE_3D, texture);
+
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glTexImage3D(
+		GL_TEXTURE_3D,
+		0,
+		glTextureFormat,
+		desc.width,
+		desc.height,
+		desc.depth,
+		0,
+		glTextureFormat,
+		glType,
+		data);
+
+	GLTexture3D *texture3d = new GLTexture3D(this, desc, texture);
+
+	deleteTextureGuard.release();
+
+	return texture3d;
+}
+
+CLCGHAL_API RenderTargetView *GLGHALDevice::createRenderTargetViewForTexture2D(Texture2D *texture) {
+	return new GLRenderTargetView(this, RenderTargetViewType::Texture2D, ((GLTexture2D *)texture)->textureHandle);
+}
+
+CLCGHAL_API GLGHALDeviceContext::GLGHALDeviceContext(
+	GLGHALDevice *device)
+	: GHALDeviceContext(),
+	  device(device) {
+}
+
+CLCGHAL_API GLGHALDeviceContext::~GLGHALDeviceContext() {
+#if _WIN32
+	wglDeleteContext(_wglContext);
+	ReleaseDC(_hWnd, _hdc);
+#else
+	if (eglContext != EGL_NO_CONTEXT) {
+		eglDestroyContext(eglDisplay, eglContext);
+	}
+
+	if (eglSurface != EGL_NO_SURFACE) {
+		eglDestroySurface(eglDisplay, eglSurface);
+	}
+
+	if (eglDisplay != EGL_NO_DISPLAY) {
+		if (auto it = g_initializedEglDisplays.find(eglDisplay); it != g_initializedEglDisplays.end()) {
+			if (!--it->second) {
+				eglTerminate(eglDisplay);
+				g_initializedEglDisplays.erase(it);
+			}
+		} else {
+			eglTerminate(eglDisplay);
+		}
+	}
+#endif
+}
+
+CLCGHAL_API RenderTargetView *GLGHALDeviceContext::getDefaultRenderTargetView() {
+	return defaultRenderTargetView.get();
+}
+
+CLCGHAL_API void GLGHALDeviceContext::onResize(int width, int height) {
+#ifdef _WIN32
+#else
+	windowWidth = width;
+	windowHeight = height;
+
+	if(eglSurface != EGL_NO_SURFACE)
+		eglDestroySurface(eglDisplay, eglSurface);
+
+	eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, eglWindow, nullptr);
+	if (eglSurface == EGL_NO_SURFACE)
+		throw std::runtime_error("Error creating EGL surface");
+#endif
+}
+
+CLCGHAL_API void GLGHALDeviceContext::clearRenderTargetView(
+	RenderTargetView *renderTargetView,
+	float r,
+	float g,
+	float b,
+	float a) {
+	GLuint prevRenderTarget;
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *)&prevRenderTarget);
+
+	utils::ScopeGuard restoreRenderTargetGuard([prevRenderTarget]() {
+		glBindFramebuffer(GL_FRAMEBUFFER, prevRenderTarget);
+	});
+
+	if(!renderTargetView)
+		renderTargetView = defaultRenderTargetView.get();
+
+	glBindFramebuffer(GL_FRAMEBUFFER, ((GLRenderTargetView *)renderTargetView)->frameBufferHandle);
+	glClearColor(r, g, b, a);
+	glClear(GL_COLOR_BUFFER_BIT);
+}
+
+CLCGHAL_API void GLGHALDeviceContext::clearDepth(
+	DepthStencilView *depthStencilView,
+	float depth) {
+	GLuint prevRenderTarget;
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *)&prevRenderTarget);
+
+	utils::ScopeGuard restoreRenderTargetGuard([prevRenderTarget]() {
+		glBindFramebuffer(GL_FRAMEBUFFER, prevRenderTarget);
+	});
+
+	glBindFramebuffer(GL_FRAMEBUFFER, ((GLDepthStencilView *)depthStencilView)->frameBufferHandle);
+	glDepthMask(GL_TRUE);
+	glClearDepth(depth);
+	glClear(GL_DEPTH_BUFFER_BIT);
+}
+
+CLCGHAL_API void GLGHALDeviceContext::clearStencil(
+	DepthStencilView *depthStencilView,
+	uint8_t stencil) {
+	GLuint prevRenderTarget;
+	glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *)&prevRenderTarget);
+
+	utils::ScopeGuard restoreRenderTargetGuard([prevRenderTarget]() {
+		glBindFramebuffer(GL_FRAMEBUFFER, prevRenderTarget);
+	});
+
+	glBindFramebuffer(GL_FRAMEBUFFER, ((GLDepthStencilView *)depthStencilView)->frameBufferHandle);
+	glStencilMask(0xff);
+	glClearStencil(stencil);
+	glClear(GL_STENCIL_BUFFER_BIT);
+}
+
+CLCGHAL_API void GLGHALDeviceContext::bindVertexBuffer(Buffer *buffer, size_t stride) {
+	glBindBuffer(GL_ARRAY_BUFFER, ((GLBuffer *)buffer)->bufferHandle);
+}
+
+CLCGHAL_API void GLGHALDeviceContext::bindIndexBuffer(Buffer *buffer) {
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ((GLBuffer *)buffer)->bufferHandle);
+}
+
+CLCGHAL_API void GLGHALDeviceContext::bindVertexArray(VertexArray *vertexArray) {
+	glBindVertexArray(((GLVertexArray *)vertexArray)->vertexArrayHandle);
+}
+
+CLCGHAL_API void GLGHALDeviceContext::setData(Buffer *buffer, const void *data) {
+	GLuint prevBuffer;
+	glGetIntegerv(GL_COPY_WRITE_BUFFER, (GLint *)&prevBuffer);
+	utils::ScopeGuard restoreBufferGuard([prevBuffer]() {
+		glBindBuffer(GL_COPY_WRITE_BUFFER, prevBuffer);
+	});
+
+	glBindBuffer(GL_COPY_WRITE_BUFFER, ((GLBuffer *)buffer)->bufferHandle);
+
+	GLenum usage;
+	switch (buffer->bufferDesc.usage) {
+		case BufferUsage::Static: {
+			if (buffer->bufferDesc.cpuWritable) {
+				usage = GL_STATIC_COPY;
+			} else if (buffer->bufferDesc.cpuReadable) {
+				usage = GL_STATIC_READ;
+			} else {
+				usage = GL_STATIC_DRAW;
+			}
+			break;
+		}
+		case BufferUsage::Default:
+		case BufferUsage::Dynamic: {
+			if (buffer->bufferDesc.cpuWritable) {
+				usage = GL_DYNAMIC_COPY;
+			} else if (buffer->bufferDesc.cpuReadable) {
+				usage = GL_DYNAMIC_READ;
+			} else {
+				usage = GL_DYNAMIC_DRAW;
+			}
+			break;
+		}
+		case BufferUsage::Staging: {
+			if (buffer->bufferDesc.cpuWritable) {
+				usage = GL_STREAM_COPY;
+			} else if (buffer->bufferDesc.cpuReadable) {
+				usage = GL_STREAM_READ;
+			} else {
+				usage = GL_STREAM_DRAW;
+			}
+			break;
+		}
+	}
+
+	glBufferData(GL_COPY_WRITE_BUFFER, buffer->bufferDesc.size, data, usage);
+}
+
+CLCGHAL_API void GLGHALDeviceContext::setShaderProgram(ShaderProgram *shaderProgram) {
+	glUseProgram(((GLShaderProgram *)shaderProgram)->programHandle);
+}
+
+CLCGHAL_API void GLGHALDeviceContext::setRenderTarget(
+	RenderTargetView *renderTargetView,
+	DepthStencilView *depthStencilView) {
+	glBindFramebuffer(GL_FRAMEBUFFER, ((GLRenderTargetView *)renderTargetView)->frameBufferHandle);
+
+	GLuint prevRenderTarget;
+	glGetIntegerv(GL_RENDERBUFFER_BINDING, (GLint *)&prevRenderTarget);
+
+	utils::ScopeGuard restoreRenderTargetGuard([prevRenderTarget]() {
+		glBindRenderbuffer(GL_RENDERBUFFER, prevRenderTarget);
+	});
+
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, ((GLDepthStencilView *)depthStencilView)->frameBufferHandle);
+}
+
+CLCGHAL_API void GLGHALDeviceContext::setViewport(
+	int x,
+	int y,
+	int width,
+	int height,
+	float minDepth,
+	float maxDepth) {
+	viewportX = x,
+	viewportY = y;
+	viewportWidth = width,
+	viewportHeight = height;
+	viewportMinDepth = minDepth;
+	viewportMaxDepth = maxDepth;
+
+	glScissor(x, (windowHeight - y - height), width, height);
+	glViewport(x, (windowHeight - y - height), width, height);
+	glDepthRange(minDepth, maxDepth);
+}
+
+CLCGHAL_API void GLGHALDeviceContext::getViewport(
+	int &xOut,
+	int &yOut,
+	int &widthOut,
+	int &heightOut,
+	float &minDepthOut,
+	float &maxDepthOut) {
+	xOut = viewportX;
+	yOut = viewportY;
+	widthOut = viewportWidth;
+	heightOut = viewportHeight;
+	minDepthOut = viewportMinDepth;
+	maxDepthOut = viewportMaxDepth;
+}
+
+CLCGHAL_API void GLGHALDeviceContext::drawIndexed(unsigned int nIndices) {
+	glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, nullptr);
+}
+
+CLCGHAL_API void GLGHALDeviceContext::begin() {
+	makeContextCurrent();
+}
+
+CLCGHAL_API void GLGHALDeviceContext::end() {
+}
+
+CLCGHAL_API void GLGHALDeviceContext::present() {
+#ifdef _WIN32
+	SwapBuffers(_hdc);
+#else
+	eglSwapBuffers(eglDisplay, eglSurface);
+#endif
+}
+
+CLCGHAL_API NativeGLContext GLGHALDeviceContext::saveContextCurrent() {
+	return { eglGetCurrentDisplay(),
+		eglGetCurrentSurface(EGL_DRAW),
+		eglGetCurrentSurface(EGL_READ),
+		eglGetCurrentContext() };
+}
+
+CLCGHAL_API bool GLGHALDeviceContext::restoreContextCurrent(const NativeGLContext &context) {
+#if _WIN32
+	return wglMakeCurrent(hdc, wglContext);
+#else
+	return eglMakeCurrent(context.eglDisplay, context.eglDrawSurface, context.eglReadSurface, context.eglContext);
+#endif
+}
+
+CLCGHAL_API bool GLGHALDeviceContext::makeContextCurrent() {
+#if _WIN32
+	return wglMakeCurrent(hdc, wglContext);
+#else
+	return eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext);
+#endif
+}
+
+CLCGHAL_API GLenum clench::ghal::toGLTextureFormat(TextureFormat format, GLenum &typeOut) {
+	switch (format) {
+		case TextureFormat::RGB8:
+			typeOut = GL_UNSIGNED_BYTE;
+			return GL_RGB;
+		case TextureFormat::RGBA8:
+			typeOut = GL_UNSIGNED_BYTE;
+			return GL_RGBA;
+		case TextureFormat::RGB32F:
+			typeOut = GL_FLOAT;
+			return GL_RGB;
+		case TextureFormat::RGBA32F:
+			typeOut = GL_FLOAT;
+			return GL_RGBA;
+		case TextureFormat::BGR8:
+			typeOut = GL_UNSIGNED_BYTE;
+			return GL_BGR;
+		case TextureFormat::BGRA8:
+			typeOut = GL_UNSIGNED_BYTE;
+			return GL_BGRA;
+		default:
+			return GL_INVALID_ENUM;
+	}
+}

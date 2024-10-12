@@ -42,8 +42,6 @@ namespace clench {
 			}
 
 		public:
-			static_assert(std::is_base_of_v<RcObject, T>);
-
 			FORCEINLINE void reset() {
 				if (_ptr)
 					_ptr->decRef();
@@ -92,6 +90,13 @@ namespace clench {
 
 			FORCEINLINE bool operator<(const RcObjectPtr<T> &rhs) const {
 				return _ptr < rhs._ptr;
+			}
+		};
+
+		template<typename T>
+		struct RcObjectUniquePtrDeleter {
+			FORCEINLINE void operator()(T *ptr) {
+				ptr->onRefZero();
 			}
 		};
 	}

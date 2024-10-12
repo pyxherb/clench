@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
 	clench::utils::RcObjectPtr<clench::ghal::VertexShader> vertexShader;
 	clench::utils::RcObjectPtr<clench::ghal::FragmentShader> fragmentShader;
 	{
-		std::ifstream is("test_vertex.cso");
+		std::ifstream is("test_vertex.glsl");
 
 		is.seekg(0, std::ios::end);
 		size_t size = is.tellg();
@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
 		vertexShader = g_mainGhalDevice->createVertexShader(vsSrc.get(), size, nullptr);
 	}
 	{
-		std::ifstream is("test_pixel.cso");
+		std::ifstream is("test_frag.glsl");
 
 		is.seekg(0, std::ios::end);
 		size_t size = is.tellg();
@@ -132,6 +132,7 @@ int main(int argc, char **argv) {
 	button->layoutAttributes->marginBox.bottom = 100;
 
 	while (!g_mainWindow->isClosed()) {
+		g_mainWindow->onDraw();
 		g_mainWindow->pollEvents();
 
 		//g_mainWindow->onExpose();

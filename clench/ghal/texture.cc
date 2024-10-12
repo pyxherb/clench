@@ -1,4 +1,5 @@
 #include "texture.h"
+#include <memory>
 
 using namespace clench;
 using namespace clench::ghal;

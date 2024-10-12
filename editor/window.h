@@ -8,7 +8,7 @@
 
 namespace clench {
 	namespace engine {
-		class MainWindow : public vwc::RootWindow {
+		class MainWindow : public vwc::VWCRootWindow {
 		public:
 			std::set<uint32_t> keyboardPressedKeys;
 

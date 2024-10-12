@@ -9,6 +9,9 @@
 #include <set>
 #include <map>
 #include <functional>
+#include <climits>
+#include <string>
+#include <stdexcept>
 
 #ifdef _WIN32
 	#include <Windows.h>
@@ -19,6 +22,7 @@
 	// #include <X11/extensions/Xrandr.h>
 	#include <X11/Xatom.h>
 
+	constexpr static auto X11_None = 0L;
 	#undef None
 #endif
 
@@ -115,7 +119,7 @@ namespace clench {
 			XID nativeHandle;
 			XSetWindowAttributes _setWindowAttribs;
 			XSizeHints *_sizeHints;
-			std::map<uint32_t, Time> keyPressedTimes;
+			std::map<uint32_t, Time> _keyPressedTimes;
 
 			Display *display;
 #endif

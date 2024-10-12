@@ -38,6 +38,8 @@ namespace clench {
 			virtual FragmentShader *createFragmentShader(const char *sources, size_t size, ShaderSourceInfo *sourceInfo) = 0;
 			virtual GeometryShader *createGeometryShader(const char *sources, size_t size, ShaderSourceInfo *sourceInfo) = 0;
 
+			virtual ShaderProgram *linkShaderProgram(Shader **shaders, size_t nShaders) = 0;
+
 			virtual Buffer *createBuffer(const BufferDesc &bufferDesc, const void *initialData) = 0;
 
 			virtual Texture1D *createTexture1D(const char *data, size_t size, const Texture1DDesc &desc) = 0;
@@ -47,7 +49,7 @@ namespace clench {
 			virtual RenderTargetView *createRenderTargetViewForTexture2D(Texture2D *texture) = 0;
 		};
 
-		class GHALDeviceContext {
+		class GHALDeviceContext : public utils::RcObject {
 		public:
 			NO_COPY_MOVE_METHODS(GHALDeviceContext);
 
@@ -77,8 +79,7 @@ namespace clench {
 
 			virtual void setData(Buffer *buffer, const void *data) = 0;
 
-			virtual void setVertexShader(VertexShader *vertexShader) = 0;
-			virtual void setFragmentShader(FragmentShader *vertexShader) = 0;
+			virtual void setShaderProgram(ShaderProgram *shaderProgram) = 0;
 
 			virtual void setRenderTarget(
 				RenderTargetView *renderTargetView,

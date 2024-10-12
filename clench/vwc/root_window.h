@@ -5,7 +5,7 @@
 
 namespace clench {
 	namespace vwc {
-		class RootWindow : public wsal::NativeWindow {
+		class VWCRootWindow : public wsal::NativeWindow {
 		public:
 			std::set<utils::RcObjectPtr<Window>> childWindows;
 			ghal::GHALDevice *ghalDevice;
@@ -13,7 +13,7 @@ namespace clench {
 			ghal::TextureFormat renderBufferFormat;
 			std::set<Window *> hoveredChildWindows;
 
-			CLCVWC_API RootWindow(
+			CLCVWC_API VWCRootWindow(
 				wsal::CreateWindowFlags createWindowFlags,
 				ghal::GHALDevice *ghalDevice,
 				NativeWindow *parent,
@@ -21,7 +21,7 @@ namespace clench {
 				int y,
 				int width,
 				int height);
-			CLCVWC_API virtual ~RootWindow();
+			CLCVWC_API virtual ~VWCRootWindow();
 
 			CLCVWC_API virtual void addChildWindow(Window *window) override;
 			CLCVWC_API virtual void removeChildWindow(Window *window) override;

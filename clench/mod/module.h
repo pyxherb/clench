@@ -14,6 +14,8 @@
 
 #if _WIN32
 	#include <Windows.h>
+#elif __unix__
+	#include <dlfcn.h>
 #endif
 
 namespace clench {
@@ -29,6 +31,7 @@ namespace clench {
 			ModuleInit moduleInit;
 			ModuleDeinit moduleDeinit;
 			bool autoLoad;
+			size_t moduleRegisterCounter;
 
 #ifdef _WIN32
 			HMODULE nativeHandle;
@@ -51,8 +54,12 @@ namespace clench {
 			bool isExternal = false;
 			std::unordered_set<std::string> dependencies;
 
+			size_t moduleRegisterCounterValue = SIZE_MAX;
+
 #ifdef _WIN32
 			HMODULE nativeHandle = NULL;
+#elif __unix__
+			void *nativeHandle = nullptr;
 #endif
 
 			CLCMOD_API Module(
@@ -68,6 +75,7 @@ namespace clench {
 		};
 
 		CLCMOD_API extern std::unordered_map<std::string, std::unique_ptr<Module>> g_registeredModules;
+		CLCMOD_API extern size_t g_moduleRegisterCounter;
 
 		CLCMOD_API bool initBuiltinModules();
 		CLCMOD_API void deinitModules();

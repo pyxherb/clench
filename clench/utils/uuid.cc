@@ -2,6 +2,7 @@
 #include "assert.h"
 #include <clench/base/attribs.h>
 #include <random>
+#include <ctime>
 
 using namespace clench;
 using namespace clench::utils;

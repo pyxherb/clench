@@ -22,6 +22,7 @@ ModuleEntry::ModuleEntry(
 		moduleRegistry.moduleDeinit = moduleDeinit;
 		moduleRegistry.next = g_builtinModuleRegistries;
 		moduleRegistry.autoLoad = autoLoad;
+		moduleRegistry.moduleRegisterCounter = g_moduleRegisterCounter++;
 
 #ifdef _WIN32
 		moduleRegistry.nativeHandle = _getCurrentModule();
