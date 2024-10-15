@@ -9,12 +9,6 @@ namespace clench {
 	namespace ghal {
 		using namespace Microsoft::WRL;
 
-		CLCGHAL_API extern const char g_clearRtvVertShaderByteCode[];
-		CLCGHAL_API extern const size_t g_clearRtvVertShaderByteCode_length;
-
-		CLCGHAL_API extern const char g_clearRtvFragShaderByteCode[];
-		CLCGHAL_API extern const size_t g_clearRtvFragShaderByteCode_length;
-
 		class D3D11GHALBackend : public GHALBackend {
 		public:
 			NO_COPY_MOVE_METHODS(D3D11GHALBackend);

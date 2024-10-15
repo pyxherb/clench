@@ -5,7 +5,9 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <set>
 #include <memory>
+#include <list>
 
 namespace clench {
 	namespace ghal {
@@ -37,7 +39,7 @@ namespace clench {
 
 		CLCGHAL_API void registerBuiltinGHALBackends();
 
-		CLCGHAL_API GHALDevice* createGHALDevice();
+		CLCGHAL_API GHALDevice *createGHALDevice(const std::list<std::string> &preferredBackendNames = {});
 	}
 }
 

@@ -91,35 +91,6 @@ CLCGHAL_API GHALDevice *D3D11GHALBackend::createDevice() {
 	ComPtr<ID3D11VertexShader> clearVertexShader;
 	ComPtr<ID3D11PixelShader> clearPixelShader;
 
-	if (FAILED(d3dDevice->CreateVertexShader(
-			g_clearRtvVertShaderByteCode,
-			g_clearRtvVertShaderByteCode_length,
-			nullptr,
-			&clearVertexShader)))
-		throw std::runtime_error("Error creating initial shaders");
-
-	if (FAILED(d3dDevice->CreatePixelShader(
-			g_clearRtvFragShaderByteCode,
-			g_clearRtvFragShaderByteCode_length,
-			nullptr,
-			&clearPixelShader)))
-		throw std::runtime_error("Error creating initial shaders");
-
-	ComPtr<ID3D11InputLayout> clearInputLayout;
-
-	D3D11_INPUT_ELEMENT_DESC inputElementDescs[] = {
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-	};
-
-	if (FAILED(d3dDevice->CreateInputLayout(
-			inputElementDescs,
-			ARRAYSIZE(inputElementDescs),
-			g_clearRtvVertShaderByteCode,
-			g_clearRtvVertShaderByteCode_length,
-			&clearInputLayout)))
-		throw std::runtime_error("Error creating initial input layouts");
-
 	D3D11GHALDevice *ghalDevice;
 
 	if (dxgiFactory2) {
@@ -147,48 +118,6 @@ CLCGHAL_API GHALDevice *D3D11GHALBackend::createDevice() {
 			dxgiDevice.Get(),
 			dxgiAdapter.Get(),
 			dxgiFactory1.Get());
-	}
-
-	ghalDevice->clearInputLayout = clearInputLayout;
-	ghalDevice->clearVertexShader = clearVertexShader;
-	ghalDevice->clearFragmentShader = clearPixelShader;
-
-	{
-		clench::ghal::BufferDesc vertexBufferDesc, indexBufferDesc;
-
-		static float data[] = {
-			-1.0f, -1.0f, 0.0f,
-			1.0f, 0.0f, 0.0f, 1.0f,
-
-			1.0f, -1.0f, 0.0f,
-			0.0f, 1.0f, 0.0f, 1.0f,
-
-			-1.0f, 1.0f, 0.0f,
-			0.0f, 0.0f, 1.0f, 1.0f,
-
-			1.0f, 1.0f, 0.0f,
-			1.0f, 1.0f, 1.0f, 1.0f,
-		};
-
-		vertexBufferDesc.size = sizeof(data);
-		vertexBufferDesc.usage = clench::ghal::BufferUsage::Dynamic;
-		vertexBufferDesc.proposedTarget = clench::ghal::BufferTarget::Vertex;
-		vertexBufferDesc.cpuReadable = false;
-		vertexBufferDesc.cpuWritable = true;
-
-		ghalDevice->clearVertexBuffer = (D3D11Buffer*)ghalDevice->createBuffer(vertexBufferDesc, data);
-
-		static int indices[] = {
-			0, 1, 2,
-			3, 2, 1
-		};
-
-		indexBufferDesc.size = sizeof(indices);
-		indexBufferDesc.usage = clench::ghal::BufferUsage::Static;
-		indexBufferDesc.proposedTarget = clench::ghal::BufferTarget::Index;
-		indexBufferDesc.cpuReadable = false;
-		indexBufferDesc.cpuWritable = false;
-		ghalDevice->clearIndexBuffer = (D3D11Buffer*)ghalDevice->createBuffer(indexBufferDesc, indices);
 	}
 
 	return ghalDevice;

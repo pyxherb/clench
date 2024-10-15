@@ -25,9 +25,14 @@ CLCGHAL_API GHALBackend *GLGHALDevice::getBackend() {
 CLCGHAL_API GHALDeviceContext *GLGHALDevice::createDeviceContextForWindow(clench::wsal::NativeWindow *window) {
 	int width, height;
 	window->getSize(width, height);
+
+	std::unique_ptr<
+		GLGHALDeviceContext,
+		utils::RcObjectUniquePtrDeleter<GLGHALDeviceContext>>
+		deviceContext(new GLGHALDeviceContext(this));
 #ifdef _WIN32
-	HWND hWnd = *(HWND *)window->nativeHandle;
-	HDC hdc = GetDC(hWnd);
+	deviceContext->hWnd = window->nativeHandle;
+	deviceContext->hdc = GetDC(deviceContext->hWnd);
 	{
 		PIXELFORMATDESCRIPTOR pfd = { 0 };
 		pfd.nSize = sizeof(pfd);
@@ -36,23 +41,29 @@ CLCGHAL_API GHALDeviceContext *GLGHALDevice::createDeviceContextForWindow(clench
 		pfd.iPixelType = PFD_TYPE_RGBA;
 		pfd.cColorBits = 24;
 
-		auto pxFmt = ChoosePixelFormat(hdc, &pfd);
+		auto pxFmt = ChoosePixelFormat(deviceContext->hdc, &pfd);
 		if (!pxFmt)
 			throw std::runtime_error("Incompatible ghal device");
 
-		SetPixelFormat(hdc, pxFmt, &pfd);
+		SetPixelFormat(deviceContext->hdc, pxFmt, &pfd);
 	}
 
-	HGLRC wglContext;
-
-	if (!(wglContext = wglCreateContext(hdc)))
+	if (!(deviceContext->wglContext = wglCreateContext(deviceContext->hdc)))
 		throw std::runtime_error("Error creating WGL context");
-#else
-	std::unique_ptr<
-		GLGHALDeviceContext,
-		utils::RcObjectUniquePtrDeleter<GLGHALDeviceContext>>
-		deviceContext(new GLGHALDeviceContext(this));
 
+	NativeGLContext prevContext = GLGHALDeviceContext::saveContextCurrent();
+	utils::ScopeGuard restoreContextGuard([&prevContext]() {
+		GLGHALDeviceContext::restoreContextCurrent(prevContext);
+	});
+	deviceContext->makeContextCurrent();
+
+	if (!g_glInitialized) {
+		int version = gladLoadGL((GLADloadfunc)_loadGlProc);
+		if (!version)
+			throw std::runtime_error("Error initializing GLAD");
+		g_glInitialized = true;
+	}
+#else
 	static const EGLint configAttribs[] = {
 		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
 		EGL_BLUE_SIZE, 8,
@@ -106,15 +117,13 @@ CLCGHAL_API GHALDeviceContext *GLGHALDevice::createDeviceContextForWindow(clench
 			throw std::runtime_error("Error initializing GLAD");
 		g_glInitialized = true;
 	}
-
+#endif
 	GLint defaultFramebuffer;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *)&defaultFramebuffer);
 	deviceContext->defaultRenderTargetView = new GLRenderTargetView(this, RenderTargetViewType::Buffer, defaultFramebuffer);
 
 	deviceContext->onResize(width, height);
-
 	return deviceContext.release();
-#endif
 }
 
 CLCGHAL_API VertexArray *GLGHALDevice::createVertexArray(
@@ -172,6 +181,8 @@ CLCGHAL_API VertexArray *GLGHALDevice::createVertexArray(
 				sizePerElement = sizeof(GLboolean);
 				glType = GL_BOOL;
 				break;
+			default:
+				throw std::logic_error("Invalid data type");
 		}
 
 		glVertexAttribPointer(i, sizePerElement * curDesc.nElements, glType, false, curDesc.stride, (void *)curDesc.off);
@@ -454,8 +465,10 @@ CLCGHAL_API GLGHALDeviceContext::GLGHALDeviceContext(
 
 CLCGHAL_API GLGHALDeviceContext::~GLGHALDeviceContext() {
 #if _WIN32
-	wglDeleteContext(wglContext);
-	ReleaseDC(hWnd, hdc);
+	if (wglContext)
+		wglDeleteContext(wglContext);
+	if (hdc)
+		ReleaseDC(hWnd, hdc);
 #else
 	if (eglContext != EGL_NO_CONTEXT) {
 		eglDestroyContext(eglDisplay, eglContext);

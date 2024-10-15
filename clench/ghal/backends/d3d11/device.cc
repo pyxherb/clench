@@ -601,39 +601,11 @@ CLCGHAL_API void D3D11GHALDeviceContext::clearRenderTargetView(
 	float a) {
 	float color[] = { r, g, b, a };
 
-	float left = -1.0f,
-		  right = 1.0f,
-		  top = 1.0f,
-		  bottom = -1.0f;
-
-	float data[] = {
-		left, top, 0.0f,
-		r, g, b, a,
-
-		right, top, 0.0f,
-		r, g, b, a,
-
-		left, bottom, 0.0f,
-		r, g, b, a,
-
-		right, bottom, 0.0f,
-		r, g, b, a
-	};
-
-	clearDepth(nullptr, 1.0f);
-	clearStencil(nullptr, 0);
-
-	d3dDeviceContext->IASetInputLayout(device->clearInputLayout.Get());
-
-	setData(device->clearVertexBuffer.get(), data);
-	bindVertexBuffer(device->clearVertexBuffer.get(), sizeof(float) * 7);
-	bindIndexBuffer(device->clearIndexBuffer.get());
-
-	d3dDeviceContext->VSSetShader(device->clearVertexShader.Get(), nullptr, 0);
-	d3dDeviceContext->PSSetShader(device->clearFragmentShader.Get(), nullptr, 0);
-
-	d3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	d3dDeviceContext->DrawIndexed(6, 0, 0);
+	d3dDeviceContext->ClearRenderTargetView(
+		renderTargetView
+			? ((D3D11RenderTargetView *)renderTargetView)->renderTargetView.Get()
+			: this->renderTargetView->renderTargetView.Get(),
+		color);
 }
 
 CLCGHAL_API void D3D11GHALDeviceContext::clearDepth(

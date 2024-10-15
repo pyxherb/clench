@@ -63,9 +63,9 @@ namespace clench {
 			utils::RcObjectPtr<GLRenderTargetView> defaultRenderTargetView;
 
 #ifdef _WIN32
-			HGLRC wglContext;
-			HWND hWnd;
-			HDC hdc;
+			HGLRC wglContext = NULL;
+			HWND hWnd = NULL;
+			HDC hdc = NULL;
 #else
 			EGLDisplay eglDisplay = EGL_NO_DISPLAY;
 			EGLSurface eglSurface = EGL_NO_SURFACE;

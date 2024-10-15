@@ -23,13 +23,6 @@ namespace clench {
 			ComPtr<IDXGIFactory1> dxgiFactory1;
 			ComPtr<IDXGIFactory2> dxgiFactory2;
 
-			// Resources for clearing render target views.
-			ComPtr<ID3D11InputLayout> clearInputLayout;
-			ComPtr<ID3D11VertexShader> clearVertexShader;
-			ComPtr<ID3D11PixelShader> clearFragmentShader;
-
-			utils::RcObjectPtr<D3D11Buffer> clearVertexBuffer, clearIndexBuffer;
-
 			NO_COPY_MOVE_METHODS(D3D11GHALDevice);
 
 			CLCGHAL_API D3D11GHALDevice(

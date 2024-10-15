@@ -18,10 +18,6 @@ CLCGHAL_API void *clench::ghal::_loadGlProc(const char *name) {
 	if (addr)
 		return addr;
 
-	if (!g_hOpenGL32Dll) {
-		if (!(g_hOpenGL32Dll = LoadLibraryA("opengl32.dll")))
-			return nullptr;
-	}
 	return GetProcAddress(g_hOpenGL32Dll, name);
 #else
 	return (void *)eglGetProcAddress(name);
@@ -29,6 +25,10 @@ CLCGHAL_API void *clench::ghal::_loadGlProc(const char *name) {
 }
 
 CLCGHAL_API GLGHALBackend::GLGHALBackend() : GHALBackend("opengl") {
+#if _WIN32
+	if (!(g_hOpenGL32Dll = LoadLibraryA("opengl32.dll")))
+		throw std::runtime_error("Error loading OpenGL32.dll");
+#endif
 }
 
 CLCGHAL_API GLGHALBackend::~GLGHALBackend() {

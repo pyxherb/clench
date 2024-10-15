@@ -46,11 +46,38 @@ CLCGHAL_API GHALBackend *clench::ghal::getGHALBackend(const char *id) {
 	return it->second.get();
 }
 
-CLCGHAL_API GHALDevice *clench::ghal::createGHALDevice() {
-	for (const auto &i : g_registeredGHALBackends) {
-		CLENCH_DEBUG_LOG("GHAL", "Creating GHAL device using GHAL backend: %s", i.first.c_str());
-		if (auto device = i.second->createDevice(); device) {
-			CLENCH_DEBUG_LOG("GHAL", "Created GHAL device using GHAL backend: %s", i.first.c_str());
+CLCGHAL_API GHALDevice *clench::ghal::createGHALDevice(const std::list<std::string> &preferredBackendNames) {
+	std::vector<GHALBackend *> deviceCreationQueue;
+	deviceCreationQueue.resize(g_registeredGHALBackends.size());
+	if (preferredBackendNames.size()) {
+		size_t deviceCreationQueueBackIndex = 0;
+		std::set<GHALBackend *> pushedBackends;
+
+		for (auto &i : preferredBackendNames) {
+			if (auto it = clench::ghal::g_registeredGHALBackends.find(i);
+				it != clench::ghal::g_registeredGHALBackends.end()) {
+				GHALBackend *curBackend = it->second.get();
+				deviceCreationQueue[deviceCreationQueueBackIndex++] = curBackend;
+				pushedBackends.insert(curBackend);
+			}
+		}
+
+		for (auto &i : g_registeredGHALBackends) {
+			if (!pushedBackends.count(i.second.get())) {
+				deviceCreationQueue[deviceCreationQueueBackIndex++] = i.second.get();
+			}
+		}
+	} else {
+		size_t deviceCreationQueueBackIndex = 0;
+		for (const auto &i : g_registeredGHALBackends) {
+			deviceCreationQueue[deviceCreationQueueBackIndex++] = i.second.get();
+		}
+	}
+
+	for (auto i : deviceCreationQueue) {
+		CLENCH_DEBUG_LOG("GHAL", "Creating GHAL device using GHAL backend: %s", i->backendId.c_str());
+		if (auto device = i->createDevice(); device) {
+			CLENCH_DEBUG_LOG("GHAL", "Created GHAL device using GHAL backend: %s", i->backendId.c_str());
 			return device;
 		}
 	}

@@ -33,13 +33,13 @@ namespace clench {
 
 	#define CLENCH_LOG(level, source, message, ...) clench::utils::doLogging(level, source, message, ##__VA_ARGS__)
 
-	#define CLENCH_FATAL_LOG(source, message, ...) CLENCH_LOG(clench::utils::LogLevel::Error, source, message, ##__VA_ARGS__)
-	#define CLENCH_ERROR_LOG(source, message, ...) CLENCH_LOG(clench::utils::LogLevel::Error, source, message, ##__VA_ARGS__)
-	#define CLENCH_WARNING_LOG(source, message, ...) CLENCH_LOG(clench::utils::LogLevel::Warning, source, message, ##__VA_ARGS__)
-	#define CLENCH_NOTE_LOG(source, message, ...) CLENCH_LOG(clench::utils::LogLevel::Note, source, message, ##__VA_ARGS__)
-	#define CLENCH_INFO_LOG(source, message, ...) CLENCH_LOG(clench::utils::LogLevel::Info, source, message, ##__VA_ARGS__)
-	#define CLENCH_DEBUG_LOG(source, message, ...) CLENCH_LOG(clench::utils::LogLevel::Debug, source, message, ##__VA_ARGS__)
-
 #endif
+
+#define CLENCH_FATAL_LOG(source, message, ...) CLENCH_LOG(clench::utils::LogLevel::Error, source, message, ##__VA_ARGS__)
+#define CLENCH_ERROR_LOG(source, message, ...) CLENCH_LOG(clench::utils::LogLevel::Error, source, message, ##__VA_ARGS__)
+#define CLENCH_WARNING_LOG(source, message, ...) CLENCH_LOG(clench::utils::LogLevel::Warning, source, message, ##__VA_ARGS__)
+#define CLENCH_NOTE_LOG(source, message, ...) CLENCH_LOG(clench::utils::LogLevel::Note, source, message, ##__VA_ARGS__)
+#define CLENCH_INFO_LOG(source, message, ...) CLENCH_LOG(clench::utils::LogLevel::Info, source, message, ##__VA_ARGS__)
+#define CLENCH_DEBUG_LOG(source, message, ...) CLENCH_LOG(clench::utils::LogLevel::Debug, source, message, ##__VA_ARGS__)
 
 #endif

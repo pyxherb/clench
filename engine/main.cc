@@ -37,12 +37,8 @@ int main(int argc, char **argv) {
 
 	mod::initBuiltinModules();
 
-#if CLENCH_DYNAMIC_LINK
-	if (!mod::registerExternalModule("world3d"))
-		assert(false);
-#endif
-
-	g_mainGhalDevice = std::unique_ptr<ghal::GHALDevice>(ghal::createGHALDevice());
+	std::list<std::string> preferredBackendNames = { "opengl", "d3d11" };
+	g_mainGhalDevice = std::unique_ptr<ghal::GHALDevice>(ghal::createGHALDevice(preferredBackendNames));
 
 	if (!g_mainGhalDevice)
 		throw std::runtime_error("Error creating main GHAL device");
@@ -55,7 +51,7 @@ int main(int argc, char **argv) {
 	clench::utils::RcObjectPtr<clench::ghal::FragmentShader> fragmentShader;
 	clench::utils::RcObjectPtr<clench::ghal::ShaderProgram> shaderProgram;
 	{
-		std::ifstream is("test_vertex.cso");
+		std::ifstream is("test_vertex.glsl");
 
 		is.seekg(0, std::ios::end);
 		size_t size = is.tellg();
@@ -67,7 +63,7 @@ int main(int argc, char **argv) {
 		vertexShader = g_mainGhalDevice->createVertexShader(vsSrc.get(), size, nullptr);
 	}
 	{
-		std::ifstream is("test_pixel.cso");
+		std::ifstream is("test_frag.glsl");
 
 		is.seekg(0, std::ios::end);
 		size_t size = is.tellg();
@@ -130,8 +126,8 @@ int main(int argc, char **argv) {
 		g_mainGhalDeviceContext->begin();
 
 		g_mainGhalDeviceContext->clearRenderTargetView(nullptr, 0.0f, 0.0f, 0.0f, 1.0f);
-		g_mainGhalDeviceContext->clearDepth(nullptr, 1.0f);
-		g_mainGhalDeviceContext->clearStencil(nullptr, 0);
+		//g_mainGhalDeviceContext->clearDepth(nullptr, 1.0f);
+		//g_mainGhalDeviceContext->clearStencil(nullptr, 0);
 
 		g_mainGhalDeviceContext->bindVertexArray(vertexArray.get());
 		g_mainGhalDeviceContext->bindVertexBuffer(vertexBuffer.get(), sizeof(float) * 3 + sizeof(float) * 4);
