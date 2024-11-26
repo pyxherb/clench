@@ -97,6 +97,30 @@ namespace clench {
 			virtual void onDraw() = 0;
 		};
 
+		#ifdef _WIN32
+		using NativeWindowHandle = HWND;
+		#elif defined(__unix__)
+		struct NativeWindowHandle {
+			XID windowId;
+			Display *display;
+
+			NativeWindowHandle() = default;
+			FORCEINLINE NativeWindowHandle(Display *display, XID windowId) : windowId(windowId), display(display) {}
+
+			FORCEINLINE bool operator<(const NativeWindowHandle &rhs) const {
+				if(display > rhs.display)
+					return false;
+				if(display < rhs.display)
+					return true;
+				if(windowId > rhs.windowId)
+					return false;
+				if(windowId < rhs.windowId)
+					return true;
+				return false;
+			}
+		};
+		#endif
+
 		class NativeWindow : public Window {
 		private:
 			bool _isClosed = false;
@@ -112,16 +136,14 @@ namespace clench {
 #ifdef _WIN32
 			CLCWSAL_API static LRESULT CALLBACK _win32WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 #endif
+
+			NativeWindowHandle nativeHandle;
 #ifdef _WIN32
-			HWND nativeHandle;
 			bool isHovered = false;
 #elif defined(__unix__)
-			XID nativeHandle;
 			XSetWindowAttributes _setWindowAttribs;
 			XSizeHints *_sizeHints;
 			std::map<uint32_t, Time> _keyPressedTimes;
-
-			Display *display;
 #endif
 
 			NO_COPY_MOVE_METHODS(NativeWindow);

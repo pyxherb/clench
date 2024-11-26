@@ -76,7 +76,7 @@ CLCGHAL_API GHALDeviceContext *GLGHALDevice::createDeviceContextForWindow(clench
 
 	EGLint eglMinor, eglMajor;
 
-	deviceContext->eglDisplay = eglGetDisplay((EGLNativeDisplayType)window->display);
+	deviceContext->eglDisplay = eglGetDisplay((EGLNativeDisplayType)window->nativeHandle.display);
 	if (auto it = g_initializedEglDisplays.find(deviceContext->eglDisplay); it != g_initializedEglDisplays.end()) {
 		++it->second;
 	} else {
@@ -84,7 +84,7 @@ CLCGHAL_API GHALDeviceContext *GLGHALDevice::createDeviceContextForWindow(clench
 		g_initializedEglDisplays[deviceContext->eglDisplay] = 1;
 	}
 
-	deviceContext->eglWindow = (EGLNativeWindowType)window->nativeHandle;
+	deviceContext->eglWindow = (EGLNativeWindowType)window->nativeHandle.windowId;
 
 	EGLint nConfigs;
 	eglChooseConfig(deviceContext->eglDisplay, configAttribs, &deviceContext->eglConfig, 1, &nConfigs);

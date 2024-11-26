@@ -8,6 +8,7 @@
 #include <set>
 #include <memory>
 #include <list>
+#include <vector>
 
 namespace clench {
 	namespace ghal {
