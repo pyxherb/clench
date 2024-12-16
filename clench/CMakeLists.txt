@@ -1,6 +1,5 @@
 add_subdirectory("base")
 add_subdirectory("utils")
-add_subdirectory("mod")
 add_subdirectory("math")
 add_subdirectory("wsal")
 add_subdirectory("plat")
@@ -8,5 +7,3 @@ add_subdirectory("ghal")
 add_subdirectory("vwc")
 add_subdirectory("rmf")
 add_subdirectory("tcm")
-
-add_subdirectory("modrt")

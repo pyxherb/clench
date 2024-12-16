@@ -1,5 +1,0 @@
-if(${CLENCH_LINK_MODE} STREQUAL "dyn")
-    add_subdirectory("dyn")
-elseif(${CLENCH_LINK_MODE} STREQUAL "static")
-    add_subdirectory("static")
-endif()

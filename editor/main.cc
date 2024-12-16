@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
 
 	ghal::registerBuiltinGHALBackends();
 
-	g_mainGhalDevice = std::unique_ptr<ghal::GHALDevice>(ghal::createGHALDevice());
+	g_mainGhalDevice = std::unique_ptr<ghal::GHALDevice>(ghal::createGHALDevice({ "opengl" }));
 
 	if (!g_mainGhalDevice)
 		throw std::runtime_error("Error creating main GHAL device");

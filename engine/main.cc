@@ -6,7 +6,6 @@
 #include <chrono>
 #include <fstream>
 #include <clench/vwc/button.h>
-#include <clench/mod/module.h>
 
 using namespace clench;
 using namespace clench::engine;
@@ -35,7 +34,6 @@ int main(int argc, char **argv) {
 
 	ghal::registerBuiltinGHALBackends();
 
-	mod::initBuiltinModules();
 
 	std::list<std::string> preferredBackendNames = { "opengl", "d3d11" };
 	g_mainGhalDevice = std::unique_ptr<ghal::GHALDevice>(ghal::createGHALDevice(preferredBackendNames));
@@ -147,8 +145,6 @@ int main(int argc, char **argv) {
 	shaderProgram.reset();
 	fragmentShader.reset();
 	vertexShader.reset();
-
-	mod::deinitModules();
 
 	g_mainGhalDeviceContext.reset();
 

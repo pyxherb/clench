@@ -7,11 +7,6 @@ clench_add_component_dependency_to_target(clcngine clcutils)
 clench_add_component_dependency_to_target(clcngine clcwsal)
 clench_add_component_dependency_to_target(clcngine clcghal)
 clench_add_component_dependency_to_target(clcngine clcvwc)
-clench_add_component_dependency_to_target(clcngine clcmod)
 clench_add_component_dependency_to_target(clcngine clcplat)
 
 get_target_property(_target_binary_dir clcngine BINARY_DIR)
-
-foreach(i ${CLENCH_ENABLED_MODULES})
-    clench_add_module_dependency_to_target(clcngine ${i})
-endforeach()

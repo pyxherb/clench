@@ -15,4 +15,6 @@ else()
 endif()
 
 target_sources(clcghal PRIVATE ${HEADERS} ${SRC})
+target_sources(clcghal_static PRIVATE ${HEADERS} ${SRC})
 target_compile_definitions(clcghal PRIVATE CLCGHAL_TEXCONV_OPTIMIZED_CODE=1)
+target_compile_definitions(clcghal_static PRIVATE CLCGHAL_TEXCONV_OPTIMIZED_CODE=1)
