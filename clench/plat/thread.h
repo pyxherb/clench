@@ -57,7 +57,7 @@ namespace clench {
 
 			CLCPLAT_API void start();
 
-			FORCEINLINE ThreadState getState() {
+			CLENCH_FORCEINLINE ThreadState getState() {
 				return _state;
 			}
 		};
@@ -88,12 +88,12 @@ namespace clench {
 		public:
 			Future<T> *const future;
 
-			FORCEINLINE Promise(Future<T> *future) : future(future) {}
-			FORCEINLINE void resolve(T &&result) {
+			CLENCH_FORCEINLINE Promise(Future<T> *future) : future(future) {}
+			CLENCH_FORCEINLINE void resolve(T &&result) {
 				future->result = result;
 				future->state = FutureState::Resolved;
 			}
-			FORCEINLINE void reject(std::exception_ptr exception) {
+			CLENCH_FORCEINLINE void reject(std::exception_ptr exception) {
 				future->exception = exception;
 				future->state = FutureState::Rejected;
 			}

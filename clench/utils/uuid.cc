@@ -7,7 +7,7 @@
 using namespace clench;
 using namespace clench::utils;
 
-FORCEINLINE uint_fast8_t _parseSingleDigit(char c) {
+CLENCH_FORCEINLINE uint_fast8_t _parseSingleDigit(char c) {
 	if (c >= '0' && c <= '9') {
 		return c - '0';
 	} else if (c >= 'a' && c <= 'f') {
@@ -86,7 +86,7 @@ CLCUTILS_API bool UUID::from(const char *s, UUID &uuidOut) {
 	return true;
 }
 
-FORCEINLINE char _hexDigitToChar(uint_fast8_t digit) {
+CLENCH_FORCEINLINE char _hexDigitToChar(uint_fast8_t digit) {
 	return digit > 9 ? digit - 10 + 'a' : digit + '0';
 }
 

@@ -11,17 +11,17 @@ namespace clench {
 			ScopeGuardCallback callback;
 
 			ScopeGuard() = default;
-			FORCEINLINE ScopeGuard(ScopeGuardCallback &&callback) : callback(callback) {}
-			FORCEINLINE ~ScopeGuard() {
+			CLENCH_FORCEINLINE ScopeGuard(ScopeGuardCallback &&callback) : callback(callback) {}
+			CLENCH_FORCEINLINE ~ScopeGuard() {
 				if (callback)
 					callback();
 			}
 
-			FORCEINLINE void release() {
+			CLENCH_FORCEINLINE void release() {
 				callback = {};
 			}
 
-			FORCEINLINE ScopeGuard& operator=(ScopeGuardCallback&& callback) {
+			CLENCH_FORCEINLINE ScopeGuard& operator=(ScopeGuardCallback&& callback) {
 				this->callback = callback;
 				return *this;
 			}

@@ -27,7 +27,7 @@ namespace clench {
 
 		class Buffer : public GHALDeviceResource {
 		public:
-			NO_COPY_MOVE_METHODS(Buffer);
+			CLENCH_NO_COPY_MOVE_METHODS(Buffer);
 
 			BufferDesc bufferDesc;
 

@@ -10,7 +10,7 @@ namespace clench {
 		public:
 			GLuint vertexArrayHandle;
 
-			NO_COPY_MOVE_METHODS(GLVertexArray);
+			CLENCH_NO_COPY_MOVE_METHODS(GLVertexArray);
 
 			CLCGHAL_API GLVertexArray(
 				GHALDevice *ownerDevice,

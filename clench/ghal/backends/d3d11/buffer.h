@@ -10,7 +10,7 @@ namespace clench {
 		public:
 			ComPtr<ID3D11Buffer> buffer;
 
-			NO_COPY_MOVE_METHODS(D3D11Buffer);
+			CLENCH_NO_COPY_MOVE_METHODS(D3D11Buffer);
 
 			CLCGHAL_API D3D11Buffer(
 				GHALDevice *ownerDevice,

@@ -18,7 +18,7 @@ namespace clench {
 		public:
 			const std::string backendId;
 
-			NO_COPY_MOVE_METHODS(GHALBackend);
+			CLENCH_NO_COPY_MOVE_METHODS(GHALBackend);
 
 			CLCGHAL_API GHALBackend(const char* backendId);
 			CLCGHAL_API virtual ~GHALBackend();

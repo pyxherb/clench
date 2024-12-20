@@ -20,7 +20,7 @@ namespace clench {
 		public:
 			std::set<GHALDeviceResource *> createdResources;
 
-			NO_COPY_MOVE_METHODS(GHALDevice);
+			CLENCH_NO_COPY_MOVE_METHODS(GHALDevice);
 
 			CLCGHAL_API GHALDevice();
 			CLCGHAL_API virtual ~GHALDevice();
@@ -51,7 +51,7 @@ namespace clench {
 
 		class GHALDeviceContext : public utils::RcObject {
 		public:
-			NO_COPY_MOVE_METHODS(GHALDeviceContext);
+			CLENCH_NO_COPY_MOVE_METHODS(GHALDeviceContext);
 
 			CLCGHAL_API GHALDeviceContext();
 			CLCGHAL_API virtual ~GHALDeviceContext();

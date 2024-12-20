@@ -4,7 +4,7 @@
 #include "mat_def.inl"
 
 template <typename T>
-FORCEINLINE clench::math::Mat1x1<T> operator*(
+CLENCH_FORCEINLINE clench::math::Mat1x1<T> operator*(
 	const clench::math::Mat1x1<T> &lhs,
 	const clench::math::Mat1x1<T> &rhs) {
 	return {
@@ -13,7 +13,7 @@ FORCEINLINE clench::math::Mat1x1<T> operator*(
 }
 
 template <typename T>
-FORCEINLINE clench::math::Mat1x1<T> operator*(
+CLENCH_FORCEINLINE clench::math::Mat1x1<T> operator*(
 	const clench::math::Mat1x2<T> &lhs,
 	const clench::math::Mat2x1<T> &rhs) {
 	return {
@@ -22,7 +22,7 @@ FORCEINLINE clench::math::Mat1x1<T> operator*(
 }
 
 template <typename T>
-FORCEINLINE clench::math::Mat1x1<T> operator*(
+CLENCH_FORCEINLINE clench::math::Mat1x1<T> operator*(
 	const clench::math::Mat1x3<T> &lhs,
 	const clench::math::Mat3x1<T> &rhs) {
 	return {
@@ -31,7 +31,7 @@ FORCEINLINE clench::math::Mat1x1<T> operator*(
 }
 
 template <typename T>
-FORCEINLINE clench::math::Mat1x1<T> operator*(
+CLENCH_FORCEINLINE clench::math::Mat1x1<T> operator*(
 	const clench::math::Mat1x4<T> &lhs,
 	const clench::math::Mat4x1<T> &rhs) {
 	return {
@@ -40,7 +40,7 @@ FORCEINLINE clench::math::Mat1x1<T> operator*(
 }
 
 template <typename T>
-FORCEINLINE clench::math::Mat2x2<T> operator*(
+CLENCH_FORCEINLINE clench::math::Mat2x2<T> operator*(
 	const clench::math::Mat2x1<T> &lhs,
 	const clench::math::Mat1x2<T> &rhs) {
 	return {
@@ -53,7 +53,7 @@ FORCEINLINE clench::math::Mat2x2<T> operator*(
 }
 
 template <typename T>
-FORCEINLINE clench::math::Mat2x2<T> operator*(
+CLENCH_FORCEINLINE clench::math::Mat2x2<T> operator*(
 	const clench::math::Mat2x2<T> &lhs,
 	const clench::math::Mat2x2<T> &rhs) {
 	return {
@@ -66,7 +66,7 @@ FORCEINLINE clench::math::Mat2x2<T> operator*(
 }
 
 template <typename T>
-FORCEINLINE clench::math::Mat2x2<T> operator*(
+CLENCH_FORCEINLINE clench::math::Mat2x2<T> operator*(
 	const clench::math::Mat2x3<T> &lhs,
 	const clench::math::Mat3x2<T> &rhs) {
 	return {
@@ -79,7 +79,7 @@ FORCEINLINE clench::math::Mat2x2<T> operator*(
 }
 
 template <typename T>
-FORCEINLINE clench::math::Mat2x2<T> operator*(
+CLENCH_FORCEINLINE clench::math::Mat2x2<T> operator*(
 	const clench::math::Mat2x4<T> &lhs,
 	const clench::math::Mat4x2<T> &rhs) {
 	return {
@@ -92,7 +92,7 @@ FORCEINLINE clench::math::Mat2x2<T> operator*(
 }
 
 template <typename T>
-FORCEINLINE clench::math::Mat3x3<T> operator*(
+CLENCH_FORCEINLINE clench::math::Mat3x3<T> operator*(
 	const clench::math::Mat3x1<T> &lhs,
 	const clench::math::Mat1x3<T> &rhs) {
 	return {
@@ -111,7 +111,7 @@ FORCEINLINE clench::math::Mat3x3<T> operator*(
 }
 
 template <typename T>
-FORCEINLINE clench::math::Mat3x3<T> operator*(
+CLENCH_FORCEINLINE clench::math::Mat3x3<T> operator*(
 	const clench::math::Mat3x2<T> &lhs,
 	const clench::math::Mat2x3<T> &rhs) {
 	return {
@@ -130,7 +130,7 @@ FORCEINLINE clench::math::Mat3x3<T> operator*(
 }
 
 template <typename T>
-FORCEINLINE clench::math::Mat3x3<T> operator*(
+CLENCH_FORCEINLINE clench::math::Mat3x3<T> operator*(
 	const clench::math::Mat3x3<T> &lhs,
 	const clench::math::Mat3x3<T> &rhs) {
 	return {
@@ -149,7 +149,7 @@ FORCEINLINE clench::math::Mat3x3<T> operator*(
 }
 
 template <typename T>
-FORCEINLINE clench::math::Mat3x3<T> operator*(
+CLENCH_FORCEINLINE clench::math::Mat3x3<T> operator*(
 	const clench::math::Mat3x4<T> &lhs,
 	const clench::math::Mat4x3<T> &rhs) {
 	return {
@@ -168,7 +168,7 @@ FORCEINLINE clench::math::Mat3x3<T> operator*(
 }
 
 template <typename T>
-FORCEINLINE clench::math::Mat4x4<T> operator*(
+CLENCH_FORCEINLINE clench::math::Mat4x4<T> operator*(
 	const clench::math::Mat4x1<T> &lhs,
 	const clench::math::Mat1x4<T> &rhs) {
 	return {
@@ -195,7 +195,7 @@ FORCEINLINE clench::math::Mat4x4<T> operator*(
 }
 
 template <typename T>
-FORCEINLINE clench::math::Mat4x4<T> operator*(
+CLENCH_FORCEINLINE clench::math::Mat4x4<T> operator*(
 	const clench::math::Mat4x2<T> &lhs,
 	const clench::math::Mat2x4<T> &rhs) {
 	return {
@@ -222,7 +222,7 @@ FORCEINLINE clench::math::Mat4x4<T> operator*(
 }
 
 template <typename T>
-FORCEINLINE clench::math::Mat4x4<T> operator*(
+CLENCH_FORCEINLINE clench::math::Mat4x4<T> operator*(
 	const clench::math::Mat4x3<T> &lhs,
 	const clench::math::Mat3x4<T> &rhs) {
 	return {
@@ -249,7 +249,7 @@ FORCEINLINE clench::math::Mat4x4<T> operator*(
 }
 
 template <typename T>
-FORCEINLINE clench::math::Mat4x4<T> operator*(
+CLENCH_FORCEINLINE clench::math::Mat4x4<T> operator*(
 	const clench::math::Mat4x4<T> &lhs,
 	const clench::math::Mat4x4<T> &rhs) {
 	return {

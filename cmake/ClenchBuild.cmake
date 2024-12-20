@@ -29,7 +29,7 @@ endfunction()
 function(clench_add_component component_name)
 	add_library(${component_name} SHARED)
 	add_library(${component_name}_static STATIC)
-	
+
 	target_compile_definitions(${component_name} PRIVATE CLENCH_DYNAMIC_LINK=1)
 	target_compile_definitions(${component_name}_static PRIVATE CLENCH_STATIC_LINK=1)
 	set_target_properties(${component_name} PROPERTIES CXX_STANDARD 17)
@@ -42,6 +42,6 @@ function(clench_add_component_dependency_to_target target_name component_name)
 
 		clench_copy_output_so(${target_name} ${component_name})
 	elseif(${CLENCH_LINK_MODE} STREQUAL "static")
-		target_link_libraries(${target_name}_static PUBLIC ${component_name})
+		target_link_libraries(${target_name} PUBLIC ${component_name}_static)
 	endif()
 endfunction()

@@ -10,7 +10,7 @@ namespace clench {
 		public:
 			GLuint bufferHandle;
 
-			NO_COPY_MOVE_METHODS(GLBuffer);
+			CLENCH_NO_COPY_MOVE_METHODS(GLBuffer);
 
 			CLCGHAL_API GLBuffer(
 				GHALDevice *ownerDevice,

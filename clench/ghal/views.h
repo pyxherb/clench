@@ -18,7 +18,7 @@ namespace clench {
 
 		class RenderTargetView : public GHALDeviceResource {
 		public:
-			NO_COPY_MOVE_METHODS(RenderTargetView);
+			CLENCH_NO_COPY_MOVE_METHODS(RenderTargetView);
 
 			RenderTargetViewType renderTargetViewType;
 
@@ -39,7 +39,7 @@ namespace clench {
 
 		class DepthStencilView : public GHALDeviceResource {
 		public:
-			NO_COPY_MOVE_METHODS(DepthStencilView);
+			CLENCH_NO_COPY_MOVE_METHODS(DepthStencilView);
 
 			DepthStencilViewType depthStencilViewType;
 

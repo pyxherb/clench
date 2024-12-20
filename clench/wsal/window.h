@@ -49,7 +49,7 @@ namespace clench {
 
 		class Window : public utils::RcObject {
 		public:
-			NO_COPY_MOVE_METHODS(Window);
+			CLENCH_NO_COPY_MOVE_METHODS(Window);
 
 			CLCWSAL_API Window();
 			CLCWSAL_API virtual ~Window();
@@ -65,6 +65,9 @@ namespace clench {
 
 			virtual void setSize(int width, int height) = 0;
 			virtual void getSize(int &widthOut, int &heightOut) const = 0;
+
+			// virtual void getActualPos(int &xOut, int &yOut) const = 0;
+			// virtual void getActualSize(int &widthOut, int &heightOut) const = 0;
 
 			virtual void setTitle(const char *title) = 0;
 
@@ -105,9 +108,9 @@ namespace clench {
 			Display *display;
 
 			NativeWindowHandle() = default;
-			FORCEINLINE NativeWindowHandle(Display *display, XID windowId) : windowId(windowId), display(display) {}
+			CLENCH_FORCEINLINE NativeWindowHandle(Display *display, XID windowId) : windowId(windowId), display(display) {}
 
-			FORCEINLINE bool operator<(const NativeWindowHandle &rhs) const {
+			CLENCH_FORCEINLINE bool operator<(const NativeWindowHandle &rhs) const {
 				if(display > rhs.display)
 					return false;
 				if(display < rhs.display)
@@ -146,7 +149,7 @@ namespace clench {
 			std::map<uint32_t, Time> _keyPressedTimes;
 #endif
 
-			NO_COPY_MOVE_METHODS(NativeWindow);
+			CLENCH_NO_COPY_MOVE_METHODS(NativeWindow);
 
 			CLCWSAL_API NativeWindow(
 				CreateWindowFlags flags,
@@ -208,8 +211,8 @@ namespace clench {
 			Box() = default;
 			Box(const Box &) = default;
 			Box(Box &&) = default;
-			FORCEINLINE Box(int top, int bottom, int left, int right) : top(top), bottom(bottom), left(left), right(right) {}
-			FORCEINLINE Box(int value) : top(value), bottom(value), left(value), right(value) {}
+			CLENCH_FORCEINLINE Box(int top, int bottom, int left, int right) : top(top), bottom(bottom), left(left), right(right) {}
+			CLENCH_FORCEINLINE Box(int value) : top(value), bottom(value), left(value), right(value) {}
 			~Box() = default;
 
 			Box &operator=(const Box &) = default;
@@ -269,7 +272,7 @@ namespace clench {
 			int _width, _height;
 
 		public:
-			NO_COPY_MOVE_METHODS(VirtualWindow);
+			CLENCH_NO_COPY_MOVE_METHODS(VirtualWindow);
 
 			CLCWSAL_API VirtualWindow(
 				CreateWindowFlags flags,

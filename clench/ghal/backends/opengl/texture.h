@@ -10,7 +10,7 @@ namespace clench {
 		public:
 			GLuint textureHandle = UINT_MAX;
 
-			NO_COPY_MOVE_METHODS(GLTexture1D);
+			CLENCH_NO_COPY_MOVE_METHODS(GLTexture1D);
 
 			CLCGHAL_API GLTexture1D(
 				GHALDevice *ownerDevice,
@@ -23,7 +23,7 @@ namespace clench {
 		public:
 			GLuint textureHandle = UINT_MAX;
 
-			NO_COPY_MOVE_METHODS(GLTexture2D);
+			CLENCH_NO_COPY_MOVE_METHODS(GLTexture2D);
 
 			CLCGHAL_API GLTexture2D(
 				GHALDevice *ownerDevice,
@@ -36,7 +36,7 @@ namespace clench {
 		public:
 			GLuint textureHandle = UINT_MAX;
 
-			NO_COPY_MOVE_METHODS(GLTexture3D);
+			CLENCH_NO_COPY_MOVE_METHODS(GLTexture3D);
 
 			CLCGHAL_API GLTexture3D(
 				GHALDevice *ownerDevice,

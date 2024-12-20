@@ -8,7 +8,7 @@ namespace clench {
 	namespace ghal {
 		class D3D11RenderTargetView : public RenderTargetView {
 		public:
-			NO_COPY_MOVE_METHODS(D3D11RenderTargetView);
+			CLENCH_NO_COPY_MOVE_METHODS(D3D11RenderTargetView);
 
 			ComPtr<ID3D11RenderTargetView> renderTargetView;
 
@@ -21,7 +21,7 @@ namespace clench {
 
 		class D3D11DepthStencilView : public DepthStencilView {
 		public:
-			NO_COPY_MOVE_METHODS(D3D11DepthStencilView);
+			CLENCH_NO_COPY_MOVE_METHODS(D3D11DepthStencilView);
 
 			ComPtr<ID3D11DepthStencilView> depthStencilView;
 

@@ -12,7 +12,7 @@ namespace clench {
 		public:
 			GHALDevice* ownerDevice;
 
-			NO_COPY_MOVE_METHODS(GHALDeviceResource);
+			CLENCH_NO_COPY_MOVE_METHODS(GHALDeviceResource);
 
 			CLCGHAL_API GHALDeviceResource(GHALDevice* ownerDevice);
 			CLCGHAL_API virtual ~GHALDeviceResource();

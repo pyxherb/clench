@@ -23,7 +23,7 @@ namespace clench {
 			ComPtr<IDXGIFactory1> dxgiFactory1;
 			ComPtr<IDXGIFactory2> dxgiFactory2;
 
-			NO_COPY_MOVE_METHODS(D3D11GHALDevice);
+			CLENCH_NO_COPY_MOVE_METHODS(D3D11GHALDevice);
 
 			CLCGHAL_API D3D11GHALDevice(
 				D3D11GHALBackend *backend,
@@ -68,7 +68,7 @@ namespace clench {
 
 			CLCGHAL_API virtual RenderTargetView *createRenderTargetViewForTexture2D(Texture2D *texture) override;
 
-			FORCEINLINE bool isD3D11_1Capable() {
+			CLENCH_FORCEINLINE bool isD3D11_1Capable() {
 				return d3dImmediateDeviceContext1;
 			}
 		};
@@ -96,7 +96,7 @@ namespace clench {
 				viewportMinDepth = 0.0f, viewportMaxDepth = 0.0f,
 				windowWidth = 0, windowHeight = 0;
 
-			NO_COPY_MOVE_METHODS(D3D11GHALDeviceContext);
+			CLENCH_NO_COPY_MOVE_METHODS(D3D11GHALDeviceContext);
 
 			CLCGHAL_API D3D11GHALDeviceContext(
 				D3D11GHALDevice *device,

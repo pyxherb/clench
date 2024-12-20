@@ -12,11 +12,11 @@ namespace clench {
 				Vec1<T> rows[1];
 			};
 
-			FORCEINLINE Vec1<T> &operator[](size_t index) {
+			CLENCH_FORCEINLINE Vec1<T> &operator[](size_t index) {
 				CLCMATH_INDEX_ASSERT(index, 1);
 				return rows[index];
 			}
-			FORCEINLINE const Vec1<T> &operator[](size_t index) const {
+			CLENCH_FORCEINLINE const Vec1<T> &operator[](size_t index) const {
 				CLCMATH_INDEX_ASSERT(index, 1);
 				return rows[index];
 			}
@@ -29,11 +29,11 @@ namespace clench {
 				Vec2<T> rows[1];
 			};
 
-			FORCEINLINE Vec2<T> &operator[](size_t index) {
+			CLENCH_FORCEINLINE Vec2<T> &operator[](size_t index) {
 				CLCMATH_INDEX_ASSERT(index, 1);
 				return rows[index];
 			}
-			FORCEINLINE const Vec2<T> &operator[](size_t index) const {
+			CLENCH_FORCEINLINE const Vec2<T> &operator[](size_t index) const {
 				CLCMATH_INDEX_ASSERT(index, 1);
 				return rows[index];
 			}
@@ -46,11 +46,11 @@ namespace clench {
 				Vec3<T> rows[1];
 			};
 
-			FORCEINLINE Vec3<T> &operator[](size_t index) {
+			CLENCH_FORCEINLINE Vec3<T> &operator[](size_t index) {
 				CLCMATH_INDEX_ASSERT(index, 1);
 				return rows[index];
 			}
-			FORCEINLINE const Vec3<T> &operator[](size_t index) const {
+			CLENCH_FORCEINLINE const Vec3<T> &operator[](size_t index) const {
 				CLCMATH_INDEX_ASSERT(index, 1);
 				return rows[index];
 			}
@@ -63,11 +63,11 @@ namespace clench {
 				Vec4<T> rows[1];
 			};
 
-			FORCEINLINE Vec4<T> &operator[](size_t index) {
+			CLENCH_FORCEINLINE Vec4<T> &operator[](size_t index) {
 				CLCMATH_INDEX_ASSERT(index, 1);
 				return rows[index];
 			}
-			FORCEINLINE const Vec4<T> &operator[](size_t index) const {
+			CLENCH_FORCEINLINE const Vec4<T> &operator[](size_t index) const {
 				CLCMATH_INDEX_ASSERT(index, 1);
 				return rows[index];
 			}
@@ -80,11 +80,11 @@ namespace clench {
 				Vec1<T> rows[2];
 			};
 
-			FORCEINLINE Vec1<T> &operator[](size_t index) {
+			CLENCH_FORCEINLINE Vec1<T> &operator[](size_t index) {
 				CLCMATH_INDEX_ASSERT(index, 2);
 				return rows[index];
 			}
-			FORCEINLINE const Vec1<T> &operator[](size_t index) const {
+			CLENCH_FORCEINLINE const Vec1<T> &operator[](size_t index) const {
 				CLCMATH_INDEX_ASSERT(index, 2);
 				return rows[index];
 			}
@@ -97,11 +97,11 @@ namespace clench {
 				Vec2<T> rows[2];
 			};
 
-			FORCEINLINE Vec2<T> &operator[](size_t index) {
+			CLENCH_FORCEINLINE Vec2<T> &operator[](size_t index) {
 				CLCMATH_INDEX_ASSERT(index, 2);
 				return rows[index];
 			}
-			FORCEINLINE const Vec2<T> &operator[](size_t index) const {
+			CLENCH_FORCEINLINE const Vec2<T> &operator[](size_t index) const {
 				CLCMATH_INDEX_ASSERT(index, 2);
 				return rows[index];
 			}
@@ -114,11 +114,11 @@ namespace clench {
 				Vec3<T> rows[2];
 			};
 
-			FORCEINLINE Vec3<T> &operator[](size_t index) {
+			CLENCH_FORCEINLINE Vec3<T> &operator[](size_t index) {
 				CLCMATH_INDEX_ASSERT(index, 2);
 				return rows[index];
 			}
-			FORCEINLINE const Vec3<T> &operator[](size_t index) const {
+			CLENCH_FORCEINLINE const Vec3<T> &operator[](size_t index) const {
 				CLCMATH_INDEX_ASSERT(index, 2);
 				return rows[index];
 			}
@@ -131,11 +131,11 @@ namespace clench {
 				Vec4<T> rows[2];
 			};
 
-			FORCEINLINE Vec4<T> &operator[](size_t index) {
+			CLENCH_FORCEINLINE Vec4<T> &operator[](size_t index) {
 				CLCMATH_INDEX_ASSERT(index, 2);
 				return rows[index];
 			}
-			FORCEINLINE const Vec4<T> &operator[](size_t index) const {
+			CLENCH_FORCEINLINE const Vec4<T> &operator[](size_t index) const {
 				CLCMATH_INDEX_ASSERT(index, 2);
 				return rows[index];
 			}
@@ -148,11 +148,11 @@ namespace clench {
 				Vec1<T> rows[3];
 			};
 
-			FORCEINLINE Vec2<T> &operator[](size_t index) {
+			CLENCH_FORCEINLINE Vec2<T> &operator[](size_t index) {
 				CLCMATH_INDEX_ASSERT(index, 3);
 				return rows[index];
 			}
-			FORCEINLINE const Vec2<T> &operator[](size_t index) const {
+			CLENCH_FORCEINLINE const Vec2<T> &operator[](size_t index) const {
 				CLCMATH_INDEX_ASSERT(index, 3);
 				return rows[index];
 			}
@@ -165,11 +165,11 @@ namespace clench {
 				Vec2<T> rows[3];
 			};
 
-			FORCEINLINE Vec2<T> &operator[](size_t index) {
+			CLENCH_FORCEINLINE Vec2<T> &operator[](size_t index) {
 				CLCMATH_INDEX_ASSERT(index, 3);
 				return rows[index];
 			}
-			FORCEINLINE const Vec2<T> &operator[](size_t index) const {
+			CLENCH_FORCEINLINE const Vec2<T> &operator[](size_t index) const {
 				CLCMATH_INDEX_ASSERT(index, 3);
 				return rows[index];
 			}
@@ -182,11 +182,11 @@ namespace clench {
 				Vec3<T> rows[3];
 			};
 
-			FORCEINLINE Vec3<T> &operator[](size_t index) {
+			CLENCH_FORCEINLINE Vec3<T> &operator[](size_t index) {
 				CLCMATH_INDEX_ASSERT(index, 3);
 				return rows[index];
 			}
-			FORCEINLINE const Vec3<T> &operator[](size_t index) const {
+			CLENCH_FORCEINLINE const Vec3<T> &operator[](size_t index) const {
 				CLCMATH_INDEX_ASSERT(index, 3);
 				return rows[index];
 			}
@@ -199,11 +199,11 @@ namespace clench {
 				Vec4<T> rows[3];
 			};
 
-			FORCEINLINE Vec4<T> &operator[](size_t index) {
+			CLENCH_FORCEINLINE Vec4<T> &operator[](size_t index) {
 				CLCMATH_INDEX_ASSERT(index, 3);
 				return rows[index];
 			}
-			FORCEINLINE const Vec4<T> &operator[](size_t index) const {
+			CLENCH_FORCEINLINE const Vec4<T> &operator[](size_t index) const {
 				CLCMATH_INDEX_ASSERT(index, 3);
 				return rows[index];
 			}
@@ -216,11 +216,11 @@ namespace clench {
 				Vec1<T> rows[4];
 			};
 
-			FORCEINLINE Vec1<T> &operator[](size_t index) {
+			CLENCH_FORCEINLINE Vec1<T> &operator[](size_t index) {
 				CLCMATH_INDEX_ASSERT(index, 4);
 				return rows[index];
 			}
-			FORCEINLINE const Vec1<T> &operator[](size_t index) const {
+			CLENCH_FORCEINLINE const Vec1<T> &operator[](size_t index) const {
 				CLCMATH_INDEX_ASSERT(index, 4);
 				return rows[index];
 			}
@@ -233,11 +233,11 @@ namespace clench {
 				Vec2<T> rows[4];
 			};
 
-			FORCEINLINE Vec2<T> &operator[](size_t index) {
+			CLENCH_FORCEINLINE Vec2<T> &operator[](size_t index) {
 				CLCMATH_INDEX_ASSERT(index, 4);
 				return rows[index];
 			}
-			FORCEINLINE const Vec2<T> &operator[](size_t index) const {
+			CLENCH_FORCEINLINE const Vec2<T> &operator[](size_t index) const {
 				CLCMATH_INDEX_ASSERT(index, 4);
 				return rows[index];
 			}
@@ -250,11 +250,11 @@ namespace clench {
 				Vec3<T> rows[4];
 			};
 
-			FORCEINLINE Vec3<T> &operator[](size_t index) {
+			CLENCH_FORCEINLINE Vec3<T> &operator[](size_t index) {
 				CLCMATH_INDEX_ASSERT(index, 4);
 				return rows[index];
 			}
-			FORCEINLINE const Vec3<T> &operator[](size_t index) const {
+			CLENCH_FORCEINLINE const Vec3<T> &operator[](size_t index) const {
 				CLCMATH_INDEX_ASSERT(index, 4);
 				return rows[index];
 			}
@@ -267,11 +267,11 @@ namespace clench {
 				Vec4<T> rows[4];
 			};
 
-			FORCEINLINE Vec4<T> &operator[](size_t index) {
+			CLENCH_FORCEINLINE Vec4<T> &operator[](size_t index) {
 				CLCMATH_INDEX_ASSERT(index, 4);
 				return rows[index];
 			}
-			FORCEINLINE const Vec4<T> &operator[](size_t index) const {
+			CLENCH_FORCEINLINE const Vec4<T> &operator[](size_t index) const {
 				CLCMATH_INDEX_ASSERT(index, 4);
 				return rows[index];
 			}

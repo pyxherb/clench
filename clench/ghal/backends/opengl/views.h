@@ -10,7 +10,7 @@ namespace clench {
 		public:
 			GLuint frameBufferHandle;
 
-			NO_COPY_MOVE_METHODS(GLRenderTargetView);
+			CLENCH_NO_COPY_MOVE_METHODS(GLRenderTargetView);
 
 			CLCGHAL_API GLRenderTargetView(
 				GHALDevice *ownerDevice,
@@ -25,7 +25,7 @@ namespace clench {
 			GLuint depthBufferHandle;
 			GLuint stencilBufferHandle;
 
-			NO_COPY_MOVE_METHODS(GLDepthStencilView);
+			CLENCH_NO_COPY_MOVE_METHODS(GLDepthStencilView);
 
 			CLCGHAL_API GLDepthStencilView(
 				GHALDevice *ownerDevice,

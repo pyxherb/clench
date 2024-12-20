@@ -10,7 +10,7 @@ namespace clench {
 		public:
 			ComPtr<ID3D11InputLayout> inputLayout;
 
-			NO_COPY_MOVE_METHODS(D3D11VertexArray);
+			CLENCH_NO_COPY_MOVE_METHODS(D3D11VertexArray);
 
 			CLCGHAL_API D3D11VertexArray(
 				GHALDevice *ownerDevice,

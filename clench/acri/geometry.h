@@ -10,7 +10,7 @@ namespace clench {
 		enum class GeometryKind {
 			Triangle = 0,
 			Polygon,
-			Oval
+			Oval,
 			Path
 		};
 

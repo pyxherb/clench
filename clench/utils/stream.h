@@ -18,7 +18,7 @@ namespace clench {
 
 		class Stream {
 		public:
-			NO_COPY_MOVE_METHODS(Stream);
+			CLENCH_NO_COPY_MOVE_METHODS(Stream);
 
 			CLCUTILS_API Stream();
 			CLCUTILS_API virtual ~Stream();
@@ -29,7 +29,7 @@ namespace clench {
 
 		class InputStream : virtual public Stream {
 		public:
-			NO_COPY_MOVE_METHODS(InputStream);
+			CLENCH_NO_COPY_MOVE_METHODS(InputStream);
 
 			CLCUTILS_API InputStream();
 			CLCUTILS_API ~InputStream();
@@ -39,7 +39,7 @@ namespace clench {
 
 		class OutputStream : virtual public Stream {
 		public:
-			NO_COPY_MOVE_METHODS(OutputStream);
+			CLENCH_NO_COPY_MOVE_METHODS(OutputStream);
 
 			CLCUTILS_API OutputStream();
 			CLCUTILS_API ~OutputStream();
@@ -49,7 +49,7 @@ namespace clench {
 
 		class InputOutputStream : public InputStream, public OutputStream {
 		public:
-			NO_COPY_MOVE_METHODS(InputOutputStream);
+			CLENCH_NO_COPY_MOVE_METHODS(InputOutputStream);
 
 			CLCUTILS_API InputOutputStream();
 			CLCUTILS_API ~InputOutputStream();

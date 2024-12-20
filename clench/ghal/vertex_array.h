@@ -30,7 +30,7 @@ namespace clench {
 
 		class VertexArray : public GHALDeviceResource {
 		public:
-			NO_COPY_MOVE_METHODS(VertexArray);
+			CLENCH_NO_COPY_MOVE_METHODS(VertexArray);
 
 			CLCGHAL_API VertexArray(GHALDevice* ownerDevice);
 			CLCGHAL_API virtual ~VertexArray();

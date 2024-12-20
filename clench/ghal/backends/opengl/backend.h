@@ -15,7 +15,7 @@ namespace clench {
 	namespace ghal {
 		class GLGHALBackend : public GHALBackend {
 		public:
-			NO_COPY_MOVE_METHODS(GLGHALBackend);
+			CLENCH_NO_COPY_MOVE_METHODS(GLGHALBackend);
 
 			CLCGHAL_API GLGHALBackend();
 			CLCGHAL_API virtual ~GLGHALBackend();

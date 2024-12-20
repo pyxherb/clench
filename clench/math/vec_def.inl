@@ -16,11 +16,11 @@ namespace clench {
 				};
 			};
 
-			FORCEINLINE T &operator[](size_t index) {
+			CLENCH_FORCEINLINE T &operator[](size_t index) {
 				CLCMATH_INDEX_ASSERT(index, 1);
 				return data[index];
 			}
-			FORCEINLINE const T &operator[](size_t index) const {
+			CLENCH_FORCEINLINE const T &operator[](size_t index) const {
 				CLCMATH_INDEX_ASSERT(index, 1);
 				return data[index];
 			}
@@ -36,11 +36,11 @@ namespace clench {
 				};
 			};
 
-			FORCEINLINE T &operator[](size_t index) {
+			CLENCH_FORCEINLINE T &operator[](size_t index) {
 				CLCMATH_INDEX_ASSERT(index, 2);
 				return data[index];
 			}
-			FORCEINLINE const T &operator[](size_t index) const {
+			CLENCH_FORCEINLINE const T &operator[](size_t index) const {
 				CLCMATH_INDEX_ASSERT(index, 2);
 				return data[index];
 			}
@@ -57,11 +57,11 @@ namespace clench {
 				};
 			};
 
-			FORCEINLINE T &operator[](size_t index) {
+			CLENCH_FORCEINLINE T &operator[](size_t index) {
 				CLCMATH_INDEX_ASSERT(index, 3);
 				return data[index];
 			}
-			FORCEINLINE const T &operator[](size_t index) const {
+			CLENCH_FORCEINLINE const T &operator[](size_t index) const {
 				CLCMATH_INDEX_ASSERT(index, 3);
 				return data[index];
 			}
@@ -79,11 +79,11 @@ namespace clench {
 				};
 			};
 
-			FORCEINLINE T &operator[](size_t index) {
+			CLENCH_FORCEINLINE T &operator[](size_t index) {
 				CLCMATH_INDEX_ASSERT(index, 4);
 				return data[index];
 			}
-			FORCEINLINE const T &operator[](size_t index) const {
+			CLENCH_FORCEINLINE const T &operator[](size_t index) const {
 				CLCMATH_INDEX_ASSERT(index, 4);
 				return data[index];
 			}
@@ -103,14 +103,14 @@ namespace clench {
 	#endif
 			};
 
-			FORCEINLINE Vec2(float x, float y) : x(x), y(y) {}
-			FORCEINLINE Vec2(__m128 m128) : m128(m128) {}
+			CLENCH_FORCEINLINE Vec2(float x, float y) : x(x), y(y) {}
+			CLENCH_FORCEINLINE Vec2(__m128 m128) : m128(m128) {}
 
-			FORCEINLINE float &operator[](size_t index) {
+			CLENCH_FORCEINLINE float &operator[](size_t index) {
 				CLCMATH_INDEX_ASSERT(index, 2);
 				return data[index];
 			}
-			FORCEINLINE const float &operator[](size_t index) const {
+			CLENCH_FORCEINLINE const float &operator[](size_t index) const {
 				CLCMATH_INDEX_ASSERT(index, 2);
 				return data[index];
 			}
@@ -130,14 +130,14 @@ namespace clench {
 	#endif
 			};
 
-			FORCEINLINE Vec3(float x, float y, float z) : x(x), y(y), z(z) {}
-			FORCEINLINE Vec3(__m128 m128) : m128(m128) {}
+			CLENCH_FORCEINLINE Vec3(float x, float y, float z) : x(x), y(y), z(z) {}
+			CLENCH_FORCEINLINE Vec3(__m128 m128) : m128(m128) {}
 
-			FORCEINLINE float &operator[](size_t index) {
+			CLENCH_FORCEINLINE float &operator[](size_t index) {
 				CLCMATH_INDEX_ASSERT(index, 3);
 				return data[index];
 			}
-			FORCEINLINE const float &operator[](size_t index) const {
+			CLENCH_FORCEINLINE const float &operator[](size_t index) const {
 				CLCMATH_INDEX_ASSERT(index, 3);
 				return data[index];
 			}
@@ -158,14 +158,14 @@ namespace clench {
 	#endif
 			};
 
-			FORCEINLINE Vec4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
-			FORCEINLINE Vec4(__m128 m128) : m128(m128) {}
+			CLENCH_FORCEINLINE Vec4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
+			CLENCH_FORCEINLINE Vec4(__m128 m128) : m128(m128) {}
 
-			FORCEINLINE float &operator[](size_t index) {
+			CLENCH_FORCEINLINE float &operator[](size_t index) {
 				CLCMATH_INDEX_ASSERT(index, 4);
 				return data[index];
 			}
-			FORCEINLINE const float &operator[](size_t index) const {
+			CLENCH_FORCEINLINE const float &operator[](size_t index) const {
 				CLCMATH_INDEX_ASSERT(index, 4);
 				return data[index];
 			}
@@ -191,14 +191,14 @@ namespace clench {
 	#endif
 			};
 
-			FORCEINLINE Vec3(double x, double y, double z) : x(x), y(y), z(z) {}
-			FORCEINLINE Vec3(__m128d m128dLow, __m128d m128dHigh) : m128d({ m128dLow, m128dHigh }) {}
+			CLENCH_FORCEINLINE Vec3(double x, double y, double z) : x(x), y(y), z(z) {}
+			CLENCH_FORCEINLINE Vec3(__m128d m128dLow, __m128d m128dHigh) : m128d({ m128dLow, m128dHigh }) {}
 
-			FORCEINLINE double &operator[](size_t index) {
+			CLENCH_FORCEINLINE double &operator[](size_t index) {
 				CLCMATH_INDEX_ASSERT(index, 3);
 				return data[index];
 			}
-			FORCEINLINE const double &operator[](size_t index) const {
+			CLENCH_FORCEINLINE const double &operator[](size_t index) const {
 				CLCMATH_INDEX_ASSERT(index, 3);
 				return data[index];
 			}
@@ -224,14 +224,14 @@ namespace clench {
 	#endif
 			};
 
-			FORCEINLINE Vec4(double x, double y, double z, double w) : x(x), y(y), z(z), w(w) {}
-			FORCEINLINE Vec4(__m128d m128dLow, __m128d m128dHigh) : m128d({ m128dLow, m128dHigh }) {}
+			CLENCH_FORCEINLINE Vec4(double x, double y, double z, double w) : x(x), y(y), z(z), w(w) {}
+			CLENCH_FORCEINLINE Vec4(__m128d m128dLow, __m128d m128dHigh) : m128d({ m128dLow, m128dHigh }) {}
 
-			FORCEINLINE double &operator[](size_t index) {
+			CLENCH_FORCEINLINE double &operator[](size_t index) {
 				CLCMATH_INDEX_ASSERT(index, 4);
 				return data[index];
 			}
-			FORCEINLINE const double &operator[](size_t index) const {
+			CLENCH_FORCEINLINE const double &operator[](size_t index) const {
 				CLCMATH_INDEX_ASSERT(index, 4);
 				return data[index];
 			}

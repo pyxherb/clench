@@ -28,7 +28,7 @@ namespace clench {
 			/// @brief Default context for some internal operations. DO NOT try to draw with it!
 			utils::RcObjectPtr<GLGHALDeviceContext> defaultContext;
 
-			NO_COPY_MOVE_METHODS(GLGHALDevice);
+			CLENCH_NO_COPY_MOVE_METHODS(GLGHALDevice);
 
 			CLCGHAL_API GLGHALDevice(GLGHALBackend *backend);
 			CLCGHAL_API virtual ~GLGHALDevice();
@@ -80,7 +80,7 @@ namespace clench {
 				viewportMinDepth = 0.0f, viewportMaxDepth = 0.0f,
 				windowWidth = 0, windowHeight = 0;
 
-			NO_COPY_MOVE_METHODS(GLGHALDeviceContext);
+			CLENCH_NO_COPY_MOVE_METHODS(GLGHALDeviceContext);
 
 			CLCGHAL_API GLGHALDeviceContext(
 				GLGHALDevice *device);

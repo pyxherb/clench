@@ -11,7 +11,7 @@ namespace clench {
 
 		class D3D11GHALBackend : public GHALBackend {
 		public:
-			NO_COPY_MOVE_METHODS(D3D11GHALBackend);
+			CLENCH_NO_COPY_MOVE_METHODS(D3D11GHALBackend);
 
 			CLCGHAL_API D3D11GHALBackend();
 			CLCGHAL_API virtual ~D3D11GHALBackend();

@@ -14,5 +14,4 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 include(${PROJECT_SOURCE_DIR}/cmake/ClenchBuild.cmake)
 
 add_subdirectory("clench")
-add_subdirectory("engine")
 add_subdirectory("editor")

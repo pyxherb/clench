@@ -14,7 +14,8 @@ if(NOT glad_POPULATED)
     FetchContent_MakeAvailable(glad)
 
     add_subdirectory("${glad_SOURCE_DIR}/cmake" glad_cmake)
-    glad_add_library(glad REPRODUCIBLE EXCLUDE_FROM_ALL LOADER API gl:core=4.6 EXTENSIONS GL_ARB_bindless_texture GL_EXT_texture_compression_s3tc)
+    glad_add_library(glad SHARED REPRODUCIBLE EXCLUDE_FROM_ALL LOADER API gl:core=4.6 EXTENSIONS GL_ARB_bindless_texture GL_EXT_texture_compression_s3tc)
+    glad_add_library(glad_static STATIC REPRODUCIBLE EXCLUDE_FROM_ALL LOADER API gl:core=4.6 EXTENSIONS GL_ARB_bindless_texture GL_EXT_texture_compression_s3tc)
 endif()
 
 file(GLOB HEADERS *.h)
@@ -25,7 +26,7 @@ target_sources(clcghal PRIVATE ${HEADERS} ${SRC})
 target_compile_definitions(clcghal PUBLIC CLCGHAL_HAS_OPENGL_BACKEND=1)
 target_compile_definitions(clcghal_static PUBLIC CLCGHAL_HAS_OPENGL_BACKEND=1)
 target_link_libraries(clcghal PUBLIC glad)
-target_link_libraries(clcghal_static PUBLIC glad)
+target_link_libraries(clcghal_static PUBLIC glad_static)
 
 if(WIN32)
     target_link_libraries(clcghal PUBLIC opengl32)

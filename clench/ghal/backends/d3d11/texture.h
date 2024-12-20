@@ -8,7 +8,7 @@ namespace clench {
 	namespace ghal {
 		class D3D11Texture1D : public Texture1D {
 		public:
-			NO_COPY_MOVE_METHODS(D3D11Texture1D);
+			CLENCH_NO_COPY_MOVE_METHODS(D3D11Texture1D);
 
 			ComPtr<ID3D11Texture1D> texture1D;
 
@@ -22,7 +22,7 @@ namespace clench {
 
 		class D3D11Texture2D : public Texture2D {
 		public:
-			NO_COPY_MOVE_METHODS(D3D11Texture2D);
+			CLENCH_NO_COPY_MOVE_METHODS(D3D11Texture2D);
 
 			ComPtr<ID3D11Texture2D> texture2D;
 
@@ -35,7 +35,7 @@ namespace clench {
 
 		class D3D11Texture3D : public Texture3D {
 		public:
-			NO_COPY_MOVE_METHODS(D3D11Texture3D);
+			CLENCH_NO_COPY_MOVE_METHODS(D3D11Texture3D);
 
 			ComPtr<ID3D11Texture3D> texture3D;
 

@@ -13,18 +13,18 @@ namespace clench {
 		public:
 			std::atomic_size_t refCount = 0;
 
-			NO_COPY_MOVE_METHODS(RcObject);
+			CLENCH_NO_COPY_MOVE_METHODS(RcObject);
 
 			CLCUTILS_API RcObject();
 			CLCUTILS_API virtual ~RcObject();
 
 			CLCUTILS_API virtual void onRefZero();
 
-			FORCEINLINE size_t incRef() noexcept {
+			CLENCH_FORCEINLINE size_t incRef() noexcept {
 				return ++refCount;
 			}
 
-			FORCEINLINE size_t decRef() {
+			CLENCH_FORCEINLINE size_t decRef() {
 				if (!(--refCount))
 					onRefZero();
 				return refCount;
@@ -36,44 +36,44 @@ namespace clench {
 		private:
 			T *_ptr = nullptr;
 
-			FORCEINLINE void _setAndIncRef(T *_ptr) {
+			CLENCH_FORCEINLINE void _setAndIncRef(T *_ptr) {
 				this->_ptr = _ptr;
 				_ptr->incRef();
 			}
 
 		public:
-			FORCEINLINE void reset() {
+			CLENCH_FORCEINLINE void reset() {
 				if (_ptr)
 					_ptr->decRef();
 				_ptr = nullptr;
 			}
 
-			FORCEINLINE RcObjectPtr(T *ptr = nullptr) {
+			CLENCH_FORCEINLINE RcObjectPtr(T *ptr = nullptr) {
 				if (ptr)
 					_setAndIncRef(ptr);
 			}
-			FORCEINLINE RcObjectPtr(const RcObjectPtr<T> &other) {
+			CLENCH_FORCEINLINE RcObjectPtr(const RcObjectPtr<T> &other) {
 				_setAndIncRef(other._ptr);
 			}
-			FORCEINLINE RcObjectPtr(RcObjectPtr<T> &&other) {
+			CLENCH_FORCEINLINE RcObjectPtr(RcObjectPtr<T> &&other) {
 				_ptr = other._ptr;
 				other._ptr = nullptr;
 			}
-			FORCEINLINE ~RcObjectPtr() {
+			CLENCH_FORCEINLINE ~RcObjectPtr() {
 				reset();
 			}
 
-			FORCEINLINE RcObjectPtr<T> &operator=(T *_ptr) noexcept {
+			CLENCH_FORCEINLINE RcObjectPtr<T> &operator=(T *_ptr) noexcept {
 				reset();
 				_setAndIncRef(_ptr);
 				return *this;
 			}
-			FORCEINLINE RcObjectPtr<T> &operator=(const RcObjectPtr<T> &other) noexcept {
+			CLENCH_FORCEINLINE RcObjectPtr<T> &operator=(const RcObjectPtr<T> &other) noexcept {
 				reset();
 				_setAndIncRef(other._ptr);
 				return *this;
 			}
-			FORCEINLINE RcObjectPtr<T> &operator=(RcObjectPtr<T> &&other) noexcept {
+			CLENCH_FORCEINLINE RcObjectPtr<T> &operator=(RcObjectPtr<T> &&other) noexcept {
 				reset();
 				_ptr = other._ptr;
 				other._ptr = nullptr;
@@ -81,25 +81,25 @@ namespace clench {
 				return *this;
 			}
 
-			FORCEINLINE T *get() {
+			CLENCH_FORCEINLINE T *get() {
 				return _ptr;
 			}
-			FORCEINLINE T *operator->() {
+			CLENCH_FORCEINLINE T *operator->() {
 				return _ptr;
 			}
 
-			FORCEINLINE bool operator<(const RcObjectPtr<T> &rhs) const {
+			CLENCH_FORCEINLINE bool operator<(const RcObjectPtr<T> &rhs) const {
 				return _ptr < rhs._ptr;
 			}
 
-			FORCEINLINE operator bool() const {
+			CLENCH_FORCEINLINE operator bool() const {
 				return _ptr;
 			}
 		};
 
 		template<typename T>
 		struct RcObjectUniquePtrDeleter {
-			FORCEINLINE void operator()(T *ptr) {
+			CLENCH_FORCEINLINE void operator()(T *ptr) {
 				ptr->onRefZero();
 			}
 		};
