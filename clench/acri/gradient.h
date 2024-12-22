@@ -1,9 +1,7 @@
 #ifndef _CLENCH_ACRI_GRADIENT_H_
 #define _CLENCH_ACRI_GRADIENT_H_
 
-#include "basedefs.h"
-#include <clench/utils/rcobj.h>
-#include <cstdint>
+#include "resource.h"
 
 namespace clench {
 	namespace acri {
@@ -12,11 +10,12 @@ namespace clench {
 			Radial,
 		};
 
-		class Gradient : public utils::RcObject {
+		class Gradient : public ACRIResource {
 		public:
 			GradientType gradientType;
 
 			CLCACRI_API Gradient(GradientType gradientType);
+			CLCACRI_API virtual ~Gradient();
 		};
 	}
 }

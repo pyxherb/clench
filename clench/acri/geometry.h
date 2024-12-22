@@ -1,7 +1,7 @@
 #ifndef _CLENCH_ACRI_GEOMETRY_H_
 #define _CLENCH_ACRI_GEOMETRY_H_
 
-#include "basedefs.h"
+#include "resource.h"
 #include <clench/ghal.h>
 #include <clench/math/vec.h>
 
@@ -14,9 +14,11 @@ namespace clench {
 			Path
 		};
 
-		class Geometry {
+		class Geometry : public ACRIResource {
 		public:
 			GeometryKind geometryKind;
+
+			CLENCH_NO_COPY_MOVE_METHODS(Geometry);
 
 			CLCACRI_API Geometry(GeometryKind geometryKind);
 			CLCACRI_API virtual ~Geometry();
@@ -27,24 +29,30 @@ namespace clench {
 			math::Vec4f color;
 		};
 
-		class TriangleGeometry {
+		class TriangleGeometry : public Geometry {
 		public:
 			TriangleVertex vertices[3];
+
+			CLENCH_NO_COPY_MOVE_METHODS(TriangleGeometry);
 
 			CLCACRI_API TriangleGeometry();
 			CLCACRI_API virtual ~TriangleGeometry();
 		};
 
-		class PolygonGeometry {
+		class PolygonGeometry : public Geometry {
 		public:
+			CLENCH_NO_COPY_MOVE_METHODS(PolygonGeometry);
+
 			CLCACRI_API PolygonGeometry();
 			CLCACRI_API virtual ~PolygonGeometry();
 		};
 
-		class OvalGeometry {
+		class OvalGeometry : public Geometry {
 		public:
 			float direction;
 			math::Vec2f scale;
+
+			CLENCH_NO_COPY_MOVE_METHODS(OvalGeometry);
 
 			CLCACRI_API OvalGeometry();
 			CLCACRI_API virtual ~OvalGeometry();
@@ -78,10 +86,12 @@ namespace clench {
 			PathInstructionOpcode opcode;
 		};
 
-		class PathGeometry {
+		class PathGeometry : public Geometry {
 		public:
 			float initX, initY;
 			std::vector<PathInstruction> instructions;
+
+			CLENCH_NO_COPY_MOVE_METHODS(PathGeometry);
 
 			CLCACRI_API PathGeometry();
 			CLCACRI_API virtual ~PathGeometry();
