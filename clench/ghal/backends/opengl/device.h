@@ -5,6 +5,8 @@
 #include "views.h"
 // #include "buffer.h"
 #include <clench/ghal/device.h>
+#include <thread>
+#include <optional>
 
 namespace clench {
 	namespace ghal {
@@ -27,6 +29,10 @@ namespace clench {
 			GLGHALBackend *backend;
 			/// @brief Default context for some internal operations. DO NOT try to draw with it!
 			utils::RcObjectPtr<GLGHALDeviceContext> defaultContext;
+
+			std::mutex texture1dLock;
+			std::mutex texture2dLock;
+			std::mutex texture3dLock;
 
 			CLENCH_NO_COPY_MOVE_METHODS(GLGHALDevice);
 
@@ -74,6 +80,14 @@ namespace clench {
 			EGLNativeWindowType eglWindow;
 #endif
 			GLGHALDevice *device;
+
+			std::optional<std::thread::id> boundThreadId;
+
+			std::optional<NativeGLContext> prevContext;
+			std::mutex prevContextSavingMutex;
+
+			std::mutex copyWriteBufferLock;
+			std::mutex renderBufferLock;
 
 			int viewportX = 0, viewportY = 0,
 				viewportWidth = 0, viewportHeight = 0,
@@ -139,6 +153,8 @@ namespace clench {
 
 			CLCGHAL_API static NativeGLContext saveContextCurrent();
 			CLCGHAL_API static bool restoreContextCurrent(const NativeGLContext &context);
+			CLCGHAL_API void saveCurrentGLContext();
+			CLCGHAL_API void restoreCurrentGLContext();
 			CLCGHAL_API bool makeContextCurrent();
 		};
 

@@ -336,10 +336,12 @@ CLCGHAL_API Texture1D *GLGHALDevice::createTexture1D(const char *data, size_t si
 		glDeleteTextures(1, &texture);
 	});
 
+	texture1dLock.lock();
 	GLint savedTexture;
 	glGetIntegerv(GL_TEXTURE_1D, &savedTexture);
-	utils::ScopeGuard restoreTextureGuard([savedTexture]() {
+	utils::ScopeGuard restoreTextureGuard([this, savedTexture]() {
 		glBindTexture(GL_TEXTURE_1D, savedTexture);
+		texture1dLock.unlock();
 	});
 
 	glBindTexture(GL_TEXTURE_1D, texture);
@@ -378,10 +380,12 @@ CLCGHAL_API Texture2D *GLGHALDevice::createTexture2D(const char *data, size_t si
 		glDeleteTextures(1, &texture);
 	});
 
+	texture2dLock.lock();
 	GLint savedTexture;
 	glGetIntegerv(GL_TEXTURE_2D, &savedTexture);
-	utils::ScopeGuard restoreTextureGuard([savedTexture]() {
+	utils::ScopeGuard restoreTextureGuard([this, savedTexture]() {
 		glBindTexture(GL_TEXTURE_2D, savedTexture);
+		texture2dLock.unlock();
 	});
 
 	glBindTexture(GL_TEXTURE_2D, texture);
@@ -421,10 +425,12 @@ CLCGHAL_API Texture3D *GLGHALDevice::createTexture3D(const char *data, size_t si
 		glDeleteTextures(1, &texture);
 	});
 
+	texture3dLock.lock();
 	GLuint savedTexture;
 	glGetIntegerv(GL_TEXTURE_3D, (GLint *)&savedTexture);
-	utils::ScopeGuard restoreTextureGuard([savedTexture]() {
+	utils::ScopeGuard restoreTextureGuard([this, savedTexture]() {
 		glBindTexture(GL_TEXTURE_3D, savedTexture);
+		texture3dLock.unlock();
 	});
 
 	glBindTexture(GL_TEXTURE_3D, texture);
@@ -498,6 +504,8 @@ CLCGHAL_API RenderTargetView *GLGHALDeviceContext::getDefaultRenderTargetView() 
 CLCGHAL_API void GLGHALDeviceContext::onResize(int width, int height) {
 #ifdef _WIN32
 #else
+	saveCurrentGLContext();
+
 	windowWidth = width;
 	windowHeight = height;
 
@@ -507,6 +515,8 @@ CLCGHAL_API void GLGHALDeviceContext::onResize(int width, int height) {
 	eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, eglWindow, nullptr);
 	if (eglSurface == EGL_NO_SURFACE)
 		throw std::runtime_error("Error creating EGL surface");
+
+	restoreCurrentGLContext();
 #endif
 }
 
@@ -516,6 +526,8 @@ CLCGHAL_API void GLGHALDeviceContext::clearRenderTargetView(
 	float g,
 	float b,
 	float a) {
+	saveCurrentGLContext();
+
 	GLuint prevRenderTarget;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *)&prevRenderTarget);
 
@@ -529,11 +541,15 @@ CLCGHAL_API void GLGHALDeviceContext::clearRenderTargetView(
 	glBindFramebuffer(GL_FRAMEBUFFER, ((GLRenderTargetView *)renderTargetView)->frameBufferHandle);
 	glClearColor(r, g, b, a);
 	glClear(GL_COLOR_BUFFER_BIT);
+
+	restoreCurrentGLContext();
 }
 
 CLCGHAL_API void GLGHALDeviceContext::clearDepth(
 	DepthStencilView *depthStencilView,
 	float depth) {
+	saveCurrentGLContext();
+
 	GLuint prevRenderTarget;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *)&prevRenderTarget);
 
@@ -545,11 +561,15 @@ CLCGHAL_API void GLGHALDeviceContext::clearDepth(
 	glDepthMask(GL_TRUE);
 	glClearDepth(depth);
 	glClear(GL_DEPTH_BUFFER_BIT);
+
+	restoreCurrentGLContext();
 }
 
 CLCGHAL_API void GLGHALDeviceContext::clearStencil(
 	DepthStencilView *depthStencilView,
 	uint8_t stencil) {
+	saveCurrentGLContext();
+
 	GLuint prevRenderTarget;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *)&prevRenderTarget);
 
@@ -561,24 +581,40 @@ CLCGHAL_API void GLGHALDeviceContext::clearStencil(
 	glStencilMask(0xff);
 	glClearStencil(stencil);
 	glClear(GL_STENCIL_BUFFER_BIT);
+
+	restoreCurrentGLContext();
 }
 
 CLCGHAL_API void GLGHALDeviceContext::bindVertexBuffer(Buffer *buffer, size_t stride) {
+	saveCurrentGLContext();
+
 	glBindBuffer(GL_ARRAY_BUFFER, ((GLBuffer *)buffer)->bufferHandle);
+
+	restoreCurrentGLContext();
 }
 
 CLCGHAL_API void GLGHALDeviceContext::bindIndexBuffer(Buffer *buffer) {
+	saveCurrentGLContext();
+
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ((GLBuffer *)buffer)->bufferHandle);
+
+	restoreCurrentGLContext();
 }
 
 CLCGHAL_API void GLGHALDeviceContext::bindVertexArray(VertexArray *vertexArray) {
+	saveCurrentGLContext();
+
 	glBindVertexArray(((GLVertexArray *)vertexArray)->vertexArrayHandle);
+
+	restoreCurrentGLContext();
 }
 
 CLCGHAL_API void GLGHALDeviceContext::setData(Buffer *buffer, const void *data) {
+	copyWriteBufferLock.lock();
 	GLuint prevBuffer;
 	glGetIntegerv(GL_COPY_WRITE_BUFFER, (GLint *)&prevBuffer);
-	utils::ScopeGuard restoreBufferGuard([prevBuffer]() {
+	utils::ScopeGuard restoreBufferGuard([this, prevBuffer]() {
+		copyWriteBufferLock.unlock();
 		glBindBuffer(GL_COPY_WRITE_BUFFER, prevBuffer);
 	});
 
@@ -631,11 +667,13 @@ CLCGHAL_API void GLGHALDeviceContext::setRenderTarget(
 	DepthStencilView *depthStencilView) {
 	glBindFramebuffer(GL_FRAMEBUFFER, ((GLRenderTargetView *)renderTargetView)->frameBufferHandle);
 
+	renderBufferLock.lock();
 	GLuint prevRenderTarget;
 	glGetIntegerv(GL_RENDERBUFFER_BINDING, (GLint *)&prevRenderTarget);
 
-	utils::ScopeGuard restoreRenderTargetGuard([prevRenderTarget]() {
+	utils::ScopeGuard restoreRenderTargetGuard([this, prevRenderTarget]() {
 		glBindRenderbuffer(GL_RENDERBUFFER, prevRenderTarget);
+		renderBufferLock.unlock();
 	});
 
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, ((GLDepthStencilView *)depthStencilView)->frameBufferHandle);
@@ -714,6 +752,18 @@ CLCGHAL_API bool GLGHALDeviceContext::restoreContextCurrent(const NativeGLContex
 #else
 	return eglMakeCurrent(context.eglDisplay, context.eglDrawSurface, context.eglReadSurface, context.eglContext);
 #endif
+}
+
+CLCGHAL_API void GLGHALDeviceContext::saveCurrentGLContext() {
+	prevContextSavingMutex.lock();
+	prevContext = saveContextCurrent();
+	makeContextCurrent();
+}
+
+CLCGHAL_API void GLGHALDeviceContext::restoreCurrentGLContext() {
+	restoreContextCurrent(prevContext.value());
+	prevContext.reset();
+	prevContextSavingMutex.unlock();
 }
 
 CLCGHAL_API bool GLGHALDeviceContext::makeContextCurrent() {
