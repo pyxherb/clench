@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <string>
 #include <string_view>
+#include <memory>
 
 namespace clench {
 	namespace rmf {
@@ -18,6 +19,9 @@ namespace clench {
 
 			virtual void *loadResource(const char *minorType, const char *path) = 0;
 			virtual void unloadResource(void *resource) = 0;
+		};
+
+		struct ResourceTypeRegistry {
 		};
 
 		CLCRMF_API extern std::unordered_map<std::string, std::unique_ptr<ResourceType>> g_registeredResourceTypes;

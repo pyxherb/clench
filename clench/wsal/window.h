@@ -5,6 +5,7 @@
 #include "keyboard.h"
 #include "mouse.h"
 #include <clench/utils/rcobj.h>
+#include <clench/utils/bitarray.h>
 #include <string_view>
 #include <set>
 #include <map>
@@ -21,8 +22,10 @@
 	#include <X11/Xutil.h>
 	// #include <X11/extensions/Xrandr.h>
 	#include <X11/Xatom.h>
+	#include <X11/Xproto.h>
+	#include <X11/extensions/shapeproto.h>
 
-	constexpr static auto X11_None = 0L;
+constexpr static auto X11_None = 0L;
 	#undef None
 #endif
 
@@ -39,6 +42,31 @@ namespace clench {
 			DEFAULT_WINDOW_POS = INT_MAX;
 
 		class Window;
+
+		class WindowClipping {
+		public:
+			size_t width, height;
+			utils::BitArray bitArray;
+
+			void resize(size_t width, size_t height) {
+				this->width = width;
+				this->height = height;
+
+				bitArray.resize(width * height);
+			}
+
+			bool getByPos(size_t x, size_t y) {
+				return bitArray.getBit(width * y + x);
+			}
+
+			void setByPos(size_t x, size_t y) {
+				bitArray.setBit(width * y + x);
+			}
+
+			void clearByPos(size_t x, size_t y) {
+				bitArray.clearBit(width * y + x);
+			}
+		};
 
 		using ChildWindowEnumer = std::function<
 			bool(Window *window)>;
@@ -100,29 +128,56 @@ namespace clench {
 			virtual void onDraw() = 0;
 		};
 
-		#ifdef _WIN32
+#ifdef _WIN32
 		using NativeWindowHandle = HWND;
-		#elif defined(__unix__)
+#elif defined(__unix__)
 		struct NativeWindowHandle {
-			XID windowId;
-			Display *display;
+			enum class Kind {
+				X11 = 0,
+				Wayland
+			};
+			union {
+				struct {
+					XID windowId;
+					Display *display;
+				} x11;
+			} data;
+			Kind kind;
 
 			NativeWindowHandle() = default;
-			CLENCH_FORCEINLINE NativeWindowHandle(Display *display, XID windowId) : windowId(windowId), display(display) {}
+			CLENCH_FORCEINLINE NativeWindowHandle(Display *display, XID windowId) : kind(Kind::X11) {
+				data.x11.display = display;
+				data.x11.windowId = windowId;
+			}
 
 			CLENCH_FORCEINLINE bool operator<(const NativeWindowHandle &rhs) const {
-				if(display > rhs.display)
-					return false;
-				if(display < rhs.display)
+				if (kind < rhs.kind) {
 					return true;
-				if(windowId > rhs.windowId)
+				} else if (kind > rhs.kind) {
 					return false;
-				if(windowId < rhs.windowId)
-					return true;
+				}
+
+				switch (kind) {
+					case Kind::X11:
+						if (data.x11.display > rhs.data.x11.display) {
+							return false;
+						} else if (data.x11.display < rhs.data.x11.display) {
+							return true;
+						}
+						if (data.x11.windowId > rhs.data.x11.windowId) {
+							return false;
+						}
+						if (data.x11.windowId < rhs.data.x11.windowId) {
+							return true;
+						}
+						break;
+					default:
+						assert(false);
+				}
 				return false;
 			}
 		};
-		#endif
+#endif
 
 		class NativeWindow : public Window {
 		private:

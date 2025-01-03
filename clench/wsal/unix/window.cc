@@ -20,27 +20,29 @@ CLCWSAL_API NativeWindow::NativeWindow(
 	int y,
 	int width,
 	int height) {
-	if (!(nativeHandle.display = XOpenDisplay(nullptr)))
+	nativeHandle.kind = NativeWindowHandle::Kind::X11;
+
+	if (!(nativeHandle.data.x11.display = XOpenDisplay(nullptr)))
 		throw std::runtime_error("Error opening default display");
 
-	nativeHandle.windowId = XCreateSimpleWindow(
-		nativeHandle.display,
-		parent ? (parent)->nativeHandle.windowId : DefaultRootWindow(nativeHandle.display),
+	nativeHandle.data.x11.windowId = XCreateSimpleWindow(
+		nativeHandle.data.x11.display,
+		parent ? (parent)->nativeHandle.data.x11.windowId : DefaultRootWindow(nativeHandle.data.x11.display),
 		x, y,
 		width,
 		height,
 		0,
-		WhitePixel(nativeHandle.display, DefaultScreen(nativeHandle.display)),
-		BlackPixel(nativeHandle.display, DefaultScreen(nativeHandle.display)));
+		WhitePixel(nativeHandle.data.x11.display, DefaultScreen(nativeHandle.data.x11.display)),
+		BlackPixel(nativeHandle.data.x11.display, DefaultScreen(nativeHandle.data.x11.display)));
 
-	auto deleteWindowAtom = XInternAtom(nativeHandle.display, "WM_DELETE_WINDOW", true);
-	XSetWMProtocols(nativeHandle.display, nativeHandle.windowId, &deleteWindowAtom, 1);
+	auto deleteWindowAtom = XInternAtom(nativeHandle.data.x11.display, "WM_DELETE_WINDOW", true);
+	XSetWMProtocols(nativeHandle.data.x11.display, nativeHandle.data.x11.windowId, &deleteWindowAtom, 1);
 	// XSetErrorHandler(_xErrorHandler);
 	// XSetIOErrorHandler(_xIoErrorHandler);
 	// XSetIOErrorExitHandler(display, _xIoErrorExitHandler, nullptr);
 
 	XSelectInput(
-		nativeHandle.display, nativeHandle.windowId,
+		nativeHandle.data.x11.display, nativeHandle.data.x11.windowId,
 		ButtonPressMask | ButtonReleaseMask | PointerMotionMask | EnterWindowMask | LeaveWindowMask |
 			KeyPressMask | KeyReleaseMask |
 			StructureNotifyMask |
@@ -59,15 +61,15 @@ CLCWSAL_API NativeWindow::NativeWindow(
 CLCWSAL_API NativeWindow::~NativeWindow() {
 	_g_createdWindows.erase(nativeHandle);
 
-	XDestroyWindow(nativeHandle.display, nativeHandle.windowId);
-	XCloseDisplay(nativeHandle.display);
+	XDestroyWindow(nativeHandle.data.x11.display, nativeHandle.data.x11.windowId);
+	XCloseDisplay(nativeHandle.data.x11.display);
 }
 
 CLCWSAL_API void NativeWindow::pollEvents() {
 	XEvent ev;
 
-	while (XPending(nativeHandle.display) && (!_isClosed)) {
-		XNextEvent(nativeHandle.display, &ev);
+	while (XPending(nativeHandle.data.x11.display) && (!_isClosed)) {
+		XNextEvent(nativeHandle.data.x11.display, &ev);
 
 		XPointer window;
 		XContext context;
@@ -93,9 +95,9 @@ CLCWSAL_API void NativeWindow::pollEvents() {
 			case KeyRelease: {
 				auto key = XLookupKeysym(&ev.xkey, 0);
 
-				if (XEventsQueued(nativeHandle.display, QueuedAfterReading)) {
+				if (XEventsQueued(nativeHandle.data.x11.display, QueuedAfterReading)) {
 					XEvent nextEvent;
-					XPeekEvent(nativeHandle.display, &nextEvent);
+					XPeekEvent(nativeHandle.data.x11.display, &nextEvent);
 
 					if (nextEvent.type == KeyPress &&
 						nextEvent.xkey.window == ev.xkey.window &&
@@ -178,24 +180,24 @@ CLCWSAL_API void NativeWindow::pollEvents() {
 				[[fallthrough]];
 			case Expose:
 			case GraphicsExpose:
-				XSync(nativeHandle.display, false);
+				XSync(nativeHandle.data.x11.display, false);
 				break;
 			case ClientMessage: {
 				const Atom msg = ev.xclient.data.l[0];
 
-				if (msg == XInternAtom(nativeHandle.display, "WM_DELETE_WINDOW", true)) {
+				if (msg == XInternAtom(nativeHandle.data.x11.display, "WM_DELETE_WINDOW", true)) {
 					if (onClose())
 						break;
 
-					XUnmapWindow(nativeHandle.display, nativeHandle.windowId);
+					XUnmapWindow(nativeHandle.data.x11.display, nativeHandle.data.x11.windowId);
 					this->_isClosed = true;
 					break;
-				} else if (msg == XInternAtom(nativeHandle.display, "NET_WM_PING", true)) {
+				} else if (msg == XInternAtom(nativeHandle.data.x11.display, "NET_WM_PING", true)) {
 					XEvent reply = ev;
-					auto root = XRootWindow(nativeHandle.display, XDefaultScreen(nativeHandle.display));
+					auto root = XRootWindow(nativeHandle.data.x11.display, XDefaultScreen(nativeHandle.data.x11.display));
 					reply.xclient.window = root;
 
-					XSendEvent(nativeHandle.display, root, False, SubstructureNotifyMask | SubstructureRedirectMask, &reply);
+					XSendEvent(nativeHandle.data.x11.display, root, False, SubstructureNotifyMask | SubstructureRedirectMask, &reply);
 				}
 				break;
 			}
@@ -204,16 +206,16 @@ CLCWSAL_API void NativeWindow::pollEvents() {
 }
 
 CLCWSAL_API void NativeWindow::show() {
-	XMapWindow(nativeHandle.display, nativeHandle.windowId);
+	XMapWindow(nativeHandle.data.x11.display, nativeHandle.data.x11.windowId);
 }
 
 CLCWSAL_API void NativeWindow::hide() {
-	XUnmapWindow(nativeHandle.display, nativeHandle.windowId);
+	XUnmapWindow(nativeHandle.data.x11.display, nativeHandle.data.x11.windowId);
 }
 
 CLCWSAL_API bool NativeWindow::isVisible() const {
 	XWindowAttributes attribs;
-	XGetWindowAttributes(nativeHandle.display, nativeHandle.windowId, &attribs);
+	XGetWindowAttributes(nativeHandle.data.x11.display, nativeHandle.data.x11.windowId, &attribs);
 
 	return attribs.map_state == IsViewable;
 }
@@ -223,26 +225,26 @@ CLCWSAL_API bool NativeWindow::isClosed() const {
 }
 
 CLCWSAL_API void NativeWindow::setPos(int x, int y) {
-	XMoveWindow(nativeHandle.display, nativeHandle.windowId, x, y);
+	XMoveWindow(nativeHandle.data.x11.display, nativeHandle.data.x11.windowId, x, y);
 }
 
 CLCWSAL_API void NativeWindow::getPos(int &xOut, int &yOut) const {
 	XWindowAttributes attribs;
 
-	XGetWindowAttributes(nativeHandle.display, nativeHandle.windowId, &attribs);
+	XGetWindowAttributes(nativeHandle.data.x11.display, nativeHandle.data.x11.windowId, &attribs);
 
 	xOut = attribs.x;
 	yOut = attribs.y;
 }
 
 CLCWSAL_API void NativeWindow::setSize(int width, int height) {
-	XResizeWindow(nativeHandle.display, nativeHandle.windowId, width, height);
+	XResizeWindow(nativeHandle.data.x11.display, nativeHandle.data.x11.windowId, width, height);
 }
 
 CLCWSAL_API void NativeWindow::getSize(int &widthOut, int &heightOut) const {
 	XWindowAttributes attribs;
 
-	XGetWindowAttributes(nativeHandle.display, nativeHandle.windowId, &attribs);
+	XGetWindowAttributes(nativeHandle.data.x11.display, nativeHandle.data.x11.windowId, &attribs);
 
 	widthOut = attribs.width;
 	heightOut = attribs.height;
@@ -250,8 +252,8 @@ CLCWSAL_API void NativeWindow::getSize(int &widthOut, int &heightOut) const {
 
 CLCWSAL_API void NativeWindow::setTitle(const char *title) {
 	XmbSetWMProperties(
-		nativeHandle.display,
-		nativeHandle.windowId,
+		nativeHandle.data.x11.display,
+		nativeHandle.data.x11.windowId,
 		title, title,
 		nullptr, 0,
 		nullptr, nullptr, nullptr);
@@ -265,9 +267,9 @@ CLCWSAL_API void NativeWindow::setParent(Window *window) {
 		throw std::logic_error("Cannot set parent of a native window to a non-native window");
 
 	XReparentWindow(
-		((NativeWindow *)window)->nativeHandle.display,
-		nativeHandle.windowId,
-		((NativeWindow *)window)->nativeHandle.windowId,
+		((NativeWindow *)window)->nativeHandle.data.x11.display,
+		nativeHandle.data.x11.windowId,
+		((NativeWindow *)window)->nativeHandle.data.x11.windowId,
 		0,
 		0);
 }
@@ -276,12 +278,12 @@ CLCWSAL_API wsal::Window *NativeWindow::getParent() const {
 	::Window rootWindow, parentWindow, *children;
 	unsigned int nChildren;
 
-	if (XQueryTree(nativeHandle.display, nativeHandle.windowId, &rootWindow, &parentWindow, &children, &nChildren))
+	if (XQueryTree(nativeHandle.data.x11.display, nativeHandle.data.x11.windowId, &rootWindow, &parentWindow, &children, &nChildren))
 		return nullptr;
 
 	XFree(children);
 
-	if (auto it = _g_createdWindows.find(NativeWindowHandle{nativeHandle.display, parentWindow}); it != _g_createdWindows.end())
+	if (auto it = _g_createdWindows.find(NativeWindowHandle(nativeHandle.data.x11.display, parentWindow)); it != _g_createdWindows.end())
 		return it->second;
 
 	return nullptr;
@@ -310,12 +312,12 @@ CLCWSAL_API void NativeWindow::removeChildWindow(wsal::Window *window) {
 	::Window rootWindow, parentWindow, *children;
 	unsigned int nChildren;
 
-	if (XQueryTree(nativeHandle.display, nativeHandle.windowId, &rootWindow, &parentWindow, &children, &nChildren))
+	if (XQueryTree(nativeHandle.data.x11.display, nativeHandle.data.x11.windowId, &rootWindow, &parentWindow, &children, &nChildren))
 		return;
 
 	XFree(children);
 
-	XReparentWindow(nativeHandle.display, nativeWindow->nativeHandle.windowId, rootWindow, 0, 0);
+	XReparentWindow(nativeHandle.data.x11.display, nativeWindow->nativeHandle.data.x11.windowId, rootWindow, 0, 0);
 }
 
 CLCWSAL_API bool NativeWindow::hasChildWindow(wsal::Window *window) const {
@@ -332,7 +334,7 @@ CLCWSAL_API void NativeWindow::enumChildWindows(ChildWindowEnumer &&enumer) {
 	::Window rootWindow, parentWindow, *children;
 	unsigned int nChildren;
 
-	if (XQueryTree(nativeHandle.display, nativeHandle.windowId, &rootWindow, &parentWindow, &children, &nChildren))
+	if (XQueryTree(nativeHandle.data.x11.display, nativeHandle.data.x11.windowId, &rootWindow, &parentWindow, &children, &nChildren))
 		return;
 
 	utils::ScopeGuard freeChildrenGuard([children]() {
@@ -340,7 +342,7 @@ CLCWSAL_API void NativeWindow::enumChildWindows(ChildWindowEnumer &&enumer) {
 	});
 
 	for (unsigned int i = 0; i < nChildren; ++i) {
-		if (auto it = _g_createdWindows.find(NativeWindowHandle{nativeHandle.display, children[i]});
+		if (auto it = _g_createdWindows.find(NativeWindowHandle(nativeHandle.data.x11.display, children[i]));
 			it != _g_createdWindows.end()) {
 			enumer(it->second);
 		}
@@ -414,8 +416,8 @@ CLCWSAL_API void clench::wsal::setMouseCapture(Window *window) {
 		if (windowProperties.isNative) {
 			_g_curMouseCapturedTopLevelWindow = (NativeWindow *)i;
 			XGrabPointer(
-				((NativeWindow *)i)->nativeHandle.display,
-				((NativeWindow *)i)->nativeHandle.windowId,
+				((NativeWindow *)i)->nativeHandle.data.x11.display,
+				((NativeWindow *)i)->nativeHandle.data.x11.windowId,
 				true,
 				ButtonPressMask | ButtonReleaseMask | PointerMotionMask | FocusChangeMask | EnterWindowMask | LeaveWindowMask,
 				GrabModeAsync,
@@ -440,7 +442,7 @@ foundTopLevelWindow:
 CLCWSAL_API void clench::wsal::releaseMouseCapture() {
 	CLENCH_DEBUG_LOG("WSAL", "Releasing mouse capture");
 
-	XUngrabPointer(_g_curMouseCapturedTopLevelWindow->nativeHandle.display, CurrentTime);
+	XUngrabPointer(_g_curMouseCapturedTopLevelWindow->nativeHandle.data.x11.display, CurrentTime);
 	_releaseMouseCapture();
 }
 

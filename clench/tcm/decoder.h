@@ -4,6 +4,7 @@
 #include "basedefs.h"
 #include <unordered_map>
 #include <clench/ghal/texture.h>
+#include <memory>
 
 namespace clench {
 	namespace tcm {
