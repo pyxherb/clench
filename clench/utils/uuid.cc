@@ -19,7 +19,7 @@ CLENCH_FORCEINLINE uint_fast8_t _parseSingleDigit(char c) {
 	throw UINT_FAST8_MAX;
 }
 
-CLCUTILS_API bool UUID::from(const char *s, UUID &uuidOut) {
+CLCUTILS_API bool utils::parseUUID(const char *s, base::UUID &uuidOut) {
 	CLENCH_ASSERT(strlen(s) >= 36, "Input string is too short");
 
 	if (s[8] != '-' ||
@@ -28,7 +28,7 @@ CLCUTILS_API bool UUID::from(const char *s, UUID &uuidOut) {
 		(s[23] != '-'))
 		return false;
 
-	memset(&uuidOut, 0, sizeof(UUID));
+	memset(&uuidOut, 0, sizeof(base::UUID));
 
 	for (size_t i = 0; i < 8; ++i) {
 		uuidOut.a *= 16;
@@ -90,7 +90,7 @@ CLENCH_FORCEINLINE char _hexDigitToChar(uint_fast8_t digit) {
 	return digit > 9 ? digit - 10 + 'a' : digit + '0';
 }
 
-std::string std::to_string(const clench::utils::UUID &uuid) {
+std::string std::to_string(const clench::base::UUID &uuid) {
 	char s[37];
 
 	s[0] = _hexDigitToChar((uuid.a >> 28) & 0xf);
@@ -141,19 +141,4 @@ std::string std::to_string(const clench::utils::UUID &uuid) {
 	s[36] = '\0';
 
 	return s;
-}
-
-CLCUTILS_API void clench::utils::generateRandomUUID(UUID &uuidOut) {
-	memset(&uuidOut, 0, sizeof(UUID));
-
-	std::mt19937_64 g_uuidRng(time(nullptr));
-
-	uint64_t a = g_uuidRng(),
-			 b = g_uuidRng();
-
-	uuidOut.a = (uint32_t)a;
-	uuidOut.b = (uint16_t)(a >> 32);
-	uuidOut.c = 0b0100 | ((b & 0xfff) << 4);
-	uuidOut.d = 0b10 | (uint16_t)(b << 2);
-	uuidOut.e = b >> 14;
 }
