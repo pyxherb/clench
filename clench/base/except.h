@@ -6,6 +6,9 @@
 
 namespace clench {
 	namespace base {
+		constexpr UUID
+			EXCEPTION_TYPE_GENERAL = CLENCH_UUID(319ac148, d8a5, 4f4c, b984, 8f93a3c29a98);
+
 		class InternalException {
 		public:
 			mutable peff::RcObjectPtr<peff::Alloc> allocator;

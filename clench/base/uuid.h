@@ -29,6 +29,6 @@ namespace clench {
 }
 
 #define CLENCH_UUID(a, b, c, d, e) \
-	clench::base::UUID { 0x##a, 0x##b, 0x##c, 0x##d, 0x##e }
+	clench::base::UUID { 0x##a##U, 0x##b##U, 0x##c##U, 0x##d##U, 0x##e##UL }
 
 #endif
