@@ -21,7 +21,6 @@ namespace clench {
 		struct VertexArrayElementDesc {
 			InputVertexShaderSemanticType semanticType;
 			uint32_t semanticIndex;
-			uint32_t index;
 			uint32_t nElements;
 			VertexDataType dataType;
 			uint32_t stride;

@@ -56,7 +56,7 @@ static uint64_t _fetchSystemNode() {
 	return UINT64_MAX;
 }
 
-CLCPLAT_API void clench::plat::generateUUID(utils::UUID &uuidOut) {
+CLCPLAT_API void clench::plat::generateUUID(base::UUID &uuidOut) {
 	uint64_t t = _fetchSystemTime();
 
 	if (t <= _g_lastGenTime) {

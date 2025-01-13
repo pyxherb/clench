@@ -6,7 +6,7 @@
 
 namespace clench {
 	namespace plat {
-		CLCPLAT_API void generateUUID(utils::UUID &uuidOut);
+		CLCPLAT_API void generateUUID(base::UUID &uuidOut);
 	}
 }
 

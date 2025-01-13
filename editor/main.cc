@@ -75,13 +75,11 @@ int main(int argc, char **argv) {
 		clench::ghal::VertexArrayElementDesc descs[] = {
 			{ clench::ghal::InputVertexShaderSemanticType::Position,
 				0,
-				0,
 				3,
 				clench::ghal::VertexDataType::Float,
 				sizeof(float) * 4 + sizeof(float) * 3,
 				0 },
 			{ clench::ghal::InputVertexShaderSemanticType::Color,
-				0,
 				0,
 				4,
 				clench::ghal::VertexDataType::Float,
