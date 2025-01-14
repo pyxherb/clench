@@ -4,10 +4,12 @@
 using namespace clench;
 using namespace clench::engine;
 
-std::unique_ptr<MainWindow> clench::engine::g_mainWindow;
+std::unique_ptr<wsal::WindowScope, peff::DeallocableDeleter> clench::engine::g_mainWindowScope;
+peff::RcObjectPtr<MainWindow> clench::engine::g_mainWindow;
 
-CLCWSAL_API clench::engine::MainWindow::MainWindow()
+CLCWSAL_API clench::engine::MainWindow::MainWindow(wsal::WindowScope *windowScope)
 	: VWCRootWindow(
+		  windowScope,
 		  wsal::CREATEWINDOW_MIN |
 			  wsal::CREATEWINDOW_MAX |
 			  wsal::CREATEWINDOW_RESIZE,

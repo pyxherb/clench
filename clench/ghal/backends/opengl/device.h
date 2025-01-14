@@ -7,6 +7,7 @@
 #include <clench/ghal/device.h>
 #include <thread>
 #include <optional>
+#include <mutex>
 
 namespace clench {
 	namespace ghal {
@@ -28,7 +29,8 @@ namespace clench {
 		public:
 			GLGHALBackend *backend;
 			/// @brief Default context for some internal operations. DO NOT try to draw with it!
-			utils::RcObjectPtr<GLGHALDeviceContext> defaultContext;
+			/// @note DO NOT forget to create one for the device after the creation!
+			peff::RcObjectPtr<GLGHALDeviceContext> defaultContext;
 
 			std::mutex texture1dLock;
 			std::mutex texture2dLock;
@@ -36,7 +38,7 @@ namespace clench {
 
 			CLENCH_NO_COPY_MOVE_METHODS(GLGHALDevice);
 
-			CLCGHAL_API GLGHALDevice(GLGHALBackend *backend);
+			CLCGHAL_API GLGHALDevice(peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator, GLGHALBackend *backend);
 			CLCGHAL_API virtual ~GLGHALDevice();
 
 			CLCGHAL_API virtual GHALBackend *getBackend() override;
@@ -62,11 +64,17 @@ namespace clench {
 			CLCGHAL_API virtual Texture3D *createTexture3D(const char *data, size_t size, const Texture3DDesc &desc) override;
 
 			CLCGHAL_API virtual RenderTargetView *createRenderTargetViewForTexture2D(Texture2D *texture) override;
+
+			CLCGHAL_API static GLGHALDevice *alloc(peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator, GLGHALBackend *backend);
 		};
 
 		class GLGHALDeviceContext : public GHALDeviceContext {
+		protected:
+			CLCGHAL_API GLGHALDeviceContext(
+				GLGHALDevice *device);
+
 		public:
-			utils::RcObjectPtr<GLRenderTargetView> defaultRenderTargetView;
+			peff::RcObjectPtr<GLRenderTargetView> defaultRenderTargetView;
 
 #ifdef _WIN32
 			HGLRC wglContext = NULL;
@@ -79,7 +87,6 @@ namespace clench {
 			EGLConfig eglConfig = nullptr;
 			EGLNativeWindowType eglWindow;
 #endif
-			GLGHALDevice *device;
 
 			std::optional<std::thread::id> boundThreadId;
 
@@ -96,8 +103,6 @@ namespace clench {
 
 			CLENCH_NO_COPY_MOVE_METHODS(GLGHALDeviceContext);
 
-			CLCGHAL_API GLGHALDeviceContext(
-				GLGHALDevice *device);
 			CLCGHAL_API virtual ~GLGHALDeviceContext();
 
 			CLCGHAL_API virtual RenderTargetView *getDefaultRenderTargetView() override;
@@ -156,6 +161,8 @@ namespace clench {
 			CLCGHAL_API void saveCurrentGLContext();
 			CLCGHAL_API void restoreCurrentGLContext();
 			CLCGHAL_API bool makeContextCurrent();
+
+			CLCGHAL_API static GLGHALDeviceContext *alloc(GLGHALDevice *device);
 		};
 
 		CLCGHAL_API GLenum toGLTextureFormat(TextureFormat format, GLenum &typeOut);

@@ -297,7 +297,7 @@ CLCGHAL_API GeometryShader *D3D11GHALDevice::createGeometryShader(const char *so
 CLCGHAL_API ShaderProgram *D3D11GHALDevice::linkShaderProgram(Shader **shaders, size_t nShaders) {
 	std::unique_ptr<
 		D3D11ShaderProgram,
-		utils::RcObjectUniquePtrDeleter<D3D11ShaderProgram>> program(new D3D11ShaderProgram(this));
+		peff::RcObjectUniquePtrDeleter<D3D11ShaderProgram>> program(new D3D11ShaderProgram(this));
 
 	for (size_t i = 0; i < nShaders; ++i) {
 		Shader *curShader = shaders[i];

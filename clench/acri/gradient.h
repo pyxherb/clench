@@ -16,6 +16,8 @@ namespace clench {
 
 			CLCACRI_API Gradient(GradientType gradientType);
 			CLCACRI_API virtual ~Gradient();
+
+			CLCACRI_API virtual void dealloc() override;
 		};
 	}
 }

@@ -11,15 +11,14 @@
 using namespace clench;
 using namespace clench::wsal;
 
-static std::map<NativeWindowHandle, NativeWindow *> _g_createdWindows;
-
 CLCWSAL_API NativeWindow::NativeWindow(
+	WindowScope *windowScope,
 	CreateWindowFlags flags,
 	NativeWindow *parent,
 	int x,
 	int y,
 	int width,
-	int height) {
+	int height) : Window(windowScope) {
 	nativeHandle.kind = NativeWindowHandle::Kind::X11;
 
 	if (!(nativeHandle.data.x11.display = XOpenDisplay(nullptr)))
@@ -55,11 +54,12 @@ CLCWSAL_API NativeWindow::NativeWindow(
 			StructureNotifyMask |
 			PropertyChangeMask);
 
-	_g_createdWindows[nativeHandle] = this;
+	NativeWindowHandle tmpNativeHandle = nativeHandle;
+	windowScope->handleToWindowMap.insert(std::move(tmpNativeHandle), this);
 }
 
 CLCWSAL_API NativeWindow::~NativeWindow() {
-	_g_createdWindows.erase(nativeHandle);
+	windowScope->handleToWindowMap.remove(nativeHandle);
 
 	XDestroyWindow(nativeHandle.data.x11.display, nativeHandle.data.x11.windowId);
 	XCloseDisplay(nativeHandle.data.x11.display);
@@ -283,8 +283,9 @@ CLCWSAL_API wsal::Window *NativeWindow::getParent() const {
 
 	XFree(children);
 
-	if (auto it = _g_createdWindows.find(NativeWindowHandle(nativeHandle.data.x11.display, parentWindow)); it != _g_createdWindows.end())
-		return it->second;
+	if (auto it = windowScope->handleToWindowMap.find(NativeWindowHandle(nativeHandle.data.x11.display, parentWindow));
+		it != windowScope->handleToWindowMap.end())
+		return it.value();
 
 	return nullptr;
 }
@@ -342,9 +343,9 @@ CLCWSAL_API void NativeWindow::enumChildWindows(ChildWindowEnumer &&enumer) {
 	});
 
 	for (unsigned int i = 0; i < nChildren; ++i) {
-		if (auto it = _g_createdWindows.find(NativeWindowHandle(nativeHandle.data.x11.display, children[i]));
-			it != _g_createdWindows.end()) {
-			enumer(it->second);
+		if (auto it = windowScope->handleToWindowMap.find(NativeWindowHandle(nativeHandle.data.x11.display, children[i]));
+			it != windowScope->handleToWindowMap.end()) {
+			enumer(it.value());
 		}
 	}
 }

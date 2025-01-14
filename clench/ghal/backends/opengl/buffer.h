@@ -17,6 +17,11 @@ namespace clench {
 				const BufferDesc &bufferDesc,
 				GLuint bufferHandle);
 			CLCGHAL_API virtual ~GLBuffer();
+
+			CLCGHAL_API static GLBuffer *alloc(
+				GHALDevice *ownerDevice,
+				const BufferDesc &bufferDesc,
+				GLuint bufferHandle);
 		};
 	}
 }

@@ -123,12 +123,13 @@ CLCWSAL_API LRESULT CALLBACK NativeWindow::_win32WndProc(HWND hWnd, UINT uMsg, W
 }
 
 CLCWSAL_API NativeWindow::NativeWindow(
+	WindowScope *windowScope,
 	CreateWindowFlags flags,
 	NativeWindow *parent,
 	int x,
 	int y,
 	int width,
-	int height) {
+	int height): Window(windowScope) {
 	DWORD style = parent ? WS_CHILDWINDOW : WS_OVERLAPPEDWINDOW;
 
 	if (!(flags & CREATEWINDOW_MIN))

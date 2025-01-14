@@ -83,7 +83,7 @@ namespace clench {
 			ComPtr<ID3D11Texture2D> d3dBackBuffer;
 			ComPtr<ID3D11RenderTargetView> d3dRenderTargetView;  // RTV for the back buffer.
 
-			utils::RcObjectPtr<D3D11RenderTargetView> renderTargetView;
+			peff::RcObjectPtr<D3D11RenderTargetView> renderTargetView;
 
 			ComPtr<ID3D11Texture2D> d3dDepthStencilBuffer;
 			ComPtr<ID3D11DepthStencilView> d3dDepthStencilView; // DSV for the depth stencil buffer.

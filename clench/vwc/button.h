@@ -8,6 +8,7 @@ namespace clench {
 		class Button : public Control {
 		public:
 			CLCVWC_API Button(
+				wsal::WindowScope *windowScope,
 				ghal::GHALDevice *ghalDevice,
 				ghal::GHALDeviceContext *ghalDeviceContext,
 				ghal::TextureFormat renderBufferFormat,
@@ -36,13 +37,14 @@ namespace clench {
 			bool _isPressed = false;
 
 		public:
-			utils::RcObjectPtr<Control> content;
+			peff::RcObjectPtr<Control> content;
 
 			float backgroundColor[3] = { 0.7f, 0.7f, 0.7f };
 			float pressedBackgroundColor[3] = { 0.6f, 0.6f, 0.6f };
 			float hoverBackgroundColor[3] = { 0.8f, 0.8f, 0.8f };
 
 			CLCVWC_API DefaultButton(
+				wsal::WindowScope *windowScope,
 				ghal::GHALDevice *ghalDevice,
 				ghal::GHALDeviceContext *ghalDeviceContext,
 				ghal::TextureFormat renderBufferFormat,

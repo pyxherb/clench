@@ -4,6 +4,7 @@ using namespace clench;
 using namespace clench::vwc;
 
 CLCVWC_API Button::Button(
+	wsal::WindowScope *windowScope,
 	ghal::GHALDevice *ghalDevice,
 	ghal::GHALDeviceContext *ghalDeviceContext,
 	ghal::TextureFormat renderBufferFormat,
@@ -13,6 +14,7 @@ CLCVWC_API Button::Button(
 	int width,
 	int height)
 	: Control(
+		  windowScope,
 		  wsal::CREATEWINDOW_NOFRAME,
 		  ghalDevice,
 		  ghalDeviceContext,
@@ -47,6 +49,7 @@ CLCVWC_API void Button::onMouseLeave() {
 }
 
 CLCVWC_API DefaultButton::DefaultButton(
+	wsal::WindowScope *windowScope,
 	ghal::GHALDevice *ghalDevice,
 	ghal::GHALDeviceContext *ghalDeviceContext,
 	ghal::TextureFormat renderBufferFormat,
@@ -56,6 +59,7 @@ CLCVWC_API DefaultButton::DefaultButton(
 	int width,
 	int height)
 	: Button(
+		  windowScope,
 		  ghalDevice,
 		  ghalDeviceContext,
 		  renderBufferFormat,

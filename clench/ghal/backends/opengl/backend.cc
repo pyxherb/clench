@@ -35,5 +35,5 @@ CLCGHAL_API GLGHALBackend::~GLGHALBackend() {
 }
 
 CLCGHAL_API GHALDevice *GLGHALBackend::createDevice() {
-	return new GLGHALDevice(this);
+	return GLGHALDevice::alloc(peff::getDefaultAlloc(), peff::getDefaultAlloc(), this);
 }

@@ -10,7 +10,7 @@ namespace clench {
 		enum class GeometryKind {
 			Triangle = 0,
 			Polygon,
-			Oval,
+			Ellipse,
 			Path
 		};
 
@@ -37,6 +37,8 @@ namespace clench {
 
 			CLCACRI_API TriangleGeometry();
 			CLCACRI_API virtual ~TriangleGeometry();
+
+			CLCACRI_API virtual void dealloc() override;
 		};
 
 		class PolygonGeometry : public Geometry {
@@ -45,17 +47,21 @@ namespace clench {
 
 			CLCACRI_API PolygonGeometry();
 			CLCACRI_API virtual ~PolygonGeometry();
+
+			CLCACRI_API virtual void dealloc() override;
 		};
 
-		class OvalGeometry : public Geometry {
+		class EllipseGeometry : public Geometry {
 		public:
 			float direction;
 			math::Vec2f scale;
 
-			CLENCH_NO_COPY_MOVE_METHODS(OvalGeometry);
+			CLENCH_NO_COPY_MOVE_METHODS(EllipseGeometry);
 
-			CLCACRI_API OvalGeometry();
-			CLCACRI_API virtual ~OvalGeometry();
+			CLCACRI_API EllipseGeometry();
+			CLCACRI_API virtual ~EllipseGeometry();
+
+			CLCACRI_API virtual void dealloc() override;
 		};
 
 		enum class PathInstructionOpcode {
@@ -95,6 +101,8 @@ namespace clench {
 
 			CLCACRI_API PathGeometry();
 			CLCACRI_API virtual ~PathGeometry();
+
+			CLCACRI_API virtual void dealloc() override;
 		};
 	}
 }

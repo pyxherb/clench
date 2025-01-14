@@ -38,8 +38,8 @@ namespace clench {
 
 		class D3D11ShaderProgram : public ShaderProgram {
 		public:
-			utils::RcObjectPtr<D3D11VertexShader> vertexShader;
-			utils::RcObjectPtr<D3D11FragmentShader> fragmentShader;
+			peff::RcObjectPtr<D3D11VertexShader> vertexShader;
+			peff::RcObjectPtr<D3D11FragmentShader> fragmentShader;
 
 			CLCGHAL_API D3D11ShaderProgram(
 				GHALDevice *ownerDevice);

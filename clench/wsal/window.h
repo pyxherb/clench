@@ -4,7 +4,11 @@
 #include "basedefs.h"
 #include "keyboard.h"
 #include "mouse.h"
-#include <clench/utils/rcobj.h>
+#include <peff/base/rcobj.h>
+#include <peff/base/deallocable.h>
+#include <peff/base/allocator.h>
+#include <peff/containers/set.h>
+#include <peff/containers/map.h>
 #include <clench/utils/bitarray.h>
 #include <string_view>
 #include <set>
@@ -31,102 +35,7 @@ constexpr static auto X11_None = 0L;
 
 namespace clench {
 	namespace wsal {
-		using CreateWindowFlags = std::uint32_t;
-		constexpr CreateWindowFlags
-			CREATEWINDOW_MIN = 1,
-			CREATEWINDOW_MAX = 2,
-			CREATEWINDOW_RESIZE = 4,
-			CREATEWINDOW_NOFRAME = 8;
-
-		constexpr int
-			DEFAULT_WINDOW_POS = INT_MAX;
-
 		class Window;
-
-		class WindowClipping {
-		public:
-			size_t width, height;
-			utils::BitArray bitArray;
-
-			void resize(size_t width, size_t height) {
-				this->width = width;
-				this->height = height;
-
-				bitArray.resize(width * height);
-			}
-
-			bool getByPos(size_t x, size_t y) {
-				return bitArray.getBit(width * y + x);
-			}
-
-			void setByPos(size_t x, size_t y) {
-				bitArray.setBit(width * y + x);
-			}
-
-			void clearByPos(size_t x, size_t y) {
-				bitArray.clearBit(width * y + x);
-			}
-		};
-
-		using ChildWindowEnumer = std::function<
-			bool(Window *window)>;
-
-		struct WindowProperties {
-			bool isNative : 1;
-		};
-
-		class Window : public utils::RcObject {
-		public:
-			CLENCH_NO_COPY_MOVE_METHODS(Window);
-
-			CLCWSAL_API Window();
-			CLCWSAL_API virtual ~Window();
-
-			virtual void show() = 0;
-			virtual void hide() = 0;
-			virtual bool isVisible() const = 0;
-
-			virtual bool isClosed() const = 0;
-
-			virtual void setPos(int x, int y) = 0;
-			virtual void getPos(int &xOut, int &yOut) const = 0;
-
-			virtual void setSize(int width, int height) = 0;
-			virtual void getSize(int &widthOut, int &heightOut) const = 0;
-
-			// virtual void getActualPos(int &xOut, int &yOut) const = 0;
-			// virtual void getActualSize(int &widthOut, int &heightOut) const = 0;
-
-			virtual void setTitle(const char *title) = 0;
-
-			virtual void setParent(Window *window) = 0;
-			virtual Window *getParent() const = 0;
-
-			virtual void addChildWindow(Window *window) = 0;
-			virtual void removeChildWindow(Window *window) = 0;
-			virtual bool hasChildWindow(Window *window) const = 0;
-
-			virtual void enumChildWindows(ChildWindowEnumer &&enumer) = 0;
-
-			virtual void getWindowProperties(WindowProperties &propertiesOut) const = 0;
-
-			virtual void invalidate() = 0;
-
-			virtual void pollEvents() = 0;
-
-			virtual void onResize(int width, int height) = 0;
-			virtual void onMove(int x, int y) = 0;
-			virtual bool onClose() = 0;
-			virtual void onKeyDown(KeyboardKeyCode keyCode) = 0;
-			virtual void onKeyUp(KeyboardKeyCode keyCode) = 0;
-			virtual void onMouseButtonPress(MouseButton button, int x, int y) = 0;
-			virtual void onMouseButtonRelease(MouseButton button, int x, int y) = 0;
-			virtual void onMouseHover(int x, int y) = 0;
-			virtual void onMouseLeave() = 0;
-			virtual void onMouseMove(int x, int y) = 0;
-			virtual void onExpose() = 0;
-			virtual void onDraw() = 0;
-		};
 
 #ifdef _WIN32
 		using NativeWindowHandle = HWND;
@@ -179,6 +88,123 @@ namespace clench {
 		};
 #endif
 
+		class WindowScope final : public peff::Deallocable {
+		private:
+			CLCWSAL_API WindowScope(peff::Alloc *selfAllocator, peff::Alloc *allocator);
+
+		public:
+			peff::RcObjectPtr<peff::Alloc> selfAllocator, allocator;
+			peff::Set<Window *> childWindows;
+			peff::Map<NativeWindowHandle, Window *> handleToWindowMap;
+
+			CLCWSAL_API ~WindowScope();
+
+			CLCWSAL_API virtual void dealloc() override;
+
+			CLCWSAL_API static WindowScope *alloc(peff::Alloc *selfAllocator, peff::Alloc *allocator);
+		};
+
+		using CreateWindowFlags = std::uint32_t;
+		constexpr CreateWindowFlags
+			CREATEWINDOW_MIN = 1,
+			CREATEWINDOW_MAX = 2,
+			CREATEWINDOW_RESIZE = 4,
+			CREATEWINDOW_NOFRAME = 8;
+
+		constexpr int
+			DEFAULT_WINDOW_POS = INT_MAX;
+
+		class Window;
+
+		class WindowClipping {
+		public:
+			size_t width, height;
+			utils::BitArray bitArray;
+
+			void resize(size_t width, size_t height) {
+				this->width = width;
+				this->height = height;
+
+				bitArray.resize(width * height);
+			}
+
+			bool getByPos(size_t x, size_t y) {
+				return bitArray.getBit(width * y + x);
+			}
+
+			void setByPos(size_t x, size_t y) {
+				bitArray.setBit(width * y + x);
+			}
+
+			void clearByPos(size_t x, size_t y) {
+				bitArray.clearBit(width * y + x);
+			}
+		};
+
+		using ChildWindowEnumer = std::function<
+			bool(Window *window)>;
+
+		struct WindowProperties {
+			bool isNative : 1;
+		};
+
+		class Window : public peff::RcObject {
+		public:
+			WindowScope *windowScope;
+
+			CLENCH_NO_COPY_MOVE_METHODS(Window);
+
+			CLCWSAL_API Window(WindowScope *windowScope);
+			CLCWSAL_API virtual ~Window();
+
+			virtual void onRefZero() noexcept override;
+
+			virtual void show() = 0;
+			virtual void hide() = 0;
+			virtual bool isVisible() const = 0;
+
+			virtual bool isClosed() const = 0;
+
+			virtual void setPos(int x, int y) = 0;
+			virtual void getPos(int &xOut, int &yOut) const = 0;
+
+			virtual void setSize(int width, int height) = 0;
+			virtual void getSize(int &widthOut, int &heightOut) const = 0;
+
+			// virtual void getActualPos(int &xOut, int &yOut) const = 0;
+			// virtual void getActualSize(int &widthOut, int &heightOut) const = 0;
+
+			virtual void setTitle(const char *title) = 0;
+
+			virtual void setParent(Window *window) = 0;
+			virtual Window *getParent() const = 0;
+
+			virtual void addChildWindow(Window *window) = 0;
+			virtual void removeChildWindow(Window *window) = 0;
+			virtual bool hasChildWindow(Window *window) const = 0;
+
+			virtual void enumChildWindows(ChildWindowEnumer &&enumer) = 0;
+
+			virtual void getWindowProperties(WindowProperties &propertiesOut) const = 0;
+
+			virtual void invalidate() = 0;
+
+			virtual void pollEvents() = 0;
+
+			virtual void onResize(int width, int height) = 0;
+			virtual void onMove(int x, int y) = 0;
+			virtual bool onClose() = 0;
+			virtual void onKeyDown(KeyboardKeyCode keyCode) = 0;
+			virtual void onKeyUp(KeyboardKeyCode keyCode) = 0;
+			virtual void onMouseButtonPress(MouseButton button, int x, int y) = 0;
+			virtual void onMouseButtonRelease(MouseButton button, int x, int y) = 0;
+			virtual void onMouseHover(int x, int y) = 0;
+			virtual void onMouseLeave() = 0;
+			virtual void onMouseMove(int x, int y) = 0;
+			virtual void onExpose() = 0;
+			virtual void onDraw() = 0;
+		};
+
 		class NativeWindow : public Window {
 		private:
 			bool _isClosed = false;
@@ -207,6 +233,7 @@ namespace clench {
 			CLENCH_NO_COPY_MOVE_METHODS(NativeWindow);
 
 			CLCWSAL_API NativeWindow(
+				WindowScope *windowScope,
 				CreateWindowFlags flags,
 				NativeWindow *parent,
 				int x,
@@ -322,7 +349,7 @@ namespace clench {
 			Window *_parent = nullptr;
 			bool _closed = false;
 			bool _shown = false;
-			std::set<utils::RcObjectPtr<VirtualWindow>> _childWindows;
+			std::set<peff::RcObjectPtr<VirtualWindow>> _childWindows;
 			int _x, _y;
 			int _width, _height;
 
@@ -330,6 +357,7 @@ namespace clench {
 			CLENCH_NO_COPY_MOVE_METHODS(VirtualWindow);
 
 			CLCWSAL_API VirtualWindow(
+				WindowScope *windowScope,
 				CreateWindowFlags flags,
 				Window *parent,
 				int x,

@@ -9,19 +9,52 @@
 using namespace clench;
 using namespace clench::wsal;
 
-CLCWSAL_API wsal::Window::Window() {}
+CLCWSAL_API WindowScope::WindowScope(peff::Alloc *selfAllocator, peff::Alloc *allocator) : selfAllocator(selfAllocator), allocator(allocator) {
+}
+
+CLCWSAL_API WindowScope::~WindowScope() {
+	assert((!childWindows.size(), "Not all child windows are released"));
+}
+
+CLCWSAL_API void WindowScope::dealloc() {
+	peff::RcObjectPtr<peff::Alloc> allocator = selfAllocator;
+	std::destroy_at<WindowScope>(this);
+
+	allocator->release(this);
+}
+
+CLCWSAL_API WindowScope *WindowScope::alloc(peff::Alloc *selfAllocator, peff::Alloc *allocator) {
+	void *ptr = selfAllocator->alloc(sizeof(WindowScope));
+	if (!ptr)
+		return nullptr;
+
+	new (ptr) WindowScope(selfAllocator, allocator);
+
+	return (WindowScope *)ptr;
+}
+
+CLCWSAL_API wsal::Window::Window(WindowScope *windowScope) : windowScope(windowScope) {}
 
 CLCWSAL_API wsal::Window::~Window() {
 }
 
+void wsal::Window::onRefZero() noexcept {
+	peff::RcObjectPtr<peff::Alloc> allocator = windowScope->allocator;
+	std::destroy_at<Window>(this);
+
+	allocator->release(this);
+}
+
 CLCWSAL_API VirtualWindow::VirtualWindow(
+	WindowScope *windowScope,
 	CreateWindowFlags flags,
 	Window *parent,
 	int x,
 	int y,
 	int width,
 	int height)
-	: _createWindowFlags(flags),
+	: Window(windowScope),
+	  _createWindowFlags(flags),
 	  _parent(parent),
 	  _x(x),
 	  _y(y),

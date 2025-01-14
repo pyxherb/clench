@@ -34,17 +34,23 @@ int main(int argc, char **argv) {
 
 	ghal::registerBuiltinGHALBackends();
 
-	g_mainGhalDevice = std::unique_ptr<ghal::GHALDevice>(ghal::createGHALDevice({ "opengl" }));
+	g_mainGhalDevice = std::unique_ptr<ghal::GHALDevice, peff::DeallocableDeleter>(ghal::createGHALDevice({ "opengl" }));
 
 	if (!g_mainGhalDevice)
 		throw std::runtime_error("Error creating main GHAL device");
 
-	g_mainWindow = std::make_unique<MainWindow>();
+	g_mainWindowScope = std::unique_ptr<wsal::WindowScope, peff::DeallocableDeleter>(
+		wsal::WindowScope::alloc(peff::getDefaultAlloc(), peff::getDefaultAlloc())
+	);
+	if(!g_mainWindowScope)
+		throw std::bad_alloc();
+
+	g_mainWindow = new MainWindow(g_mainWindowScope.get());
 
 	g_mainWindow->show();
 
-	clench::utils::RcObjectPtr<clench::ghal::VertexShader> vertexShader;
-	clench::utils::RcObjectPtr<clench::ghal::FragmentShader> fragmentShader;
+	peff::RcObjectPtr<clench::ghal::VertexShader> vertexShader;
+	peff::RcObjectPtr<clench::ghal::FragmentShader> fragmentShader;
 	{
 		std::ifstream is("test_vertex.glsl");
 
@@ -70,7 +76,7 @@ int main(int argc, char **argv) {
 		fragmentShader = g_mainGhalDevice->createFragmentShader(fsSrc.get(), size, nullptr);
 	}
 
-	clench::utils::RcObjectPtr<clench::ghal::VertexArray> vertexArray;
+	peff::RcObjectPtr<clench::ghal::VertexArray> vertexArray;
 	{
 		clench::ghal::VertexArrayElementDesc descs[] = {
 			{ clench::ghal::InputVertexShaderSemanticType::Position,
@@ -90,7 +96,7 @@ int main(int argc, char **argv) {
 		vertexArray = g_mainGhalDevice->createVertexArray(descs, std::size(descs), vertexShader.get());
 	}
 
-	clench::utils::RcObjectPtr<clench::ghal::Buffer> vertexBuffer, indexBuffer;
+	peff::RcObjectPtr<clench::ghal::Buffer> vertexBuffer, indexBuffer;
 	{
 		clench::ghal::BufferDesc vertexBufferDesc, indexBufferDesc;
 
@@ -109,8 +115,9 @@ int main(int argc, char **argv) {
 		indexBuffer = g_mainGhalDevice->createBuffer(indexBufferDesc, indices);
 	}
 
-	clench::utils::RcObjectPtr<clench::vwc::DefaultButton> button =
+	peff::RcObjectPtr<clench::vwc::DefaultButton> button =
 		new clench::vwc::DefaultButton(
+			g_mainWindowScope.get(),
 			g_mainGhalDevice.get(),
 			g_mainWindow->ghalDeviceContext.get(),
 			clench::ghal::TextureFormat::RGBA8,
@@ -164,6 +171,7 @@ int main(int argc, char **argv) {
 	//g_mainGhalDeviceContext.reset();
 
 	g_mainWindow.reset();
+	g_mainWindowScope.reset();
 
 	g_mainGhalDevice.reset();
 

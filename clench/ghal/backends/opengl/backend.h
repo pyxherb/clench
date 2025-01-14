@@ -2,6 +2,7 @@
 #define _CLENCH_GHAL_BACKENDS_OPENGL_BACKEND_H_
 
 #include <clench/ghal/backend.h>
+#include <clench/ghal/device.h>
 #if _WIN32
 	#include <Windows.h>
 #elif __unix__

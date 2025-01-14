@@ -11,19 +11,23 @@
 #include <clench/utils/assert.h>
 #include <clench/wsal/window.h>
 #include <set>
+#include <peff/base/allocator.h>
 
 namespace clench {
 	namespace ghal {
 		class GHALDeviceContext;
 
-		class GHALDevice {
+		class GHALDevice : public peff::Deallocable {
 		public:
+			peff::RcObjectPtr<peff::Alloc> selfAllocator, resourceAllocator;
 			std::set<GHALDeviceResource *> createdResources;
 
 			CLENCH_NO_COPY_MOVE_METHODS(GHALDevice);
 
-			CLCGHAL_API GHALDevice();
+			CLCGHAL_API GHALDevice(peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator);
 			CLCGHAL_API virtual ~GHALDevice();
+
+			CLCGHAL_API virtual void dealloc() override;
 
 			virtual GHALBackend *getBackend() = 0;
 
@@ -49,11 +53,11 @@ namespace clench {
 			virtual RenderTargetView *createRenderTargetViewForTexture2D(Texture2D *texture) = 0;
 		};
 
-		class GHALDeviceContext : public utils::RcObject {
+		class GHALDeviceContext : public GHALDeviceResource {
 		public:
 			CLENCH_NO_COPY_MOVE_METHODS(GHALDeviceContext);
 
-			CLCGHAL_API GHALDeviceContext();
+			CLCGHAL_API GHALDeviceContext(GHALDevice *ownerDevice);
 			CLCGHAL_API virtual ~GHALDeviceContext();
 
 			virtual RenderTargetView *getDefaultRenderTargetView() = 0;

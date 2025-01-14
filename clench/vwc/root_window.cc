@@ -4,6 +4,7 @@ using namespace clench;
 using namespace clench::vwc;
 
 CLCVWC_API VWCRootWindow::VWCRootWindow(
+	wsal::WindowScope *windowScope,
 	wsal::CreateWindowFlags createWindowFlags,
 	ghal::GHALDevice *ghalDevice,
 	NativeWindow *parent,
@@ -12,6 +13,7 @@ CLCVWC_API VWCRootWindow::VWCRootWindow(
 	int width,
 	int height)
 	: NativeWindow(
+		  windowScope,
 		  createWindowFlags,
 		  parent,
 		  x,

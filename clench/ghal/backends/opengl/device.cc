@@ -9,10 +9,9 @@
 using namespace clench;
 using namespace clench::ghal;
 
-CLCGHAL_API GLGHALDevice::GLGHALDevice(GLGHALBackend *backend)
-	: GHALDevice(),
-	  backend(backend),
-	  defaultContext(new GLGHALDeviceContext(this)) {
+CLCGHAL_API GLGHALDevice::GLGHALDevice(peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator, GLGHALBackend *backend)
+	: GHALDevice(selfAllocator, resourceAllocator),
+	  backend(backend) {
 }
 
 CLCGHAL_API GLGHALDevice::~GLGHALDevice() {
@@ -28,8 +27,10 @@ CLCGHAL_API GHALDeviceContext *GLGHALDevice::createDeviceContextForWindow(clench
 
 	std::unique_ptr<
 		GLGHALDeviceContext,
-		utils::RcObjectUniquePtrDeleter<GLGHALDeviceContext>>
-		deviceContext(new GLGHALDeviceContext(this));
+		peff::RcObjectUniquePtrDeleter>
+		deviceContext(GLGHALDeviceContext::alloc(this));
+	if (!deviceContext)
+		return nullptr;
 #ifdef _WIN32
 	deviceContext->hWnd = window->nativeHandle;
 	deviceContext->hdc = GetDC(deviceContext->hWnd);
@@ -463,10 +464,22 @@ CLCGHAL_API RenderTargetView *GLGHALDevice::createRenderTargetViewForTexture2D(T
 	return new GLRenderTargetView(this, RenderTargetViewType::Texture2D, ((GLTexture2D *)texture)->textureHandle);
 }
 
+CLCGHAL_API GLGHALDevice *GLGHALDevice::alloc(peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator, GLGHALBackend *backend) {
+	std::unique_ptr<GLGHALDevice, peff::DeallocableDeleter> ptr((GLGHALDevice*)selfAllocator->alloc(sizeof(GLGHALDevice)));
+	if (!ptr)
+		return nullptr;
+
+	new (ptr.get()) GLGHALDevice(selfAllocator, resourceAllocator, backend);
+
+	if(!(ptr->defaultContext = GLGHALDeviceContext::alloc(ptr.get())))
+		return nullptr;
+
+	return (GLGHALDevice *)ptr.release();
+}
+
 CLCGHAL_API GLGHALDeviceContext::GLGHALDeviceContext(
 	GLGHALDevice *device)
-	: GHALDeviceContext(),
-	  device(device) {
+	: GHALDeviceContext(device) {
 }
 
 CLCGHAL_API GLGHALDeviceContext::~GLGHALDeviceContext() {
@@ -772,6 +785,16 @@ CLCGHAL_API bool GLGHALDeviceContext::makeContextCurrent() {
 #else
 	return eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext);
 #endif
+}
+
+CLCGHAL_API GLGHALDeviceContext *GLGHALDeviceContext::alloc(GLGHALDevice *device) {
+	void *ptr = device->resourceAllocator->alloc(sizeof(GLGHALDeviceContext));
+	if (!ptr)
+		return nullptr;
+
+	new (ptr) GLGHALDeviceContext(device);
+
+	return (GLGHALDeviceContext *)ptr;
 }
 
 CLCGHAL_API GLenum clench::ghal::toGLTextureFormat(TextureFormat format, GLenum &typeOut) {

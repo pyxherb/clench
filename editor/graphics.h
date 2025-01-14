@@ -11,7 +11,7 @@ namespace clench {
 			std::unique_ptr<clench::ghal::GHALDevice> g_mainGhalDevice;
 		};
 
-		extern std::unique_ptr<clench::ghal::GHALDevice> g_mainGhalDevice;
+		extern std::unique_ptr<clench::ghal::GHALDevice, peff::DeallocableDeleter> g_mainGhalDevice;
 	}
 }
 
