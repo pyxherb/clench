@@ -7,18 +7,11 @@ using namespace clench::engine;
 std::unique_ptr<wsal::WindowScope, peff::DeallocableDeleter> clench::engine::g_mainWindowScope;
 peff::RcObjectPtr<MainWindow> clench::engine::g_mainWindow;
 
-CLCWSAL_API clench::engine::MainWindow::MainWindow(wsal::WindowScope *windowScope)
+CLCWSAL_API clench::engine::MainWindow::MainWindow(wsal::WindowScope *windowScope, wsal::NativeWindowHandle nativeWindowHandle)
 	: VWCRootWindow(
 		  windowScope,
-		  wsal::CREATEWINDOW_MIN |
-			  wsal::CREATEWINDOW_MAX |
-			  wsal::CREATEWINDOW_RESIZE,
-		  g_mainGhalDevice.get(),
-		  nullptr,
-		  0,
-		  0,
-		  640,
-		  480) {
+		  nativeWindowHandle,
+		  g_mainGhalDevice.get()) {
 	setTitle("Clench Engine");
 }
 
@@ -34,4 +27,15 @@ CLCWSAL_API bool clench::engine::MainWindow::onClose() {
 
 CLCWSAL_API bool clench::engine::MainWindow::isKeyDown(wsal::KeyboardKeyCode keyCode) const {
 	return keyboardPressedKeys.count((uint32_t)keyCode);
+}
+
+CLCWSAL_API MainWindow *MainWindow::alloc(wsal::WindowScope *windowScope, wsal::NativeWindowHandle nativeWindowHandle) {
+	std::unique_ptr<MainWindow, peff::RcObjectUniquePtrDeleter>
+		ptr((MainWindow *)windowScope->allocator->alloc(sizeof(MainWindow)));
+	if (!ptr)
+		return nullptr;
+
+	new (ptr.get()) MainWindow(windowScope, nativeWindowHandle);
+
+	return ptr.release();
 }

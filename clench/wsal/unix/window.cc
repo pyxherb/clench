@@ -13,56 +13,21 @@ using namespace clench::wsal;
 
 CLCWSAL_API NativeWindow::NativeWindow(
 	WindowScope *windowScope,
-	CreateWindowFlags flags,
-	NativeWindow *parent,
-	int x,
-	int y,
-	int width,
-	int height) : Window(windowScope) {
-	nativeHandle.kind = NativeWindowHandle::Kind::X11;
-
-	if (!(nativeHandle.data.x11.display = XOpenDisplay(nullptr)))
-		throw std::runtime_error("Error opening default display");
-
-	nativeHandle.data.x11.windowId = XCreateSimpleWindow(
-		nativeHandle.data.x11.display,
-		parent ? (parent)->nativeHandle.data.x11.windowId : DefaultRootWindow(nativeHandle.data.x11.display),
-		x, y,
-		width,
-		height,
-		0,
-		WhitePixel(nativeHandle.data.x11.display, DefaultScreen(nativeHandle.data.x11.display)),
-		BlackPixel(nativeHandle.data.x11.display, DefaultScreen(nativeHandle.data.x11.display)));
-
-	auto deleteWindowAtom = XInternAtom(nativeHandle.data.x11.display, "WM_DELETE_WINDOW", true);
-	XSetWMProtocols(nativeHandle.data.x11.display, nativeHandle.data.x11.windowId, &deleteWindowAtom, 1);
-	// XSetErrorHandler(_xErrorHandler);
-	// XSetIOErrorHandler(_xIoErrorHandler);
-	// XSetIOErrorExitHandler(display, _xIoErrorExitHandler, nullptr);
-
-	XSelectInput(
-		nativeHandle.data.x11.display, nativeHandle.data.x11.windowId,
-		ButtonPressMask | ButtonReleaseMask | PointerMotionMask | EnterWindowMask | LeaveWindowMask |
-			KeyPressMask | KeyReleaseMask |
-			StructureNotifyMask |
-			VisibilityChangeMask |
-			FocusChangeMask |
-			EnterWindowMask | LeaveWindowMask |
-			PointerMotionMask |
-			ResizeRedirectMask |
-			ExposureMask |
-			StructureNotifyMask |
-			PropertyChangeMask);
-
-	NativeWindowHandle tmpNativeHandle = nativeHandle;
-	windowScope->handleToWindowMap.insert(std::move(tmpNativeHandle), this);
+	NativeWindowHandle nativeWindowHandle) : Window(windowScope), nativeHandle(nativeWindowHandle) {
 }
 
 CLCWSAL_API NativeWindow::~NativeWindow() {
-	windowScope->handleToWindowMap.remove(nativeHandle);
+	if(auto it = windowScope->handleToWindowMap.find(nativeHandle); it != windowScope->handleToWindowMap.end())
+		windowScope->handleToWindowMap.remove(it);
 
-	XDestroyWindow(nativeHandle.data.x11.display, nativeHandle.data.x11.windowId);
-	XCloseDisplay(nativeHandle.data.x11.display);
+	switch (nativeHandle.kind) {
+		case NativeWindowHandle::Kind::Uninitialized:
+			break;
+		case NativeWindowHandle::Kind::X11:
+			XDestroyWindow(nativeHandle.data.x11.display, nativeHandle.data.x11.windowId);
+			XCloseDisplay(nativeHandle.data.x11.display);
+			break;
+	}
 }
 
 CLCWSAL_API void NativeWindow::pollEvents() {
@@ -399,6 +364,56 @@ CLCWSAL_API void NativeWindow::onDraw() {
 
 static wsal::Window *_g_curMouseCapturedWindow = nullptr;
 static NativeWindow *_g_curMouseCapturedTopLevelWindow = nullptr;
+
+NativeWindowHandle wsal::createNativeWindow(
+	CreateWindowFlags flags,
+	NativeWindow *parent,
+	int x,
+	int y,
+	int width,
+	int height) {
+	NativeWindowHandle nativeHandle;
+
+	Display *display;
+	::Window windowId;
+
+	if (!(nativeHandle.data.x11.display = (display = XOpenDisplay(nullptr))))
+		throw std::runtime_error("Error opening default display");
+
+	nativeHandle.data.x11.windowId = (windowId = XCreateSimpleWindow(
+										  display,
+										  parent ? (parent)->nativeHandle.data.x11.windowId : DefaultRootWindow(display),
+										  x, y,
+										  width,
+										  height,
+										  0,
+										  WhitePixel(display, DefaultScreen(display)),
+										  BlackPixel(display, DefaultScreen(display))));
+
+	auto deleteWindowAtom = XInternAtom(display, "WM_DELETE_WINDOW", true);
+	XSetWMProtocols(display, windowId, &deleteWindowAtom, 1);
+	// XSetErrorHandler(_xErrorHandler);
+	// XSetIOErrorHandler(_xIoErrorHandler);
+	// XSetIOErrorExitHandler(display, _xIoErrorExitHandler, nullptr);
+
+	XSelectInput(
+		display, windowId,
+		ButtonPressMask | ButtonReleaseMask | PointerMotionMask | EnterWindowMask | LeaveWindowMask |
+			KeyPressMask | KeyReleaseMask |
+			StructureNotifyMask |
+			VisibilityChangeMask |
+			FocusChangeMask |
+			EnterWindowMask | LeaveWindowMask |
+			PointerMotionMask |
+			ResizeRedirectMask |
+			ExposureMask |
+			StructureNotifyMask |
+			PropertyChangeMask);
+
+	nativeHandle.kind = NativeWindowHandle::Kind::X11;
+
+	return nativeHandle;
+}
 
 CLCWSAL_API void clench::wsal::setMouseCapture(Window *window) {
 	CLENCH_DEBUG_LOG("WSAL", "Setting mouse capture for window: %p", window);

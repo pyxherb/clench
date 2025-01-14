@@ -15,13 +15,8 @@ namespace clench {
 
 			CLCVWC_API VWCRootWindow(
 				wsal::WindowScope *windowScope,
-				wsal::CreateWindowFlags createWindowFlags,
-				ghal::GHALDevice *ghalDevice,
-				NativeWindow *parent,
-				int x,
-				int y,
-				int width,
-				int height);
+				wsal::NativeWindowHandle nativeWindowHandle,
+				ghal::GHALDevice *ghalDevice);
 			CLCVWC_API virtual ~VWCRootWindow();
 
 			CLCVWC_API virtual void addChildWindow(Window *window) override;

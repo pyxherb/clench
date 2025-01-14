@@ -40,12 +40,22 @@ int main(int argc, char **argv) {
 		throw std::runtime_error("Error creating main GHAL device");
 
 	g_mainWindowScope = std::unique_ptr<wsal::WindowScope, peff::DeallocableDeleter>(
-		wsal::WindowScope::alloc(peff::getDefaultAlloc(), peff::getDefaultAlloc())
-	);
-	if(!g_mainWindowScope)
+		wsal::WindowScope::alloc(peff::getDefaultAlloc(), peff::getDefaultAlloc()));
+	if (!g_mainWindowScope)
 		throw std::bad_alloc();
 
-	g_mainWindow = new MainWindow(g_mainWindowScope.get());
+	g_mainWindow = MainWindow::alloc(g_mainWindowScope.get(),
+		wsal::createNativeWindow(
+			wsal::CREATEWINDOW_MIN |
+				wsal::CREATEWINDOW_MAX |
+				wsal::CREATEWINDOW_RESIZE,
+			nullptr,
+			0,
+			0,
+			640,
+			480));
+	if (!g_mainWindow)
+		throw std::bad_alloc();
 
 	g_mainWindow->show();
 
@@ -140,7 +150,7 @@ int main(int argc, char **argv) {
 		g_mainWindow->onDraw();
 		g_mainWindow->pollEvents();
 
-		//g_mainWindow->onExpose();
+		// g_mainWindow->onExpose();
 		/*
 		g_mainGhalDeviceContext->begin();
 
@@ -168,7 +178,7 @@ int main(int argc, char **argv) {
 	fragmentShader.reset();
 	vertexShader.reset();
 
-	//g_mainGhalDeviceContext.reset();
+	// g_mainGhalDeviceContext.reset();
 
 	g_mainWindow.reset();
 	g_mainWindowScope.reset();

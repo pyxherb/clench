@@ -5,21 +5,11 @@ using namespace clench::vwc;
 
 CLCVWC_API VWCRootWindow::VWCRootWindow(
 	wsal::WindowScope *windowScope,
-	wsal::CreateWindowFlags createWindowFlags,
-	ghal::GHALDevice *ghalDevice,
-	NativeWindow *parent,
-	int x,
-	int y,
-	int width,
-	int height)
+	wsal::NativeWindowHandle nativeWindowHandle,
+	ghal::GHALDevice *ghalDevice)
 	: NativeWindow(
 		  windowScope,
-		  createWindowFlags,
-		  parent,
-		  x,
-		  y,
-		  width,
-		  height),
+		  nativeWindowHandle),
 	  ghalDevice(ghalDevice) {
 	ghalDeviceContext = std::unique_ptr<ghal::GHALDeviceContext>(ghalDevice->createDeviceContextForWindow(this));
 }

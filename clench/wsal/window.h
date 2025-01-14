@@ -42,7 +42,8 @@ namespace clench {
 #elif defined(__unix__)
 		struct NativeWindowHandle {
 			enum class Kind {
-				X11 = 0,
+				Uninitialized = 0,
+				X11,
 				Wayland
 			};
 			union {
@@ -234,12 +235,7 @@ namespace clench {
 
 			CLCWSAL_API NativeWindow(
 				WindowScope *windowScope,
-				CreateWindowFlags flags,
-				NativeWindow *parent,
-				int x,
-				int y,
-				int width,
-				int height);
+				NativeWindowHandle nativeWindowHandle);
 			CLCWSAL_API virtual ~NativeWindow();
 
 			CLCWSAL_API virtual void show() override;
@@ -284,6 +280,14 @@ namespace clench {
 			CLCWSAL_API virtual void onExpose() override;
 			CLCWSAL_API virtual void onDraw() override;
 		};
+
+		NativeWindowHandle createNativeWindow(CreateWindowFlags flags,
+				NativeWindow *parent,
+				int x,
+				int y,
+				int width,
+				int height
+		);
 
 		constexpr static int UNSET = INT_MIN;
 
