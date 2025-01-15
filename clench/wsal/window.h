@@ -90,19 +90,27 @@ namespace clench {
 #endif
 
 		class WindowScope final : public peff::Deallocable {
-		private:
-			CLCWSAL_API WindowScope(peff::Alloc *selfAllocator, peff::Alloc *allocator);
-
 		public:
 			peff::RcObjectPtr<peff::Alloc> selfAllocator, allocator;
 			peff::Set<Window *> childWindows;
 			peff::Map<NativeWindowHandle, Window *> handleToWindowMap;
 
+			CLCWSAL_API WindowScope(peff::Alloc *selfAllocator, peff::Alloc *allocator);
 			CLCWSAL_API ~WindowScope();
 
 			CLCWSAL_API virtual void dealloc() override;
 
 			CLCWSAL_API static WindowScope *alloc(peff::Alloc *selfAllocator, peff::Alloc *allocator);
+
+			template <typename T, typename... Args>
+			CLENCH_FORCEINLINE T *newWindow(Args... args) {
+				T *ptr = peff::allocAndConstruct<T>(allocator.get(), sizeof(std::max_align_t), std::forward<Args>(args)...);
+
+				if(!ptr)
+					return nullptr;
+
+				return (T *)ptr;
+			}
 		};
 
 		using CreateWindowFlags = std::uint32_t;
@@ -282,12 +290,11 @@ namespace clench {
 		};
 
 		NativeWindowHandle createNativeWindow(CreateWindowFlags flags,
-				NativeWindow *parent,
-				int x,
-				int y,
-				int width,
-				int height
-		);
+			NativeWindow *parent,
+			int x,
+			int y,
+			int width,
+			int height);
 
 		constexpr static int UNSET = INT_MIN;
 

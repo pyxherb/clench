@@ -13,3 +13,12 @@ CLCGHAL_API GLVertexArray::GLVertexArray(
 CLCGHAL_API GLVertexArray::~GLVertexArray() {
 	glDeleteVertexArrays(1, &vertexArrayHandle);
 }
+
+CLCGHAL_API GLVertexArray *GLVertexArray::alloc(
+	GHALDevice *ownerDevice,
+	GLuint vertexArrayHandle) {
+	return (GLVertexArray *)
+		peff::allocAndConstruct<GLVertexArray>(
+			ownerDevice->resourceAllocator.get(), sizeof(std::max_align_t),
+			ownerDevice, vertexArrayHandle);
+}

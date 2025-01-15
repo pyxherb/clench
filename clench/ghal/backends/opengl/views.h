@@ -17,6 +17,12 @@ namespace clench {
 				RenderTargetViewType type,
 				GLuint frameBufferHandle);
 			CLCGHAL_API virtual ~GLRenderTargetView();
+
+			CLCGHAL_API static GLRenderTargetView *alloc(
+				GHALDevice *ownerDevice,
+				RenderTargetViewType type,
+				GLuint frameBufferHandle
+			);
 		};
 
 		class GLDepthStencilView : public DepthStencilView {
@@ -34,6 +40,14 @@ namespace clench {
 				GLuint depthBufferHandle,
 				GLuint stencilBufferHandle);
 			CLCGHAL_API virtual ~GLDepthStencilView();
+
+			CLCGHAL_API static GLDepthStencilView *alloc(
+				GHALDevice *ownerDevice,
+				DepthStencilViewType depthStencilViewType,
+				GLuint frameBufferHandle,
+				GLuint depthBufferHandle,
+				GLuint stencilBufferHandle
+			);
 		};
 	}
 }

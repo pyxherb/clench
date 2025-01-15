@@ -126,7 +126,7 @@ int main(int argc, char **argv) {
 	}
 
 	peff::RcObjectPtr<clench::vwc::DefaultButton> button =
-		new clench::vwc::DefaultButton(
+		g_mainWindowScope->newWindow<clench::vwc::DefaultButton>(
 			g_mainWindowScope.get(),
 			g_mainGhalDevice.get(),
 			g_mainWindow->ghalDeviceContext.get(),

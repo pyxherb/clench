@@ -121,7 +121,7 @@ CLCGHAL_API GHALDeviceContext *GLGHALDevice::createDeviceContextForWindow(clench
 #endif
 	GLint defaultFramebuffer;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *)&defaultFramebuffer);
-	deviceContext->defaultRenderTargetView = new GLRenderTargetView(this, RenderTargetViewType::Buffer, defaultFramebuffer);
+	deviceContext->defaultRenderTargetView = GLRenderTargetView::alloc(this, RenderTargetViewType::Buffer, defaultFramebuffer);
 
 	deviceContext->onResize(width, height);
 	return deviceContext.release();
@@ -144,7 +144,7 @@ CLCGHAL_API VertexArray *GLGHALDevice::createVertexArray(
 		glBindVertexArray(prevVao);
 	});
 
-	GLVertexArray *vertexArray = new GLVertexArray(this, vao);
+	std::unique_ptr<GLVertexArray, peff::RcObjectUniquePtrDeleter> vertexArray(GLVertexArray::alloc(this, vao));
 
 	for (size_t i = 0; i < nElementDescs; ++i) {
 		VertexArrayElementDesc &curDesc = elementDescs[i];
@@ -191,7 +191,7 @@ CLCGHAL_API VertexArray *GLGHALDevice::createVertexArray(
 
 	deleteVaoGuard.release();
 
-	return vertexArray;
+	return vertexArray.release();
 }
 
 CLCGHAL_API VertexShader *GLGHALDevice::createVertexShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo) {
@@ -213,11 +213,13 @@ CLCGHAL_API VertexShader *GLGHALDevice::createVertexShader(const char *source, s
 		throw std::runtime_error("Error compiling shader: " + std::string(log));
 	}
 
-	GLVertexShader *vertexShader = new GLVertexShader(this, shader);
+	std::unique_ptr<GLVertexShader, peff::RcObjectUniquePtrDeleter> vertexShader(GLVertexShader::alloc(this, shader));
+	if(!vertexShader)
+		return nullptr;
 
 	deleteShaderGuard.release();
 
-	return vertexShader;
+	return vertexShader.release();
 }
 
 CLCGHAL_API FragmentShader *GLGHALDevice::createFragmentShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo) {
@@ -239,11 +241,13 @@ CLCGHAL_API FragmentShader *GLGHALDevice::createFragmentShader(const char *sourc
 		throw std::runtime_error("Error compiling shader: " + std::string(log));
 	}
 
-	GLFragmentShader *fragmentShader = new GLFragmentShader(this, shader);
+	std::unique_ptr<GLFragmentShader, peff::RcObjectUniquePtrDeleter> fragmentShader(GLFragmentShader::alloc(this, shader));
+	if(!fragmentShader)
+		return nullptr;
 
 	deleteShaderGuard.release();
 
-	return fragmentShader;
+	return fragmentShader.release();
 }
 
 CLCGHAL_API GeometryShader *GLGHALDevice::createGeometryShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo) {
@@ -302,11 +306,13 @@ CLCGHAL_API ShaderProgram *GLGHALDevice::linkShaderProgram(Shader **shaders, siz
 		throw std::runtime_error("Error linking shaders: " + std::string(log));
 	}
 
-	GLShaderProgram *shaderProgram = new GLShaderProgram(this, program);
+	std::unique_ptr<GLShaderProgram, peff::RcObjectUniquePtrDeleter> shaderProgram(GLShaderProgram::alloc(this, program));
+	if(!shaderProgram)
+		return nullptr;
 
 	deleteProgramGuard.release();
 
-	return shaderProgram;
+	return shaderProgram.release();
 }
 
 CLCGHAL_API Buffer *GLGHALDevice::createBuffer(const BufferDesc &bufferDesc, const void *initialData) {
@@ -316,7 +322,7 @@ CLCGHAL_API Buffer *GLGHALDevice::createBuffer(const BufferDesc &bufferDesc, con
 		glDeleteBuffers(1, &buffer);
 	});
 
-	std::unique_ptr<GLBuffer> glBuffer = std::make_unique<GLBuffer>(this, bufferDesc, buffer);
+	std::unique_ptr<GLBuffer, peff::RcObjectUniquePtrDeleter> glBuffer(GLBuffer::alloc(this, bufferDesc, buffer));
 
 	deleteBufferGuard.release();
 
@@ -461,15 +467,16 @@ CLCGHAL_API Texture3D *GLGHALDevice::createTexture3D(const char *data, size_t si
 }
 
 CLCGHAL_API RenderTargetView *GLGHALDevice::createRenderTargetViewForTexture2D(Texture2D *texture) {
-	return new GLRenderTargetView(this, RenderTargetViewType::Texture2D, ((GLTexture2D *)texture)->textureHandle);
+	return GLRenderTargetView::alloc(this, RenderTargetViewType::Texture2D, ((GLTexture2D *)texture)->textureHandle);
 }
 
 CLCGHAL_API GLGHALDevice *GLGHALDevice::alloc(peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator, GLGHALBackend *backend) {
-	std::unique_ptr<GLGHALDevice, peff::DeallocableDeleter> ptr((GLGHALDevice*)selfAllocator->alloc(sizeof(GLGHALDevice)));
+	std::unique_ptr<GLGHALDevice, peff::DeallocableDeleter> ptr(
+		peff::allocAndConstruct<GLGHALDevice>(
+			selfAllocator, sizeof(std::max_align_t),
+			selfAllocator, resourceAllocator, backend));
 	if (!ptr)
 		return nullptr;
-
-	new (ptr.get()) GLGHALDevice(selfAllocator, resourceAllocator, backend);
 
 	if(!(ptr->defaultContext = GLGHALDeviceContext::alloc(ptr.get())))
 		return nullptr;
@@ -788,13 +795,9 @@ CLCGHAL_API bool GLGHALDeviceContext::makeContextCurrent() {
 }
 
 CLCGHAL_API GLGHALDeviceContext *GLGHALDeviceContext::alloc(GLGHALDevice *device) {
-	void *ptr = device->resourceAllocator->alloc(sizeof(GLGHALDeviceContext));
-	if (!ptr)
-		return nullptr;
-
-	new (ptr) GLGHALDeviceContext(device);
-
-	return (GLGHALDeviceContext *)ptr;
+	return peff::allocAndConstruct<GLGHALDeviceContext>(
+		device->resourceAllocator.get(), sizeof(std::max_align_t),
+		device);
 }
 
 CLCGHAL_API GLenum clench::ghal::toGLTextureFormat(TextureFormat format, GLenum &typeOut) {

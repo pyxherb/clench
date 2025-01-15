@@ -14,6 +14,11 @@ namespace clench {
 				GHALDevice *ownedDevice,
 				GLuint shaderHandle);
 			CLCGHAL_API virtual ~GLVertexShader();
+
+			CLCGHAL_API static GLVertexShader *alloc(
+				GHALDevice *ownedDevice,
+				GLuint shaderHandle
+			);
 		};
 
 		class GLFragmentShader : public FragmentShader {
@@ -22,6 +27,11 @@ namespace clench {
 
 			CLCGHAL_API GLFragmentShader(GHALDevice *ownedDevice, GLuint shaderHandle);
 			CLCGHAL_API virtual ~GLFragmentShader();
+
+			CLCGHAL_API static GLFragmentShader *alloc(
+				GHALDevice *ownedDevice,
+				GLuint shaderHandle
+			);
 		};
 
 		class GLGeometryShader : public GeometryShader {
@@ -30,6 +40,11 @@ namespace clench {
 
 			CLCGHAL_API GLGeometryShader(GHALDevice *ownedDevice, GLuint shaderHandle);
 			CLCGHAL_API virtual ~GLGeometryShader();
+
+			CLCGHAL_API static GLGeometryShader *alloc(
+				GHALDevice *ownedDevice,
+				GLuint shaderHandle
+			);
 		};
 
 		class GLShaderProgram : public ShaderProgram {
@@ -40,6 +55,11 @@ namespace clench {
 				GLuint programHandle
 			);
 			CLCGHAL_API virtual ~GLShaderProgram();
+
+			CLCGHAL_API static GLShaderProgram *alloc(
+				GHALDevice *ownerDevice,
+				GLuint programHandle
+			);
 		};
 	}
 }

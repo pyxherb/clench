@@ -30,12 +30,7 @@ CLCWSAL_API bool clench::engine::MainWindow::isKeyDown(wsal::KeyboardKeyCode key
 }
 
 CLCWSAL_API MainWindow *MainWindow::alloc(wsal::WindowScope *windowScope, wsal::NativeWindowHandle nativeWindowHandle) {
-	std::unique_ptr<MainWindow, peff::RcObjectUniquePtrDeleter>
-		ptr((MainWindow *)windowScope->allocator->alloc(sizeof(MainWindow)));
-	if (!ptr)
-		return nullptr;
-
-	new (ptr.get()) MainWindow(windowScope, nativeWindowHandle);
-
-	return ptr.release();
+	return peff::allocAndConstruct<MainWindow>(
+		windowScope->allocator.get(), sizeof(std::max_align_t),
+		windowScope, nativeWindowHandle);
 }

@@ -9,7 +9,7 @@ namespace clench {
 		public:
 			std::set<peff::RcObjectPtr<Window>> childWindows;
 			ghal::GHALDevice *ghalDevice;
-			std::unique_ptr<ghal::GHALDeviceContext> ghalDeviceContext;
+			peff::RcObjectPtr<ghal::GHALDeviceContext> ghalDeviceContext;
 			ghal::TextureFormat renderBufferFormat;
 			std::set<Window *> hoveredChildWindows;
 

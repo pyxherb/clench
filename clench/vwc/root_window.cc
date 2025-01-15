@@ -11,7 +11,7 @@ CLCVWC_API VWCRootWindow::VWCRootWindow(
 		  windowScope,
 		  nativeWindowHandle),
 	  ghalDevice(ghalDevice) {
-	ghalDeviceContext = std::unique_ptr<ghal::GHALDeviceContext>(ghalDevice->createDeviceContextForWindow(this));
+	ghalDeviceContext = ghalDevice->createDeviceContextForWindow(this);
 }
 
 CLCVWC_API VWCRootWindow::~VWCRootWindow() {

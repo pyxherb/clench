@@ -16,6 +16,11 @@ namespace clench {
 				GHALDevice *ownerDevice,
 				GLuint vertexArrayHandle);
 			CLCGHAL_API virtual ~GLVertexArray();
+
+			CLCGHAL_API static GLVertexArray *alloc(
+				GHALDevice *ownerDevice,
+				GLuint vertexArrayHandle
+			);
 		};
 	}
 }

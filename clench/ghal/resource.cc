@@ -12,8 +12,5 @@ CLCGHAL_API GHALDeviceResource::~GHALDeviceResource() {
 }
 
 CLCGHAL_API void GHALDeviceResource::onRefZero() noexcept {
-	peff::RcObjectPtr<peff::Alloc> allocator = ownerDevice->resourceAllocator;
-	std::destroy_at<GHALDeviceResource>(this);
-
-	allocator->release(this);
+	peff::deallocAndDestruct<GHALDeviceResource>(ownerDevice->resourceAllocator.get(), this, sizeof(std::max_align_t));
 }

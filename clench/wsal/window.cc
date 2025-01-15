@@ -17,20 +17,13 @@ CLCWSAL_API WindowScope::~WindowScope() {
 }
 
 CLCWSAL_API void WindowScope::dealloc() {
-	peff::RcObjectPtr<peff::Alloc> allocator = selfAllocator;
-	std::destroy_at<WindowScope>(this);
-
-	allocator->release(this);
+	peff::deallocAndDestruct<WindowScope>(selfAllocator.get(), this, sizeof(std::max_align_t));
 }
 
 CLCWSAL_API WindowScope *WindowScope::alloc(peff::Alloc *selfAllocator, peff::Alloc *allocator) {
-	void *ptr = selfAllocator->alloc(sizeof(WindowScope));
-	if (!ptr)
-		return nullptr;
-
-	new (ptr) WindowScope(selfAllocator, allocator);
-
-	return (WindowScope *)ptr;
+	return peff::allocAndConstruct<WindowScope>(
+		selfAllocator, sizeof(std::max_align_t),
+		selfAllocator, allocator);
 }
 
 CLCWSAL_API wsal::Window::Window(WindowScope *windowScope) : windowScope(windowScope) {}
@@ -39,10 +32,7 @@ CLCWSAL_API wsal::Window::~Window() {
 }
 
 void wsal::Window::onRefZero() noexcept {
-	peff::RcObjectPtr<peff::Alloc> allocator = windowScope->allocator;
-	std::destroy_at<Window>(this);
-
-	allocator->release(this);
+	peff::deallocAndDestruct<Window>(windowScope->allocator.get(), this, sizeof(std::max_align_t));
 }
 
 CLCWSAL_API VirtualWindow::VirtualWindow(

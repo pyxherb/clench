@@ -11,10 +11,7 @@ CLCGHAL_API GHALDevice::~GHALDevice() {
 }
 
 CLCGHAL_API void GHALDevice::dealloc() {
-	peff::RcObjectPtr<peff::Alloc> allocator = selfAllocator;
-	std::destroy_at<GHALDevice>(this);
-
-	allocator->release(this);
+	peff::deallocAndDestruct<GHALDevice>(selfAllocator.get(), this, sizeof(std::max_align_t));
 }
 
 CLCGHAL_API GHALDeviceContext::GHALDeviceContext(GHALDevice *ownerDevice) : GHALDeviceResource(ownerDevice) {}

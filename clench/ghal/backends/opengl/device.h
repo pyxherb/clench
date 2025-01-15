@@ -69,10 +69,6 @@ namespace clench {
 		};
 
 		class GLGHALDeviceContext : public GHALDeviceContext {
-		protected:
-			CLCGHAL_API GLGHALDeviceContext(
-				GLGHALDevice *device);
-
 		public:
 			peff::RcObjectPtr<GLRenderTargetView> defaultRenderTargetView;
 
@@ -103,6 +99,8 @@ namespace clench {
 
 			CLENCH_NO_COPY_MOVE_METHODS(GLGHALDeviceContext);
 
+			CLCGHAL_API GLGHALDeviceContext(
+				GLGHALDevice *device);
 			CLCGHAL_API virtual ~GLGHALDeviceContext();
 
 			CLCGHAL_API virtual RenderTargetView *getDefaultRenderTargetView() override;
