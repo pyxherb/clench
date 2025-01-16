@@ -2,7 +2,7 @@
 #define _CLENCH_ACRI_CONTEXT_H_
 
 #include "resource.h"
-#include <peff/base/allocator.h>
+#include <peff/base/alloc.h>
 #include <peff/containers/set.h>
 #include <clench/ghal/device.h>
 

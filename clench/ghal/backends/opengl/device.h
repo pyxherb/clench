@@ -51,6 +51,8 @@ namespace clench {
 				size_t nElementDescs,
 				VertexShader *vertexShader) override;
 
+			CLCGHAL_API virtual bool isVertexDataTypeSupported(const VertexDataType &vertexDataType) override;
+
 			CLCGHAL_API virtual VertexShader *createVertexShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo) override;
 			CLCGHAL_API virtual FragmentShader *createFragmentShader(const char *sources, size_t size, ShaderSourceInfo *sourceInfo) override;
 			CLCGHAL_API virtual GeometryShader *createGeometryShader(const char *sources, size_t size, ShaderSourceInfo *sourceInfo) override;
@@ -163,6 +165,7 @@ namespace clench {
 			CLCGHAL_API static GLGHALDeviceContext *alloc(GLGHALDevice *device);
 		};
 
+		CLCGHAL_API GLenum toGLVertexDataType(const VertexDataType &vertexDataType, size_t &sizeOut);
 		CLCGHAL_API GLenum toGLTextureFormat(TextureFormat format, GLenum &typeOut);
 	}
 }

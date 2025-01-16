@@ -2,7 +2,7 @@
 #define _CLENCH_BASE_EXCEPT_H_
 
 #include "uuid.h"
-#include <peff/base/allocator.h>
+#include <peff/base/alloc.h>
 
 namespace clench {
 	namespace base {

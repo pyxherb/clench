@@ -6,7 +6,7 @@
 #include "mouse.h"
 #include <peff/base/rcobj.h>
 #include <peff/base/deallocable.h>
-#include <peff/base/allocator.h>
+#include <peff/base/alloc.h>
 #include <peff/containers/set.h>
 #include <peff/containers/map.h>
 #include <clench/utils/bitarray.h>

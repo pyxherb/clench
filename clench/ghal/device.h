@@ -11,7 +11,7 @@
 #include <clench/utils/assert.h>
 #include <clench/wsal/window.h>
 #include <set>
-#include <peff/base/allocator.h>
+#include <peff/base/alloc.h>
 
 namespace clench {
 	namespace ghal {
@@ -37,6 +37,8 @@ namespace clench {
 				VertexArrayElementDesc *elementDescs,
 				size_t nElementDescs,
 				VertexShader *vertexShader) = 0;
+
+			virtual bool isVertexDataTypeSupported(const VertexDataType &vertexDataType) = 0;
 
 			virtual VertexShader *createVertexShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo) = 0;
 			virtual FragmentShader *createFragmentShader(const char *sources, size_t size, ShaderSourceInfo *sourceInfo) = 0;

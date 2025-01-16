@@ -151,47 +151,21 @@ CLCGHAL_API VertexArray *GLGHALDevice::createVertexArray(
 
 		glEnableVertexArrayAttrib(vao, i);
 
-		size_t sizePerElement;
+		size_t sizeOut;
 		GLenum glType;
-		switch (curDesc.dataType) {
-			case VertexDataType::Int:
-				sizePerElement = sizeof(GLint);
-				glType = GL_INT;
-				break;
-			case VertexDataType::UInt:
-				sizePerElement = sizeof(GLuint);
-				glType = GL_UNSIGNED_INT;
-				break;
-			case VertexDataType::Short:
-				sizePerElement = sizeof(GLshort);
-				glType = GL_SHORT;
-				break;
-			case VertexDataType::UShort:
-				sizePerElement = sizeof(GLushort);
-				glType = GL_UNSIGNED_SHORT;
-				break;
-			case VertexDataType::Float:
-				sizePerElement = sizeof(GLfloat);
-				glType = GL_FLOAT;
-				break;
-			case VertexDataType::Double:
-				sizePerElement = sizeof(GLdouble);
-				glType = GL_DOUBLE;
-				break;
-			case VertexDataType::Boolean:
-				sizePerElement = sizeof(GLboolean);
-				glType = GL_BOOL;
-				break;
-			default:
-				throw std::logic_error("Invalid data type");
+		if((glType = toGLVertexDataType(curDesc.dataType, sizeOut)) == GL_INVALID_ENUM) {
+			return nullptr;
 		}
 
-		glVertexAttribPointer(i, sizePerElement * curDesc.nElements, glType, false, curDesc.stride, (void *)curDesc.off);
+		glVertexAttribPointer(i, sizeOut * curDesc.dataType.nElements, glType, false, curDesc.stride, (void *)curDesc.off);
 	}
 
 	deleteVaoGuard.release();
 
 	return vertexArray.release();
+}
+
+CLCGHAL_API bool GLGHALDevice::isVertexDataTypeSupported(const VertexDataType &vertexDataType) {
 }
 
 CLCGHAL_API VertexShader *GLGHALDevice::createVertexShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo) {
@@ -214,7 +188,7 @@ CLCGHAL_API VertexShader *GLGHALDevice::createVertexShader(const char *source, s
 	}
 
 	std::unique_ptr<GLVertexShader, peff::RcObjectUniquePtrDeleter> vertexShader(GLVertexShader::alloc(this, shader));
-	if(!vertexShader)
+	if (!vertexShader)
 		return nullptr;
 
 	deleteShaderGuard.release();
@@ -242,7 +216,7 @@ CLCGHAL_API FragmentShader *GLGHALDevice::createFragmentShader(const char *sourc
 	}
 
 	std::unique_ptr<GLFragmentShader, peff::RcObjectUniquePtrDeleter> fragmentShader(GLFragmentShader::alloc(this, shader));
-	if(!fragmentShader)
+	if (!fragmentShader)
 		return nullptr;
 
 	deleteShaderGuard.release();
@@ -307,7 +281,7 @@ CLCGHAL_API ShaderProgram *GLGHALDevice::linkShaderProgram(Shader **shaders, siz
 	}
 
 	std::unique_ptr<GLShaderProgram, peff::RcObjectUniquePtrDeleter> shaderProgram(GLShaderProgram::alloc(this, program));
-	if(!shaderProgram)
+	if (!shaderProgram)
 		return nullptr;
 
 	deleteProgramGuard.release();
@@ -478,7 +452,7 @@ CLCGHAL_API GLGHALDevice *GLGHALDevice::alloc(peff::Alloc *selfAllocator, peff::
 	if (!ptr)
 		return nullptr;
 
-	if(!(ptr->defaultContext = GLGHALDeviceContext::alloc(ptr.get())))
+	if (!(ptr->defaultContext = GLGHALDeviceContext::alloc(ptr.get())))
 		return nullptr;
 
 	return (GLGHALDevice *)ptr.release();
@@ -798,6 +772,34 @@ CLCGHAL_API GLGHALDeviceContext *GLGHALDeviceContext::alloc(GLGHALDevice *device
 	return peff::allocAndConstruct<GLGHALDeviceContext>(
 		device->resourceAllocator.get(), sizeof(std::max_align_t),
 		device);
+}
+
+CLCGHAL_API GLenum clench::ghal::toGLVertexDataType(const VertexDataType &vertexDataType, size_t &sizeOut) {
+	switch (vertexDataType.elementType) {
+		case VertexElementType::Int:
+			sizeOut = sizeof(GLint) * vertexDataType.nElements;
+			return GL_INT;
+		case VertexElementType::UInt:
+			sizeOut = sizeof(GLuint) * vertexDataType.nElements;
+			return GL_UNSIGNED_INT;
+		case VertexElementType::Short:
+			sizeOut = sizeof(GLshort) * vertexDataType.nElements;
+			return GL_SHORT;
+		case VertexElementType::UShort:
+			sizeOut = sizeof(GLushort) * vertexDataType.nElements;
+			return GL_UNSIGNED_SHORT;
+		case VertexElementType::Float:
+			sizeOut = sizeof(GLfloat) * vertexDataType.nElements;
+			return GL_FLOAT;
+		case VertexElementType::Double:
+			sizeOut = sizeof(GLdouble) * vertexDataType.nElements;
+			return GL_DOUBLE;
+		case VertexElementType::Boolean:
+			sizeOut = sizeof(GLboolean) * vertexDataType.nElements;
+			return GL_BOOL;
+		default:
+			return GL_INVALID_ENUM;
+	}
 }
 
 CLCGHAL_API GLenum clench::ghal::toGLTextureFormat(TextureFormat format, GLenum &typeOut) {

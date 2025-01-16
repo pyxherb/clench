@@ -3,7 +3,7 @@
 
 #include "basedefs.h"
 #include <clench/ghal/resource.h>
-#include <peff/base/allocator.h>
+#include <peff/base/alloc.h>
 
 namespace clench {
 	namespace acri {
