@@ -103,6 +103,7 @@ namespace clench {
 	#endif
 			};
 
+			CLENCH_FORCEINLINE Vec2() = default;
 			CLENCH_FORCEINLINE Vec2(float x, float y) : x(x), y(y) {}
 			CLENCH_FORCEINLINE Vec2(__m128 m128) : m128(m128) {}
 
@@ -130,6 +131,7 @@ namespace clench {
 	#endif
 			};
 
+			CLENCH_FORCEINLINE Vec3() = default;
 			CLENCH_FORCEINLINE Vec3(float x, float y, float z) : x(x), y(y), z(z) {}
 			CLENCH_FORCEINLINE Vec3(__m128 m128) : m128(m128) {}
 
@@ -158,6 +160,7 @@ namespace clench {
 	#endif
 			};
 
+			CLENCH_FORCEINLINE Vec4() = default;
 			CLENCH_FORCEINLINE Vec4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
 			CLENCH_FORCEINLINE Vec4(__m128 m128) : m128(m128) {}
 
@@ -191,6 +194,7 @@ namespace clench {
 	#endif
 			};
 
+			CLENCH_FORCEINLINE Vec3() = default;
 			CLENCH_FORCEINLINE Vec3(double x, double y, double z) : x(x), y(y), z(z) {}
 			CLENCH_FORCEINLINE Vec3(__m128d m128dLow, __m128d m128dHigh) : m128d({ m128dLow, m128dHigh }) {}
 
@@ -224,6 +228,7 @@ namespace clench {
 	#endif
 			};
 
+			CLENCH_FORCEINLINE Vec4() = default;
 			CLENCH_FORCEINLINE Vec4(double x, double y, double z, double w) : x(x), y(y), z(z), w(w) {}
 			CLENCH_FORCEINLINE Vec4(__m128d m128dLow, __m128d m128dHigh) : m128d({ m128dLow, m128dHigh }) {}
 

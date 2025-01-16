@@ -1,10 +1,21 @@
 #include "brush.h"
+#include "device.h"
 
 using namespace clench;
 using namespace clench::acri;
 
-CLCACRI_API Brush::Brush(ACRIContext *context, BrushType brushType) : ACRIResource(context), brushType(brushType) {
+CLCACRI_API Brush::Brush(ACRIDevice *device, BrushType brushType) : ACRIResource(device), brushType(brushType) {
 }
 
 CLCACRI_API Brush::~Brush() {
+}
+
+CLCACRI_API SolidColorBrush::SolidColorBrush(ACRIDevice *device, const ghal::Color &color): Brush(device, BrushType::SolidColor), color(color) {
+}
+
+CLCACRI_API SolidColorBrush::~SolidColorBrush() {
+}
+
+CLCACRI_API SolidColorBrush *SolidColorBrush::alloc(ACRIDevice *device, const ghal::Color &color) {
+	return peff::allocAndConstruct<SolidColorBrush>(device->resourceAllocator.get(), sizeof(std::max_align_t), device, color);
 }

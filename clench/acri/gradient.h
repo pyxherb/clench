@@ -2,6 +2,8 @@
 #define _CLENCH_ACRI_GRADIENT_H_
 
 #include "resource.h"
+#include <clench/ghal/color.h>
+#include <peff/containers/map.h>
 
 namespace clench {
 	namespace acri {
@@ -14,10 +16,17 @@ namespace clench {
 		public:
 			GradientType gradientType;
 
-			CLCACRI_API Gradient(GradientType gradientType);
+			CLCACRI_API Gradient(ACRIContext *context, GradientType gradientType);
 			CLCACRI_API virtual ~Gradient();
+		};
 
-			CLCACRI_API virtual void dealloc() override;
+		class LinearGradient : public Gradient {
+		public:
+			float angle;
+			peff::Map<float, ghal::Color> colorStops;
+
+			CLCACRI_API LinearGradient(ACRIContext *context);
+			CLCACRI_API virtual ~LinearGradient();
 		};
 	}
 }

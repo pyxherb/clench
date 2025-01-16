@@ -4,12 +4,12 @@
 #include "resource.h"
 #include <clench/ghal.h>
 #include <clench/math/vec.h>
+#include <peff/containers/dynarray.h>
 
 namespace clench {
 	namespace acri {
 		enum class GeometryKind {
 			Triangle = 0,
-			Polygon,
 			Ellipse,
 			Path
 		};
@@ -20,35 +20,23 @@ namespace clench {
 
 			CLENCH_NO_COPY_MOVE_METHODS(Geometry);
 
-			CLCACRI_API Geometry(GeometryKind geometryKind);
+			CLCACRI_API Geometry(ACRIDevice *device, GeometryKind geometryKind);
 			CLCACRI_API virtual ~Geometry();
 		};
 
-		struct TriangleVertex {
+		struct Vertex {
 			math::Vec3f position;
 			math::Vec4f color;
 		};
 
 		class TriangleGeometry : public Geometry {
 		public:
-			TriangleVertex vertices[3];
+			Vertex vertices[3];
 
 			CLENCH_NO_COPY_MOVE_METHODS(TriangleGeometry);
 
-			CLCACRI_API TriangleGeometry();
+			CLCACRI_API TriangleGeometry(ACRIDevice *device);
 			CLCACRI_API virtual ~TriangleGeometry();
-
-			CLCACRI_API virtual void dealloc() override;
-		};
-
-		class PolygonGeometry : public Geometry {
-		public:
-			CLENCH_NO_COPY_MOVE_METHODS(PolygonGeometry);
-
-			CLCACRI_API PolygonGeometry();
-			CLCACRI_API virtual ~PolygonGeometry();
-
-			CLCACRI_API virtual void dealloc() override;
 		};
 
 		class EllipseGeometry : public Geometry {
@@ -58,10 +46,8 @@ namespace clench {
 
 			CLENCH_NO_COPY_MOVE_METHODS(EllipseGeometry);
 
-			CLCACRI_API EllipseGeometry();
+			CLCACRI_API EllipseGeometry(ACRIDevice *device);
 			CLCACRI_API virtual ~EllipseGeometry();
-
-			CLCACRI_API virtual void dealloc() override;
 		};
 
 		enum class PathInstructionOpcode {
@@ -95,14 +81,12 @@ namespace clench {
 		class PathGeometry : public Geometry {
 		public:
 			float initX, initY;
-			std::vector<PathInstruction> instructions;
+			peff::DynArray<PathInstruction> instructions;
 
 			CLENCH_NO_COPY_MOVE_METHODS(PathGeometry);
 
-			CLCACRI_API PathGeometry();
+			CLCACRI_API PathGeometry(ACRIDevice *device);
 			CLCACRI_API virtual ~PathGeometry();
-
-			CLCACRI_API virtual void dealloc() override;
 		};
 	}
 }
