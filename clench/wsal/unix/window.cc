@@ -1,6 +1,5 @@
 #include <clench/wsal/window.h>
 #include <clench/utils/logger.h>
-#include <clench/utils/scope_guard.h>
 
 #include <locale>
 #include <map>
@@ -11,13 +10,41 @@
 using namespace clench;
 using namespace clench::wsal;
 
+CLCWSAL_API WindowScope::WindowScope(peff::Alloc *selfAllocator, peff::Alloc *allocator)
+	: selfAllocator(selfAllocator),
+	  allocator(allocator),
+	  builtNativeKeyMap(selfAllocator) {
+}
+
+CLCWSAL_API WindowScope::~WindowScope() {
+	assert((!childWindows.size(), "Not all child windows are released"));
+}
+
+CLCWSAL_API void WindowScope::dealloc() {
+	peff::destroyAndRelease<WindowScope>(selfAllocator.get(), this, sizeof(std::max_align_t));
+}
+
+CLCWSAL_API WindowScope *WindowScope::alloc(peff::Alloc *selfAllocator, peff::Alloc *allocator) {
+	std::unique_ptr<WindowScope, peff::DeallocableDeleter> ptr(
+		peff::allocAndConstruct<WindowScope>(
+			selfAllocator, sizeof(std::max_align_t),
+			selfAllocator, allocator));
+	if (!ptr)
+		return nullptr;
+
+	if (!ptr->builtNativeKeyMap.build(x11KeyMap))
+		return nullptr;
+
+	return ptr.release();
+}
+
 CLCWSAL_API NativeWindow::NativeWindow(
 	WindowScope *windowScope,
 	NativeWindowHandle nativeWindowHandle) : Window(windowScope), nativeHandle(nativeWindowHandle) {
 }
 
 CLCWSAL_API NativeWindow::~NativeWindow() {
-	if(auto it = windowScope->handleToWindowMap.find(nativeHandle); it != windowScope->handleToWindowMap.end())
+	if (auto it = windowScope->handleToWindowMap.find(nativeHandle); it != windowScope->handleToWindowMap.end())
 		windowScope->handleToWindowMap.remove(it);
 
 	switch (nativeHandle.kind) {
@@ -51,8 +78,8 @@ CLCWSAL_API void NativeWindow::pollEvents() {
 				if ((timeDiff == ev.xkey.time) || ((timeDiff > 0) & (timeDiff < ((Time)0xffffffff)))) {
 					_keyPressedTimes[key] = ev.xkey.time;
 
-					if (x11KeyMap.count(key)) {
-						onKeyDown((KeyboardKeyCode)x11KeyMap.at(key));
+					if (auto it = windowScope->builtNativeKeyMap.find(key); it != windowScope->builtNativeKeyMap.end()) {
+						onKeyDown((KeyboardKeyCode)it.value());
 					}
 				}
 				break;
@@ -72,8 +99,8 @@ CLCWSAL_API void NativeWindow::pollEvents() {
 					}
 				}
 
-				if (x11KeyMap.count(key)) {
-					onKeyUp((KeyboardKeyCode)x11KeyMap.at(key));
+				if (auto it = windowScope->builtNativeKeyMap.find(key); it != windowScope->builtNativeKeyMap.end()) {
+					onKeyDown((KeyboardKeyCode)it.value());
 				}
 				break;
 			}
@@ -303,7 +330,7 @@ CLCWSAL_API void NativeWindow::enumChildWindows(ChildWindowEnumer &&enumer) {
 	if (XQueryTree(nativeHandle.data.x11.display, nativeHandle.data.x11.windowId, &rootWindow, &parentWindow, &children, &nChildren))
 		return;
 
-	utils::ScopeGuard freeChildrenGuard([children]() {
+	peff::ScopeGuard freeChildrenGuard([children]() {
 		XFree(children);
 	});
 

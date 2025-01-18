@@ -9,7 +9,7 @@
 #include <peff/base/alloc.h>
 #include <peff/containers/set.h>
 #include <peff/containers/map.h>
-#include <clench/utils/bitarray.h>
+#include <peff/containers/bitarray.h>
 #include <string_view>
 #include <set>
 #include <map>
@@ -94,6 +94,10 @@ namespace clench {
 			peff::RcObjectPtr<peff::Alloc> selfAllocator, allocator;
 			peff::Set<Window *> childWindows;
 			peff::Map<NativeWindowHandle, Window *> handleToWindowMap;
+			#ifdef _WIN32
+			#elif defined(__unix__)
+			peff::Map<unsigned int, KeyboardKeyCode> builtNativeKeyMap;
+			#endif
 
 			CLCWSAL_API WindowScope(peff::Alloc *selfAllocator, peff::Alloc *allocator);
 			CLCWSAL_API ~WindowScope();
@@ -128,7 +132,7 @@ namespace clench {
 		class WindowClipping {
 		public:
 			size_t width, height;
-			utils::BitArray bitArray;
+			peff::BitArray bitArray;
 
 			void resize(size_t width, size_t height) {
 				this->width = width;

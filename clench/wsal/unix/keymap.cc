@@ -3,7 +3,7 @@
 using namespace clench;
 using namespace clench::wsal;
 
-std::map<unsigned int, KeyboardKeyCode> wsal::x11KeyMap = {
+std::initializer_list<std::pair<unsigned int, KeyboardKeyCode>> wsal::x11KeyMap = {
 	{ XK_space, (KeyboardKeyCode)' ' },
 	{ XK_exclam, (KeyboardKeyCode)'!' },
 	{ XK_quotedbl, (KeyboardKeyCode)'"' },

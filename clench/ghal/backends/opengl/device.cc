@@ -4,7 +4,6 @@
 #include "buffer.h"
 #include "views.h"
 #include "texture.h"
-#include <clench/utils/scope_guard.h>
 
 using namespace clench;
 using namespace clench::ghal;
@@ -53,7 +52,7 @@ CLCGHAL_API GHALDeviceContext *GLGHALDevice::createDeviceContextForWindow(clench
 		throw std::runtime_error("Error creating WGL context");
 
 	NativeGLContext prevContext = GLGHALDeviceContext::saveContextCurrent();
-	utils::ScopeGuard restoreContextGuard([&prevContext]() {
+	peff::ScopeGuard restoreContextGuard([&prevContext]() {
 		GLGHALDeviceContext::restoreContextCurrent(prevContext);
 	});
 	deviceContext->makeContextCurrent();
@@ -107,7 +106,7 @@ CLCGHAL_API GHALDeviceContext *GLGHALDevice::createDeviceContextForWindow(clench
 	deviceContext->eglContext = eglCreateContext(deviceContext->eglDisplay, deviceContext->eglConfig, EGL_NO_CONTEXT, contextAttribs);
 
 	NativeGLContext prevContext = GLGHALDeviceContext::saveContextCurrent();
-	utils::ScopeGuard restoreContextGuard([&prevContext]() {
+	peff::ScopeGuard restoreContextGuard([&prevContext]() {
 		GLGHALDeviceContext::restoreContextCurrent(prevContext);
 	});
 	deviceContext->makeContextCurrent();
@@ -134,13 +133,13 @@ CLCGHAL_API VertexArray *GLGHALDevice::createVertexArray(
 	GLuint vao;
 	glGenVertexArrays(1, &vao);
 
-	utils::ScopeGuard deleteVaoGuard([&vao]() {
+	peff::ScopeGuard deleteVaoGuard([&vao]() {
 		glDeleteVertexArrays(1, &vao);
 	});
 
 	GLint prevVao;
 	glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &prevVao);
-	utils::ScopeGuard restoreTextureGuard([prevVao]() {
+	peff::ScopeGuard restoreTextureGuard([prevVao]() {
 		glBindVertexArray(prevVao);
 	});
 
@@ -170,7 +169,7 @@ CLCGHAL_API bool GLGHALDevice::isVertexDataTypeSupported(const VertexDataType &v
 
 CLCGHAL_API VertexShader *GLGHALDevice::createVertexShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo) {
 	GLuint shader = glCreateShader(GL_VERTEX_SHADER);
-	utils::ScopeGuard deleteShaderGuard([shader]() {
+	peff::ScopeGuard deleteShaderGuard([shader]() {
 		glDeleteShader(shader);
 	});
 
@@ -198,7 +197,7 @@ CLCGHAL_API VertexShader *GLGHALDevice::createVertexShader(const char *source, s
 
 CLCGHAL_API FragmentShader *GLGHALDevice::createFragmentShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo) {
 	GLuint shader = glCreateShader(GL_FRAGMENT_SHADER);
-	utils::ScopeGuard deleteShaderGuard([shader]() {
+	peff::ScopeGuard deleteShaderGuard([shader]() {
 		glDeleteShader(shader);
 	});
 
@@ -262,7 +261,7 @@ CLCGHAL_API ShaderProgram *GLGHALDevice::linkShaderProgram(Shader **shaders, siz
 		throw std::logic_error("Missing fragment shader");
 
 	GLuint program = glCreateProgram();
-	utils::ScopeGuard deleteProgramGuard([program]() {
+	peff::ScopeGuard deleteProgramGuard([program]() {
 		glDeleteProgram(program);
 	});
 
@@ -292,7 +291,7 @@ CLCGHAL_API ShaderProgram *GLGHALDevice::linkShaderProgram(Shader **shaders, siz
 CLCGHAL_API Buffer *GLGHALDevice::createBuffer(const BufferDesc &bufferDesc, const void *initialData) {
 	GLuint buffer;
 	glGenBuffers(1, &buffer);
-	utils::ScopeGuard deleteBufferGuard([buffer]() {
+	peff::ScopeGuard deleteBufferGuard([buffer]() {
 		glDeleteBuffers(1, &buffer);
 	});
 
@@ -313,14 +312,14 @@ CLCGHAL_API Texture1D *GLGHALDevice::createTexture1D(const char *data, size_t si
 
 	GLuint texture;
 	glGenTextures(1, &texture);
-	utils::ScopeGuard deleteTextureGuard([texture]() {
+	peff::ScopeGuard deleteTextureGuard([texture]() {
 		glDeleteTextures(1, &texture);
 	});
 
 	texture1dLock.lock();
 	GLint savedTexture;
 	glGetIntegerv(GL_TEXTURE_1D, &savedTexture);
-	utils::ScopeGuard restoreTextureGuard([this, savedTexture]() {
+	peff::ScopeGuard restoreTextureGuard([this, savedTexture]() {
 		glBindTexture(GL_TEXTURE_1D, savedTexture);
 		texture1dLock.unlock();
 	});
@@ -357,14 +356,14 @@ CLCGHAL_API Texture2D *GLGHALDevice::createTexture2D(const char *data, size_t si
 
 	GLuint texture;
 	glGenTextures(1, &texture);
-	utils::ScopeGuard deleteTextureGuard([texture]() {
+	peff::ScopeGuard deleteTextureGuard([texture]() {
 		glDeleteTextures(1, &texture);
 	});
 
 	texture2dLock.lock();
 	GLint savedTexture;
 	glGetIntegerv(GL_TEXTURE_2D, &savedTexture);
-	utils::ScopeGuard restoreTextureGuard([this, savedTexture]() {
+	peff::ScopeGuard restoreTextureGuard([this, savedTexture]() {
 		glBindTexture(GL_TEXTURE_2D, savedTexture);
 		texture2dLock.unlock();
 	});
@@ -402,14 +401,14 @@ CLCGHAL_API Texture3D *GLGHALDevice::createTexture3D(const char *data, size_t si
 
 	GLuint texture;
 	glGenTextures(1, &texture);
-	utils::ScopeGuard deleteTextureGuard([texture]() {
+	peff::ScopeGuard deleteTextureGuard([texture]() {
 		glDeleteTextures(1, &texture);
 	});
 
 	texture3dLock.lock();
 	GLuint savedTexture;
 	glGetIntegerv(GL_TEXTURE_3D, (GLint *)&savedTexture);
-	utils::ScopeGuard restoreTextureGuard([this, savedTexture]() {
+	peff::ScopeGuard restoreTextureGuard([this, savedTexture]() {
 		glBindTexture(GL_TEXTURE_3D, savedTexture);
 		texture3dLock.unlock();
 	});
@@ -525,7 +524,7 @@ CLCGHAL_API void GLGHALDeviceContext::clearRenderTargetView(
 	GLuint prevRenderTarget;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *)&prevRenderTarget);
 
-	utils::ScopeGuard restoreRenderTargetGuard([prevRenderTarget]() {
+	peff::ScopeGuard restoreRenderTargetGuard([prevRenderTarget]() {
 		glBindFramebuffer(GL_FRAMEBUFFER, prevRenderTarget);
 	});
 
@@ -547,7 +546,7 @@ CLCGHAL_API void GLGHALDeviceContext::clearDepth(
 	GLuint prevRenderTarget;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *)&prevRenderTarget);
 
-	utils::ScopeGuard restoreRenderTargetGuard([prevRenderTarget]() {
+	peff::ScopeGuard restoreRenderTargetGuard([prevRenderTarget]() {
 		glBindFramebuffer(GL_FRAMEBUFFER, prevRenderTarget);
 	});
 
@@ -567,7 +566,7 @@ CLCGHAL_API void GLGHALDeviceContext::clearStencil(
 	GLuint prevRenderTarget;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *)&prevRenderTarget);
 
-	utils::ScopeGuard restoreRenderTargetGuard([prevRenderTarget]() {
+	peff::ScopeGuard restoreRenderTargetGuard([prevRenderTarget]() {
 		glBindFramebuffer(GL_FRAMEBUFFER, prevRenderTarget);
 	});
 
@@ -607,7 +606,7 @@ CLCGHAL_API void GLGHALDeviceContext::setData(Buffer *buffer, const void *data) 
 	copyWriteBufferLock.lock();
 	GLuint prevBuffer;
 	glGetIntegerv(GL_COPY_WRITE_BUFFER, (GLint *)&prevBuffer);
-	utils::ScopeGuard restoreBufferGuard([this, prevBuffer]() {
+	peff::ScopeGuard restoreBufferGuard([this, prevBuffer]() {
 		copyWriteBufferLock.unlock();
 		glBindBuffer(GL_COPY_WRITE_BUFFER, prevBuffer);
 	});
@@ -665,7 +664,7 @@ CLCGHAL_API void GLGHALDeviceContext::setRenderTarget(
 	GLuint prevRenderTarget;
 	glGetIntegerv(GL_RENDERBUFFER_BINDING, (GLint *)&prevRenderTarget);
 
-	utils::ScopeGuard restoreRenderTargetGuard([this, prevRenderTarget]() {
+	peff::ScopeGuard restoreRenderTargetGuard([this, prevRenderTarget]() {
 		glBindRenderbuffer(GL_RENDERBUFFER, prevRenderTarget);
 		renderBufferLock.unlock();
 	});

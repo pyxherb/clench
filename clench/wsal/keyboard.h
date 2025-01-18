@@ -6,7 +6,7 @@
 namespace clench {
 	namespace wsal {
 		enum class KeyboardKeyCode : uint32_t {
-			None = 0,
+			Null = 0,
 
 			// ASCII control characters
 			Backspace = 8,	// \b

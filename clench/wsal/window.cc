@@ -9,23 +9,6 @@
 using namespace clench;
 using namespace clench::wsal;
 
-CLCWSAL_API WindowScope::WindowScope(peff::Alloc *selfAllocator, peff::Alloc *allocator) : selfAllocator(selfAllocator), allocator(allocator) {
-}
-
-CLCWSAL_API WindowScope::~WindowScope() {
-	assert((!childWindows.size(), "Not all child windows are released"));
-}
-
-CLCWSAL_API void WindowScope::dealloc() {
-	peff::destroyAndRelease<WindowScope>(selfAllocator.get(), this, sizeof(std::max_align_t));
-}
-
-CLCWSAL_API WindowScope *WindowScope::alloc(peff::Alloc *selfAllocator, peff::Alloc *allocator) {
-	return peff::allocAndConstruct<WindowScope>(
-		selfAllocator, sizeof(std::max_align_t),
-		selfAllocator, allocator);
-}
-
 CLCWSAL_API wsal::Window::Window(WindowScope *windowScope) : windowScope(windowScope) {}
 
 CLCWSAL_API wsal::Window::~Window() {

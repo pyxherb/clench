@@ -6,7 +6,7 @@
 
 namespace clench {
 	namespace wsal {
-		extern std::map<unsigned int, KeyboardKeyCode> x11KeyMap;
+		extern std::initializer_list<std::pair<unsigned int, KeyboardKeyCode>> x11KeyMap;
 	}
 }
 
