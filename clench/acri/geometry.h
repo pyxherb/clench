@@ -24,14 +24,9 @@ namespace clench {
 			CLCACRI_API virtual ~Geometry();
 		};
 
-		struct Vertex {
-			math::Vec3f position;
-			math::Vec4f color;
-		};
-
 		class TriangleGeometry : public Geometry {
 		public:
-			Vertex vertices[3];
+			math::Vec3f vertices[3];
 
 			CLENCH_NO_COPY_MOVE_METHODS(TriangleGeometry);
 

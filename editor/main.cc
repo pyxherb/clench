@@ -86,9 +86,9 @@ int main(int argc, char **argv) {
 		fragmentShader = g_mainGhalDevice->createFragmentShader(fsSrc.get(), size, nullptr);
 	}
 
-	peff::RcObjectPtr<clench::ghal::VertexArray> vertexArray;
+	peff::RcObjectPtr<clench::ghal::VertexLayout> vertexArray;
 	{
-		clench::ghal::VertexArrayElementDesc descs[] = {
+		clench::ghal::VertexLayoutElementDesc descs[] = {
 			{ clench::ghal::InputVertexShaderSemanticType::Position,
 				0,
 				{ clench::ghal::VertexElementType::Float, 3 },
@@ -101,7 +101,7 @@ int main(int argc, char **argv) {
 				sizeof(float) * 3 }
 		};
 
-		vertexArray = g_mainGhalDevice->createVertexArray(descs, std::size(descs), vertexShader.get());
+		vertexArray = g_mainGhalDevice->createVertexLayout(descs, std::size(descs), vertexShader.get());
 	}
 
 	peff::RcObjectPtr<clench::ghal::Buffer> vertexBuffer, indexBuffer;
@@ -156,7 +156,7 @@ int main(int argc, char **argv) {
 		g_mainGhalDeviceContext->clearDepth(nullptr, 1.0f);
 		g_mainGhalDeviceContext->clearStencil(nullptr, 0);
 
-		g_mainGhalDeviceContext->bindVertexArray(vertexArray.get());
+		g_mainGhalDeviceContext->bindVertexLayout(vertexArray.get());
 		g_mainGhalDeviceContext->bindVertexBuffer(vertexBuffer.get(), sizeof(float) * 3 + sizeof(float) * 4);
 		g_mainGhalDeviceContext->bindIndexBuffer(indexBuffer.get());
 

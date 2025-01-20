@@ -142,8 +142,8 @@ CLCGHAL_API GHALDeviceContext *D3D11GHALDevice::createDeviceContextForWindow(cle
 	return ghalDeviceContext;
 }
 
-CLCGHAL_API VertexArray *D3D11GHALDevice::createVertexArray(
-	VertexArrayElementDesc *elementDescs,
+CLCGHAL_API VertexLayout *D3D11GHALDevice::createVertexLayout(
+	VertexLayoutElementDesc *elementDescs,
 	size_t nElementDescs,
 	VertexShader *vertexShader) {
 	ComPtr<ID3D11InputLayout> inputLayout;
@@ -154,7 +154,7 @@ CLCGHAL_API VertexArray *D3D11GHALDevice::createVertexArray(
 
 	for (size_t i = 0; i < nElementDescs; ++i) {
 		D3D11_INPUT_ELEMENT_DESC &curDesc = (inputElementDescs.get())[i];
-		VertexArrayElementDesc &curInputDesc = elementDescs[i];
+		VertexLayoutElementDesc &curInputDesc = elementDescs[i];
 
 		switch (curInputDesc.semanticType) {
 			case InputVertexShaderSemanticType::None:
@@ -264,7 +264,7 @@ CLCGHAL_API VertexArray *D3D11GHALDevice::createVertexArray(
 			&inputLayout)))
 		throw std::runtime_error("Error creating new vertex array");
 
-	return new D3D11VertexArray(this, inputLayout.Get());
+	return new D3D11VertexLayout(this, inputLayout.Get());
 }
 
 CLCGHAL_API VertexShader *D3D11GHALDevice::createVertexShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo) {
@@ -646,8 +646,8 @@ CLCGHAL_API void D3D11GHALDeviceContext::bindIndexBuffer(Buffer *buffer) {
 		0);
 }
 
-CLCGHAL_API void D3D11GHALDeviceContext::bindVertexArray(VertexArray *vertexArray) {
-	d3dDeviceContext->IASetInputLayout(((D3D11VertexArray *)vertexArray)->inputLayout.Get());
+CLCGHAL_API void D3D11GHALDeviceContext::bindVertexLayout(VertexLayout *vertexArray) {
+	d3dDeviceContext->IASetInputLayout(((D3D11VertexLayout *)vertexArray)->inputLayout.Get());
 }
 
 CLCGHAL_API void D3D11GHALDeviceContext::setData(Buffer *buffer, const void *data) {

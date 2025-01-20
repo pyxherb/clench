@@ -33,8 +33,8 @@ namespace clench {
 
 			virtual GHALDeviceContext *createDeviceContextForWindow(wsal::NativeWindow *window) = 0;
 
-			virtual VertexArray *createVertexArray(
-				VertexArrayElementDesc *elementDescs,
+			virtual VertexLayout *createVertexLayout(
+				VertexLayoutElementDesc *elementDescs,
 				size_t nElementDescs,
 				VertexShader *vertexShader) = 0;
 
@@ -81,7 +81,7 @@ namespace clench {
 			virtual void bindVertexBuffer(Buffer *buffer, size_t stride) = 0;
 			virtual void bindIndexBuffer(Buffer *buffer) = 0;
 
-			virtual void bindVertexArray(VertexArray *vertexArray) = 0;
+			virtual void bindVertexLayout(VertexLayout *vertexArray) = 0;
 
 			virtual void setData(Buffer *buffer, const void *data) = 0;
 
@@ -109,6 +109,7 @@ namespace clench {
 			virtual void begin() = 0;
 			virtual void end() = 0;
 
+			virtual void drawTriangle(unsigned int nTriangles) = 0;
 			virtual void drawIndexed(unsigned int nIndices) = 0;
 
 			virtual void present() = 0;

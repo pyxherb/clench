@@ -3,12 +3,12 @@
 using namespace clench;
 using namespace clench::ghal;
 
-CLCGHAL_API D3D11VertexArray::D3D11VertexArray(
+CLCGHAL_API D3D11VertexLayout::D3D11VertexLayout(
 	GHALDevice *ownerDevice,
 	ID3D11InputLayout *inputLayout)
-	: VertexArray(ownerDevice),
+	: VertexLayout(ownerDevice),
 	  inputLayout(inputLayout) {
 }
 
-CLCGHAL_API D3D11VertexArray::~D3D11VertexArray() {
+CLCGHAL_API D3D11VertexLayout::~D3D11VertexLayout() {
 }

@@ -2,6 +2,7 @@
 .vscode
 .vs
 CMakePresets.json
+.VSCodeCounter/
 
 # Build Artifacts
 build/

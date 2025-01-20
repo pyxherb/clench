@@ -46,8 +46,8 @@ namespace clench {
 			CLCGHAL_API virtual GHALDeviceContext *createDeviceContextForWindow(
 				clench::wsal::NativeWindow *window) override;
 
-			CLCGHAL_API virtual VertexArray *createVertexArray(
-				VertexArrayElementDesc *elementDescs,
+			CLCGHAL_API virtual VertexLayout *createVertexLayout(
+				VertexLayoutElementDesc *elementDescs,
 				size_t nElementDescs,
 				VertexShader *vertexShader) override;
 
@@ -124,7 +124,7 @@ namespace clench {
 			CLCGHAL_API virtual void bindVertexBuffer(Buffer *buffer, size_t stride) override;
 			CLCGHAL_API virtual void bindIndexBuffer(Buffer *buffer) override;
 
-			CLCGHAL_API virtual void bindVertexArray(VertexArray *vertexArray) override;
+			CLCGHAL_API virtual void bindVertexLayout(VertexLayout *vertexArray) override;
 
 			CLCGHAL_API virtual void setData(Buffer *buffer, const void *data) override;
 
@@ -149,6 +149,7 @@ namespace clench {
 				float &minDepthOut,
 				float &maxDepthOut) override;
 
+			CLCGHAL_API virtual void drawTriangle(unsigned int nTriangles) override;
 			CLCGHAL_API virtual void drawIndexed(unsigned int nIndices) override;
 
 			CLCGHAL_API virtual void begin() override;

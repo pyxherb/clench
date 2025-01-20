@@ -22,7 +22,10 @@ file(GLOB HEADERS *.h)
 file(GLOB SRC *.cc)
 
 target_sources(clcghal PRIVATE ${HEADERS} ${SRC})
+target_sources(clcghal_static PRIVATE ${HEADERS} ${SRC})
 
+set_target_properties(clcghal PROPERTIES CLCGHAL_HAS_OPENGL_BACKEND TRUE)
+set_target_properties(clcghal_static PROPERTIES CLCGHAL_HAS_OPENGL_BACKEND TRUE)
 target_compile_definitions(clcghal PUBLIC CLCGHAL_HAS_OPENGL_BACKEND=1)
 target_compile_definitions(clcghal_static PUBLIC CLCGHAL_HAS_OPENGL_BACKEND=1)
 target_link_libraries(clcghal PUBLIC glad)

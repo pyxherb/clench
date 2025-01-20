@@ -3,22 +3,22 @@
 using namespace clench;
 using namespace clench::ghal;
 
-CLCGHAL_API GLVertexArray::GLVertexArray(
+CLCGHAL_API GLVertexLayout::GLVertexLayout(
 	GHALDevice *ownerDevice,
 	GLuint vertexArrayHandle)
-	: VertexArray(ownerDevice),
+	: VertexLayout(ownerDevice),
 	  vertexArrayHandle(vertexArrayHandle) {
 }
 
-CLCGHAL_API GLVertexArray::~GLVertexArray() {
-	glDeleteVertexArrays(1, &vertexArrayHandle);
+CLCGHAL_API GLVertexLayout::~GLVertexLayout() {
+	glDeleteVertexLayouts(1, &vertexArrayHandle);
 }
 
-CLCGHAL_API GLVertexArray *GLVertexArray::alloc(
+CLCGHAL_API GLVertexLayout *GLVertexLayout::alloc(
 	GHALDevice *ownerDevice,
 	GLuint vertexArrayHandle) {
-	return (GLVertexArray *)
-		peff::allocAndConstruct<GLVertexArray>(
+	return (GLVertexLayout *)
+		peff::allocAndConstruct<GLVertexLayout>(
 			ownerDevice->resourceAllocator.get(), sizeof(std::max_align_t),
 			ownerDevice, vertexArrayHandle);
 }

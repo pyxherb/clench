@@ -6,18 +6,18 @@
 
 namespace clench {
 	namespace ghal {
-		class GLVertexArray : public VertexArray {
+		class GLVertexLayout : public VertexLayout {
 		public:
 			GLuint vertexArrayHandle;
 
-			CLENCH_NO_COPY_MOVE_METHODS(GLVertexArray);
+			CLENCH_NO_COPY_MOVE_METHODS(GLVertexLayout);
 
-			CLCGHAL_API GLVertexArray(
+			CLCGHAL_API GLVertexLayout(
 				GHALDevice *ownerDevice,
 				GLuint vertexArrayHandle);
-			CLCGHAL_API virtual ~GLVertexArray();
+			CLCGHAL_API virtual ~GLVertexLayout();
 
-			CLCGHAL_API static GLVertexArray *alloc(
+			CLCGHAL_API static GLVertexLayout *alloc(
 				GHALDevice *ownerDevice,
 				GLuint vertexArrayHandle
 			);

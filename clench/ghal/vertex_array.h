@@ -32,7 +32,7 @@ namespace clench {
 			}
 		};
 
-		struct VertexArrayElementDesc {
+		struct VertexLayoutElementDesc {
 			InputVertexShaderSemanticType semanticType;
 			uint32_t semanticIndex;
 			VertexDataType dataType;
@@ -40,12 +40,12 @@ namespace clench {
 			uint32_t off;
 		};
 
-		class VertexArray : public GHALDeviceResource {
+		class VertexLayout : public GHALDeviceResource {
 		public:
-			CLENCH_NO_COPY_MOVE_METHODS(VertexArray);
+			CLENCH_NO_COPY_MOVE_METHODS(VertexLayout);
 
-			CLCGHAL_API VertexArray(GHALDevice* ownerDevice);
-			CLCGHAL_API virtual ~VertexArray();
+			CLCGHAL_API VertexLayout(GHALDevice* ownerDevice);
+			CLCGHAL_API virtual ~VertexLayout();
 		};
 	}
 }

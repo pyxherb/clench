@@ -6,16 +6,16 @@
 
 namespace clench {
 	namespace ghal {
-		class D3D11VertexArray : public VertexArray {
+		class D3D11VertexLayout : public VertexLayout {
 		public:
 			ComPtr<ID3D11InputLayout> inputLayout;
 
-			CLENCH_NO_COPY_MOVE_METHODS(D3D11VertexArray);
+			CLENCH_NO_COPY_MOVE_METHODS(D3D11VertexLayout);
 
-			CLCGHAL_API D3D11VertexArray(
+			CLCGHAL_API D3D11VertexLayout(
 				GHALDevice *ownerDevice,
 				ID3D11InputLayout *inputLayout);
-			CLCGHAL_API virtual ~D3D11VertexArray();
+			CLCGHAL_API virtual ~D3D11VertexLayout();
 		};
 	}
 }

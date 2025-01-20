@@ -4,9 +4,9 @@ using namespace clench;
 using namespace clench::acri;
 
 CLCACRI_API ACRIDevice::ACRIDevice(
+	ghal::GHALDevice *associatedDevice,
 	peff::Alloc *selfAllocator,
-	peff::Alloc *resourceAllocator,
-	ghal::GHALDevice *associatedDevice)
+	peff::Alloc *resourceAllocator)
 	: selfAllocator(selfAllocator),
 	  resourceAllocator(resourceAllocator),
 	  createdResources(selfAllocator),
@@ -21,9 +21,16 @@ CLCACRI_API void ACRIDevice::dealloc() {
 	peff::destroyAndRelease<ACRIDevice>(selfAllocator.get(), this, sizeof(std::max_align_t));
 }
 
-CLCACRI_API ACRIDeviceContext::ACRIDeviceContext(ACRIDevice *device, ghal::GHALDeviceContext *deviceContext) : ACRIResource(device), deviceContext(deviceContext) {
-	assert(("Input device context does not correspond to the device", device->associatedDevice == deviceContext->ownerDevice));
+CLCACRI_API ACRIDeviceContext::ACRIDeviceContext(ACRIDevice *acriDevice, ghal::GHALDeviceContext *ghalDeviceContext) : ACRIResource(acriDevice), ghalDeviceContext(ghalDeviceContext) {
 }
 
 CLCACRI_API ACRIDeviceContext::~ACRIDeviceContext() {
+}
+
+CLCACRI_API void ACRIDeviceContext::beginDraw() {
+	ghalDeviceContext->begin();
+}
+
+CLCACRI_API void ACRIDeviceContext::endDraw() {
+	ghalDeviceContext->end();
 }

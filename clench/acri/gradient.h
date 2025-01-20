@@ -16,7 +16,7 @@ namespace clench {
 		public:
 			GradientType gradientType;
 
-			CLCACRI_API Gradient(ACRIContext *context, GradientType gradientType);
+			CLCACRI_API Gradient(ACRIDevice *device, GradientType gradientType);
 			CLCACRI_API virtual ~Gradient();
 		};
 
@@ -25,7 +25,7 @@ namespace clench {
 			float angle;
 			peff::Map<float, ghal::Color> colorStops;
 
-			CLCACRI_API LinearGradient(ACRIContext *context);
+			CLCACRI_API LinearGradient(ACRIDevice *device);
 			CLCACRI_API virtual ~LinearGradient();
 		};
 	}

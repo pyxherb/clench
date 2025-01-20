@@ -126,33 +126,33 @@ CLCGHAL_API GHALDeviceContext *GLGHALDevice::createDeviceContextForWindow(clench
 	return deviceContext.release();
 }
 
-CLCGHAL_API VertexArray *GLGHALDevice::createVertexArray(
-	VertexArrayElementDesc *elementDescs,
+CLCGHAL_API VertexLayout *GLGHALDevice::createVertexLayout(
+	VertexLayoutElementDesc *elementDescs,
 	size_t nElementDescs,
 	VertexShader *vertexShader) {
 	GLuint vao;
-	glGenVertexArrays(1, &vao);
+	glGenVertexLayouts(1, &vao);
 
 	peff::ScopeGuard deleteVaoGuard([&vao]() {
-		glDeleteVertexArrays(1, &vao);
+		glDeleteVertexLayouts(1, &vao);
 	});
 
 	GLint prevVao;
 	glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &prevVao);
 	peff::ScopeGuard restoreTextureGuard([prevVao]() {
-		glBindVertexArray(prevVao);
+		glBindVertexLayout(prevVao);
 	});
 
-	std::unique_ptr<GLVertexArray, peff::RcObjectUniquePtrDeleter> vertexArray(GLVertexArray::alloc(this, vao));
+	std::unique_ptr<GLVertexLayout, peff::RcObjectUniquePtrDeleter> vertexArray(GLVertexLayout::alloc(this, vao));
 
 	for (size_t i = 0; i < nElementDescs; ++i) {
-		VertexArrayElementDesc &curDesc = elementDescs[i];
+		VertexLayoutElementDesc &curDesc = elementDescs[i];
 
-		glEnableVertexArrayAttrib(vao, i);
+		glEnableVertexLayoutAttrib(vao, i);
 
 		size_t sizeOut;
 		GLenum glType;
-		if((glType = toGLVertexDataType(curDesc.dataType, sizeOut)) == GL_INVALID_ENUM) {
+		if ((glType = toGLVertexDataType(curDesc.dataType, sizeOut)) == GL_INVALID_ENUM) {
 			return nullptr;
 		}
 
@@ -594,10 +594,10 @@ CLCGHAL_API void GLGHALDeviceContext::bindIndexBuffer(Buffer *buffer) {
 	restoreCurrentGLContext();
 }
 
-CLCGHAL_API void GLGHALDeviceContext::bindVertexArray(VertexArray *vertexArray) {
+CLCGHAL_API void GLGHALDeviceContext::bindVertexLayout(VertexLayout *vertexArray) {
 	saveCurrentGLContext();
 
-	glBindVertexArray(((GLVertexArray *)vertexArray)->vertexArrayHandle);
+	glBindVertexLayout(((GLVertexLayout *)vertexArray)->vertexArrayHandle);
 
 	restoreCurrentGLContext();
 }
@@ -704,6 +704,10 @@ CLCGHAL_API void GLGHALDeviceContext::getViewport(
 	heightOut = viewportHeight;
 	minDepthOut = viewportMinDepth;
 	maxDepthOut = viewportMaxDepth;
+}
+
+CLCGHAL_API void GLGHALDeviceContext::drawTriangle(unsigned int nTriangles) {
+	glDrawArrays(GL_TRIANGLES, 0, nTriangles);
 }
 
 CLCGHAL_API void GLGHALDeviceContext::drawIndexed(unsigned int nIndices) {
