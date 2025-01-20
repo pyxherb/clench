@@ -35,7 +35,8 @@ int main(int argc, char **argv) {
 	ghal::registerBuiltinGHALBackends(peff::getDefaultAlloc());
 
 	peff::List<std::string_view> preferredBackendList;
-	preferredBackendList.pushBack("opengl");
+	if(!preferredBackendList.build({ "opengl" }))
+		throw std::bad_alloc();
 	g_mainGhalDevice = std::unique_ptr<ghal::GHALDevice, peff::DeallocableDeleter>(ghal::createGHALDevice(preferredBackendList));
 
 	if (!g_mainGhalDevice)
