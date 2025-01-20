@@ -14,7 +14,7 @@ CLCACRI_API bool clench::acri::registerBuiltinBackends(peff::Alloc *selfAllocato
 		return false;
 	}
 
-	peff::ScopeGuard openglUnregistererGuard([&glBackend]() {
+	peff::ScopeGuard openglUnregistererGuard([&glBackend]() noexcept {
 		unregisterBackend(glBackend->name);
 	});
 #endif

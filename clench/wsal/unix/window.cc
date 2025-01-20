@@ -330,7 +330,7 @@ CLCWSAL_API void NativeWindow::enumChildWindows(ChildWindowEnumer &&enumer) {
 	if (XQueryTree(nativeHandle.data.x11.display, nativeHandle.data.x11.windowId, &rootWindow, &parentWindow, &children, &nChildren))
 		return;
 
-	peff::ScopeGuard freeChildrenGuard([children]() {
+	peff::ScopeGuard freeChildrenGuard([children]() noexcept {
 		XFree(children);
 	});
 
