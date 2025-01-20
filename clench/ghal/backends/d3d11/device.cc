@@ -1,5 +1,5 @@
 #include "device.h"
-#include "vertex_array.h"
+#include "vertex_layout.h"
 #include "shader.h"
 #include "buffer.h"
 #include "views.h"

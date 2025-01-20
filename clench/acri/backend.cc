@@ -3,7 +3,7 @@
 using namespace clench;
 using namespace clench::acri;
 
-CLCACRI_API peff::HashMap<peff::String, peff::RcObjectPtr<ACRIBackend>> clench::acri::g_registeredBackends;
+CLCACRI_API peff::HashMap<std::string_view, peff::RcObjectPtr<ACRIBackend>> clench::acri::g_registeredBackends;
 
 CLCACRI_API ACRIBackend::ACRIBackend(const char *name, peff::Alloc *selfAllocator) : name(name), selfAllocator(selfAllocator) {
 }
@@ -16,14 +16,9 @@ CLCACRI_API void ACRIBackend::onRefZero() noexcept {
 }
 
 CLCACRI_API bool clench::acri::registerBackend(ACRIBackend *backend) {
-	peff::String s;
+	return g_registeredBackends.insert((std::string_view)backend->name, backend);
+}
 
-	{
-		size_t nameLen = strlen(backend->name);
-		if(!s.resize(nameLen))
-			return false;
-		memcpy(s.data(), backend->name, nameLen);
-	}
-
-	return g_registeredBackends.insert(std::move(s), backend);
+CLCACRI_API bool clench::acri::unregisterBackend(std::string_view name) {
+	g_registeredBackends.remove(name);
 }

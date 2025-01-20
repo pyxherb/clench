@@ -24,7 +24,7 @@ CLCGHAL_API void *clench::ghal::_loadGlProc(const char *name) {
 #endif
 }
 
-CLCGHAL_API GLGHALBackend::GLGHALBackend() : GHALBackend("opengl") {
+CLCGHAL_API GLGHALBackend::GLGHALBackend(peff::Alloc *selfAllocator) : GHALBackend("opengl", selfAllocator) {
 #if _WIN32
 	if (!(g_hOpenGL32Dll = LoadLibraryA("opengl32.dll")))
 		throw std::runtime_error("Error loading OpenGL32.dll");
@@ -36,4 +36,8 @@ CLCGHAL_API GLGHALBackend::~GLGHALBackend() {
 
 CLCGHAL_API GHALDevice *GLGHALBackend::createDevice() {
 	return GLGHALDevice::alloc(peff::getDefaultAlloc(), peff::getDefaultAlloc(), this);
+}
+
+CLCGHAL_API GLGHALBackend *GLGHALBackend::alloc(peff::Alloc *selfAllocator) {
+	return peff::allocAndConstruct<GLGHALBackend>(selfAllocator, sizeof(std::max_align_t), selfAllocator);
 }

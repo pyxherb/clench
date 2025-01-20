@@ -1,4 +1,4 @@
-#include "vertex_array.h"
+#include "vertex_layout.h"
 
 using namespace clench;
 using namespace clench::ghal;

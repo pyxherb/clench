@@ -3,7 +3,7 @@
 
 #include "backend.h"
 #include "resource.h"
-#include "vertex_array.h"
+#include "vertex_layout.h"
 #include "shader.h"
 #include "buffer.h"
 #include "texture.h"

@@ -1,5 +1,5 @@
 #include "device.h"
-#include "vertex_array.h"
+#include "vertex_layout.h"
 #include "shader.h"
 #include "buffer.h"
 #include "views.h"
@@ -131,16 +131,16 @@ CLCGHAL_API VertexLayout *GLGHALDevice::createVertexLayout(
 	size_t nElementDescs,
 	VertexShader *vertexShader) {
 	GLuint vao;
-	glGenVertexLayouts(1, &vao);
+	glGenVertexArrays(1, &vao);
 
 	peff::ScopeGuard deleteVaoGuard([&vao]() {
-		glDeleteVertexLayouts(1, &vao);
+		glDeleteVertexArrays(1, &vao);
 	});
 
 	GLint prevVao;
 	glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &prevVao);
 	peff::ScopeGuard restoreTextureGuard([prevVao]() {
-		glBindVertexLayout(prevVao);
+		glBindVertexArray(prevVao);
 	});
 
 	std::unique_ptr<GLVertexLayout, peff::RcObjectUniquePtrDeleter> vertexArray(GLVertexLayout::alloc(this, vao));
@@ -148,7 +148,7 @@ CLCGHAL_API VertexLayout *GLGHALDevice::createVertexLayout(
 	for (size_t i = 0; i < nElementDescs; ++i) {
 		VertexLayoutElementDesc &curDesc = elementDescs[i];
 
-		glEnableVertexLayoutAttrib(vao, i);
+		glEnableVertexArrayAttrib(vao, i);
 
 		size_t sizeOut;
 		GLenum glType;
@@ -597,7 +597,7 @@ CLCGHAL_API void GLGHALDeviceContext::bindIndexBuffer(Buffer *buffer) {
 CLCGHAL_API void GLGHALDeviceContext::bindVertexLayout(VertexLayout *vertexArray) {
 	saveCurrentGLContext();
 
-	glBindVertexLayout(((GLVertexLayout *)vertexArray)->vertexArrayHandle);
+	glBindVertexArray(((GLVertexLayout *)vertexArray)->vertexArrayHandle);
 
 	restoreCurrentGLContext();
 }

@@ -2,7 +2,7 @@
 #define _CLENCH_GHAL_BACKENDS_D3D11_VERTEX_ARRAY_H_
 
 #include "backend.h"
-#include <clench/ghal/vertex_array.h>
+#include <clench/ghal/vertex_layout.h>
 
 namespace clench {
 	namespace ghal {

@@ -18,10 +18,12 @@ namespace clench {
 		public:
 			CLENCH_NO_COPY_MOVE_METHODS(GLGHALBackend);
 
-			CLCGHAL_API GLGHALBackend();
+			CLCGHAL_API GLGHALBackend(peff::Alloc *selfAllocator);
 			CLCGHAL_API virtual ~GLGHALBackend();
 
 			CLCGHAL_API virtual GHALDevice *createDevice() override;
+
+			CLCGHAL_API static GLGHALBackend *alloc(peff::Alloc *selfAllocator);
 		};
 
 #if _WIN32

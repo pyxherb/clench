@@ -2,26 +2,27 @@
 #define _CLENCH_GHAL_BACKEND_H_
 
 #include "basedefs.h"
-#include <stdexcept>
-#include <string>
-#include <unordered_map>
-#include <set>
 #include <memory>
-#include <list>
-#include <vector>
+#include <peff/containers/string.h>
+#include <peff/containers/hashmap.h>
+#include <peff/containers/set.h>
+#include <peff/containers/list.h>
 
 namespace clench {
 	namespace ghal {
 		class GHALDevice;
 
-		class GHALBackend {
+		class GHALBackend : public peff::RcObject {
 		public:
-			const std::string backendId;
+			peff::RcObjectPtr<peff::Alloc> selfAllocator;
+			const char *backendId;
 
 			CLENCH_NO_COPY_MOVE_METHODS(GHALBackend);
 
-			CLCGHAL_API GHALBackend(const char* backendId);
+			CLCGHAL_API GHALBackend(const char* backendId, peff::Alloc *selfAllocator);
 			CLCGHAL_API virtual ~GHALBackend();
+
+			CLCGHAL_API virtual void onRefZero() noexcept override;
 
 			virtual GHALDevice* createDevice() = 0;
 		};
@@ -32,15 +33,15 @@ namespace clench {
 			CLCGHAL_API virtual ~GHALError();
 		};
 
-		CLCGHAL_API extern std::unordered_map<std::string, std::unique_ptr<GHALBackend>> g_registeredGHALBackends;
+		CLCGHAL_API extern peff::HashMap<std::string_view, peff::RcObjectPtr<GHALBackend>> g_registeredGHALBackends;
 
 		CLCGHAL_API void registerGHALBackend(GHALBackend* backend);
 		CLCGHAL_API void unregisterGHALBackend(const char* id);
 		CLCGHAL_API GHALBackend* getGHALBackend(const char* id);
 
-		CLCGHAL_API void registerBuiltinGHALBackends();
+		CLCGHAL_API void registerBuiltinGHALBackends(peff::Alloc *selfAllocator);
 
-		CLCGHAL_API GHALDevice *createGHALDevice(const std::list<std::string> &preferredBackendNames = {});
+		CLCGHAL_API GHALDevice *createGHALDevice(const peff::List<std::string_view> &preferredBackendNames = peff::List<std::string_view>());
 	}
 }
 

@@ -32,9 +32,11 @@ uint32_t indices[] = {
 int main(int argc, char **argv) {
 	wsal::init();
 
-	ghal::registerBuiltinGHALBackends();
+	ghal::registerBuiltinGHALBackends(peff::getDefaultAlloc());
 
-	g_mainGhalDevice = std::unique_ptr<ghal::GHALDevice, peff::DeallocableDeleter>(ghal::createGHALDevice({ "opengl" }));
+	peff::List<std::string_view> preferredBackendList;
+	preferredBackendList.pushBack("opengl");
+	g_mainGhalDevice = std::unique_ptr<ghal::GHALDevice, peff::DeallocableDeleter>(ghal::createGHALDevice(preferredBackendList));
 
 	if (!g_mainGhalDevice)
 		throw std::runtime_error("Error creating main GHAL device");
