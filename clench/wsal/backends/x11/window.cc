@@ -480,7 +480,7 @@ CLCWSAL_API void X11Window::onMouseMove(int x, int y) {
 			peff::Set<Window *> leftWindows;
 			for (auto i : hoveredChildWindows) {
 				if (!i->backend) {
-					if (!childWindows.contains((VirtualWindow*)i)) {
+					if (!childWindows.contains((VirtualWindow *)i)) {
 						auto copiedI = i;
 						leftWindows.insert(std::move(copiedI));
 					}
@@ -525,35 +525,19 @@ CLCWSAL_API void X11Window::onDraw() {
 }
 
 static wsal::Window *_g_curMouseCapturedWindow = nullptr;
-static X11Window *_g_curMouseCapturedTopLevelWindow = nullptr;
+static wsal::Window *_g_curMouseCapturedTopLevelWindow = nullptr;
 
 CLCWSAL_API void clench::wsal::setMouseCapture(Window *window) {
 	CLENCH_DEBUG_LOG("WSAL", "Setting mouse capture for window: %p", window);
 	if (_g_curMouseCapturedWindow)
 		releaseMouseCapture();
 
-	WindowProperties windowProperties;
-
-	window->getWindowProperties(windowProperties);
-
-	Window *i = window->getParent();
+	Window *i = window;
 
 	while (i) {
-		i->getWindowProperties(windowProperties);
-
-		if (windowProperties.isNative) {
-			_g_curMouseCapturedTopLevelWindow = (X11Window *)i;
-			XGrabPointer(
-				((X11Window *)i)->nativeHandle.display,
-				((X11Window *)i)->nativeHandle.window,
-				true,
-				ButtonPressMask | ButtonReleaseMask | PointerMotionMask | FocusChangeMask | EnterWindowMask | LeaveWindowMask,
-				GrabModeAsync,
-				GrabModeAsync,
-				X11_None,
-				X11_None,
-				CurrentTime);
-			((X11Window *)i)->curCapturedWindow = i == window ? nullptr : window;
+		if (i->backend) {
+			_g_curMouseCapturedTopLevelWindow = i;
+			_g_curMouseCapturedTopLevelWindow->backend->setMouseCapture(_g_curMouseCapturedTopLevelWindow, _g_curMouseCapturedWindow);
 			goto foundTopLevelWindow;
 		}
 
@@ -570,7 +554,7 @@ foundTopLevelWindow:
 CLCWSAL_API void clench::wsal::releaseMouseCapture() {
 	CLENCH_DEBUG_LOG("WSAL", "Releasing mouse capture");
 
-	XUngrabPointer(_g_curMouseCapturedTopLevelWindow->nativeHandle.display, CurrentTime);
+	_g_curMouseCapturedTopLevelWindow->backend->releaseMouseCapture(_g_curMouseCapturedTopLevelWindow, _g_curMouseCapturedWindow);
 	_releaseMouseCapture();
 }
 
@@ -580,7 +564,6 @@ CLCWSAL_API wsal::Window *wsal::getMouseCapture() {
 
 CLCWSAL_API void wsal::_releaseMouseCapture() {
 	if (_g_curMouseCapturedTopLevelWindow) {
-		_g_curMouseCapturedTopLevelWindow->curCapturedWindow = nullptr;
 		_g_curMouseCapturedTopLevelWindow = nullptr;
 	}
 	_g_curMouseCapturedWindow = nullptr;

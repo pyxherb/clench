@@ -29,6 +29,8 @@ namespace clench {
 				int y,
 				int width,
 				int height) override;
+			CLCWSAL_API virtual void setMouseCapture(Window *window, Window *childWindow) override;
+			CLCWSAL_API virtual void releaseMouseCapture(Window *window, Window *childWindow) override;
 
 			CLCWSAL_API static X11Backend *alloc(
 				peff::Alloc *selfAllocator,

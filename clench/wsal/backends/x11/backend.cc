@@ -39,7 +39,7 @@ CLCWSAL_API wsal::Window *X11Backend::createWindow(
 
 	nativeHandle.window = (window = XCreateSimpleWindow(
 							   display,
-							   parent ? ((X11Window*)parent)->nativeHandle.window : DefaultRootWindow(display),
+							   parent ? ((X11Window *)parent)->nativeHandle.window : DefaultRootWindow(display),
 							   x, y,
 							   width,
 							   height,
@@ -69,12 +69,31 @@ CLCWSAL_API wsal::Window *X11Backend::createWindow(
 
 	std::unique_ptr<X11Window, peff::RcObjectUniquePtrDeleter> windowPtr(X11Window::alloc(this, nativeHandle));
 
-	if(!windowPtr) {
+	if (!windowPtr) {
 		// TODO: Destroy the native window handle;
 		return nullptr;
 	}
 
 	return windowPtr.release();
+}
+
+CLCWSAL_API void X11Backend::setMouseCapture(Window *window, Window *childWindow) {
+	XGrabPointer(
+		((X11Window *)window)->nativeHandle.display,
+		((X11Window *)window)->nativeHandle.window,
+		true,
+		ButtonPressMask | ButtonReleaseMask | PointerMotionMask | FocusChangeMask | EnterWindowMask | LeaveWindowMask,
+		GrabModeAsync,
+		GrabModeAsync,
+		X11_None,
+		X11_None,
+		CurrentTime);
+	((X11Window *)window)->curCapturedWindow = (window == childWindow ? nullptr : childWindow);
+}
+
+CLCWSAL_API void X11Backend::releaseMouseCapture(Window *window, Window *childWindow) {
+	XUngrabPointer(((X11Window *)window)->nativeHandle.display, CurrentTime);
+	((X11Window *)window)->curCapturedWindow = nullptr;
 }
 
 CLCWSAL_API X11Backend *X11Backend::alloc(

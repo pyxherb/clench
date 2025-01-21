@@ -32,6 +32,8 @@ namespace clench {
 			bool deinit();
 
 			virtual Window *createWindow(CreateWindowFlags flags, Window *parent, int x, int y, int width, int height) = 0;
+			virtual void setMouseCapture(Window *window, Window *childWindow) = 0;
+			virtual void releaseMouseCapture(Window *window, Window *childWindow) = 0;
 		};
 
 		CLCWSAL_API extern peff::HashMap<std::string_view, peff::RcObjectPtr<Backend>> g_registeredWSALBackends;
