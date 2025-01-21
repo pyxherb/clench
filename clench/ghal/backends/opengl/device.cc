@@ -5,6 +5,10 @@
 #include "views.h"
 #include "texture.h"
 
+#if __unix__
+#include <clench/wsal/backends/x11/window.h>
+#endif
+
 using namespace clench;
 using namespace clench::ghal;
 
@@ -20,7 +24,7 @@ CLCGHAL_API GHALBackend *GLGHALDevice::getBackend() {
 	return backend;
 }
 
-CLCGHAL_API GHALDeviceContext *GLGHALDevice::createDeviceContextForWindow(clench::wsal::NativeWindow *window) {
+CLCGHAL_API GHALDeviceContext *GLGHALDevice::createDeviceContextForWindow(clench::wsal::Window *window) {
 	int width, height;
 	window->getSize(width, height);
 
@@ -76,7 +80,7 @@ CLCGHAL_API GHALDeviceContext *GLGHALDevice::createDeviceContextForWindow(clench
 
 	EGLint eglMinor, eglMajor;
 
-	deviceContext->eglDisplay = eglGetDisplay((EGLNativeDisplayType)window->nativeHandle.data.x11.display);
+	deviceContext->eglDisplay = eglGetDisplay((EGLNativeDisplayType)((wsal::X11Window*)window)->nativeHandle.display);
 	if (auto it = g_initializedEglDisplays.find(deviceContext->eglDisplay); it != g_initializedEglDisplays.end()) {
 		++it.value();
 	} else {
@@ -85,7 +89,7 @@ CLCGHAL_API GHALDeviceContext *GLGHALDevice::createDeviceContextForWindow(clench
 		g_initializedEglDisplays.insert(std::move(eglDisplay), 1);
 	}
 
-	deviceContext->eglWindow = (EGLNativeWindowType)window->nativeHandle.data.x11.windowId;
+	deviceContext->eglWindow = (EGLNativeWindowType)((wsal::X11Window*)window)->nativeHandle.window;
 
 	EGLint nConfigs;
 	eglChooseConfig(deviceContext->eglDisplay, configAttribs, &deviceContext->eglConfig, 1, &nConfigs);

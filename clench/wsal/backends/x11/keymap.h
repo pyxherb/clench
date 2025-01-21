@@ -1,8 +1,8 @@
 #ifndef _CLENCH_WSAL_UNIX_WINDOW_H_
 #define _CLENCH_WSAL_UNIX_WINDOW_H_
 
-#include <clench/wsal/window.h>
-#include <map>
+#include "window.h"
+#include <initializer_list>
 
 namespace clench {
 	namespace wsal {

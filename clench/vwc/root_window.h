@@ -5,23 +5,18 @@
 
 namespace clench {
 	namespace vwc {
-		class VWCRootWindow : public wsal::NativeWindow {
+		class VWCRootWindow : public wsal::VirtualWindow {
 		public:
-			std::set<peff::RcObjectPtr<Window>> childWindows;
 			ghal::GHALDevice *ghalDevice;
 			peff::RcObjectPtr<ghal::GHALDeviceContext> ghalDeviceContext;
 			ghal::TextureFormat renderBufferFormat;
-			std::set<Window *> hoveredChildWindows;
+			wsal::LayoutAttributes layoutAttribs;
 
 			CLCVWC_API VWCRootWindow(
-				wsal::WindowScope *windowScope,
-				wsal::NativeWindowHandle nativeWindowHandle,
+				peff::Alloc *selfAllocator,
+				wsal::Window *parent,
 				ghal::GHALDevice *ghalDevice);
 			CLCVWC_API virtual ~VWCRootWindow();
-
-			CLCVWC_API virtual void addChildWindow(Window *window) override;
-			CLCVWC_API virtual void removeChildWindow(Window *window) override;
-			CLCVWC_API virtual bool hasChildWindow(Window *window) const override;
 
 			CLCVWC_API virtual void onResize(int width, int height) override;
 			CLCVWC_API virtual void onMove(int x, int y) override;
@@ -36,7 +31,9 @@ namespace clench {
 			CLCVWC_API virtual void onDraw() override;
 
 			CLCVWC_API void redrawChildWindows();
-			CLCVWC_API void findWindowsAtPos(int x, int y, std::map<Window *, std::pair<int, int>> &childWindowsOut);
+			CLCVWC_API void findWindowsAtPos(int x, int y, peff::Map<Window *, std::pair<int, int>> &childWindowsOut);
+
+			CLCVWC_API const wsal::LayoutAttributes *getLayoutAttributes() const override;
 		};
 	}
 }

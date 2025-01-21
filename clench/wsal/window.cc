@@ -1,4 +1,5 @@
 #include "window.h"
+#include "backend.h"
 
 // Fuck <Windows.h>, we have to undefine them to use std::min and std::max.
 #ifdef _WIN32
@@ -9,24 +10,25 @@
 using namespace clench;
 using namespace clench::wsal;
 
-CLCWSAL_API wsal::Window::Window(WindowScope *windowScope) : windowScope(windowScope) {}
+CLCWSAL_API wsal::Window::Window(Backend *backend) : backend(backend) {}
 
 CLCWSAL_API wsal::Window::~Window() {
 }
 
-void wsal::Window::onRefZero() noexcept {
-	peff::destroyAndRelease<Window>(windowScope->allocator.get(), this, sizeof(std::max_align_t));
+CLCWSAL_API void wsal::Window::onRefZero() noexcept {
+	peff::destroyAndRelease<Window>(backend->resourceAllocator.get(), this, sizeof(std::max_align_t));
 }
 
 CLCWSAL_API VirtualWindow::VirtualWindow(
-	WindowScope *windowScope,
+	peff::Alloc *selfAllocator,
 	CreateWindowFlags flags,
 	Window *parent,
 	int x,
 	int y,
 	int width,
 	int height)
-	: Window(windowScope),
+	: Window(nullptr),
+	  selfAllocator(selfAllocator),
 	  _createWindowFlags(flags),
 	  _parent(parent),
 	  _x(x),
@@ -38,6 +40,10 @@ CLCWSAL_API VirtualWindow::VirtualWindow(
 }
 
 CLCWSAL_API VirtualWindow::~VirtualWindow() {
+}
+
+CLCWSAL_API void VirtualWindow::onRefZero() noexcept {
+	peff::destroyAndRelease<Window>(selfAllocator.get(), this, sizeof(std::max_align_t));
 }
 
 CLCWSAL_API void VirtualWindow::show() {
@@ -69,6 +75,33 @@ CLCWSAL_API void VirtualWindow::getPos(int &xOut, int &yOut) const {
 CLCWSAL_API void VirtualWindow::setSize(int width, int height) {
 	_width = width;
 	_height = height;
+
+	for (auto i = _childWindows.begin(); i != _childWindows.end(); ++i) {
+		if ((*i)->backend)
+			continue;
+
+		if (const wsal::LayoutAttributes *layoutAttribs =
+				((wsal::VirtualWindow *)(*i).get())->getLayoutAttributes();
+			layoutAttribs) {
+			int windowX, windowY, windowWidth, windowHeight;
+			int newX, newY, newWidth, newHeight;
+
+			(*i)->getPos(windowX, windowY);
+			(*i)->getSize(windowWidth, windowHeight);
+
+			wsal::calcWindowLayout(
+				layoutAttribs,
+				0, 0,
+				_width, _height,
+				windowX, windowY,
+				windowWidth, windowHeight,
+				newX, newY,
+				newWidth, newHeight);
+
+			(*i)->setPos(newX, newY);
+			(*i)->setSize(newWidth, newHeight);
+		}
+	}
 }
 
 CLCWSAL_API void VirtualWindow::getSize(int &widthOut, int &heightOut) const {
@@ -90,21 +123,18 @@ CLCWSAL_API wsal::Window *VirtualWindow::getParent() const {
 }
 
 CLCWSAL_API void VirtualWindow::addChildWindow(Window *window) {
-	{
-		WindowProperties windowProperties;
-		window->getWindowProperties(windowProperties);
-		if (!windowProperties.isNative)
-			throw std::logic_error("Cannot add a native window onto a virtual window");
-	}
+	if (window->backend)
+		throw std::logic_error("Cannot add a native window onto a virtual window");
+	assert(("Cannot add a virtual window onto itself", this != window));
 	_childWindows.insert((VirtualWindow *)window);
 }
 
 CLCWSAL_API void VirtualWindow::removeChildWindow(Window *window) {
-	_childWindows.erase((VirtualWindow *)window);
+	_childWindows.remove((VirtualWindow *)window);
 }
 
 CLCWSAL_API bool VirtualWindow::hasChildWindow(Window *window) const {
-	return _childWindows.count((VirtualWindow *)window);
+	return _childWindows.contains((VirtualWindow *)window);
 }
 
 CLCWSAL_API void VirtualWindow::enumChildWindows(ChildWindowEnumer &&enumer) {
@@ -130,6 +160,37 @@ CLCWSAL_API void VirtualWindow::invalidate() {
 CLCWSAL_API void VirtualWindow::onResize(int width, int height) {
 	_width = width;
 	_height = height;
+
+	wsal::WindowProperties windowProperties;
+
+	for (auto i : _childWindows) {
+		i->getWindowProperties(windowProperties);
+
+		if (windowProperties.isNative)
+			continue;
+
+		if (const wsal::LayoutAttributes *layoutAttribs =
+				((wsal::VirtualWindow *)i.get())->getLayoutAttributes();
+			layoutAttribs) {
+			int windowX, windowY, windowWidth, windowHeight;
+			int newX, newY, newWidth, newHeight;
+
+			i->getPos(windowX, windowY);
+			i->getSize(windowWidth, windowHeight);
+
+			wsal::calcWindowLayout(
+				layoutAttribs,
+				0, 0,
+				width, height,
+				windowX, windowY,
+				windowWidth, windowHeight,
+				newX, newY,
+				newWidth, newHeight);
+
+			i->setPos(newX, newY);
+			i->setSize(newWidth, newHeight);
+		}
+	}
 }
 
 CLCWSAL_API void VirtualWindow::onMove(int x, int y) {
@@ -148,18 +209,73 @@ CLCWSAL_API void VirtualWindow::onKeyUp(KeyboardKeyCode keyCode) {
 }
 
 CLCWSAL_API void VirtualWindow::onMouseButtonPress(MouseButton button, int x, int y) {
+	peff::Map<Window *, std::pair<int, int>> childWindows;
+
+	findWindowsAtPos(x, y, childWindows);
+
+	for (auto i = childWindows.begin(); i != childWindows.end(); ++i) {
+		i.key()->onMouseButtonPress(button, i.value().first, i.value().second);
+	}
 }
 
 CLCWSAL_API void VirtualWindow::onMouseButtonRelease(MouseButton button, int x, int y) {
+	peff::Map<Window *, std::pair<int, int>> childWindows;
+
+	findWindowsAtPos(x, y, childWindows);
+
+	for (auto i = childWindows.begin(); i != childWindows.end(); ++i) {
+		i.key()->onMouseButtonRelease(button, i.value().first, i.value().second);
+	}
 }
 
 CLCWSAL_API void VirtualWindow::onMouseHover(int x, int y) {
+	peff::Map<Window *, std::pair<int, int>> childWindows;
+
+	findWindowsAtPos(x, y, childWindows);
+
+	for (auto i = childWindows.begin(); i != childWindows.end(); ++i) {
+		i.key()->onMouseHover(i.value().first, i.value().second);
+	}
 }
 
 CLCWSAL_API void VirtualWindow::onMouseLeave() {
+	/*
+	for (auto i : hoveredChildWindows) {
+		i->onMouseLeave();
+	}
+
+	hoveredChildWindows.clear();*/
 }
 
 CLCWSAL_API void VirtualWindow::onMouseMove(int x, int y) {
+	peff::Map<Window *, std::pair<int, int>> childWindows;
+
+	findWindowsAtPos(x, y, childWindows);
+
+	{
+		peff::Set<Window *> leftWindows;
+		for (auto i : hoveredChildWindows) {
+			if (!childWindows.contains(i)) {
+				auto copiedI = i;
+				leftWindows.insert(std::move(copiedI));
+			}
+		}
+
+		for (auto i : leftWindows) {
+			auto copiedI = i;
+			i->onMouseLeave();
+			hoveredChildWindows.remove(std::move(copiedI));
+		}
+	}
+
+	for (auto i = childWindows.begin(); i != childWindows.end(); ++i) {
+		if (!hoveredChildWindows.contains(i.key())) {
+			i.key()->onMouseHover(x, y);
+			Window *copiedWindow = i.key();
+			hoveredChildWindows.insert(std::move(copiedWindow));
+		} else
+			i.key()->onMouseMove(i.value().first, i.value().second);
+	}
 }
 
 CLCWSAL_API void VirtualWindow::onExpose() {
@@ -196,9 +312,7 @@ CLCWSAL_API void wsal::getAbsoluteOffsetToRootNativeWindow(Window *window, int &
 	WindowProperties windowProperties;
 
 	while (true) {
-		window->getWindowProperties(windowProperties);
-
-		if (windowProperties.isNative)
+		if (window->backend)
 			return;
 
 		int relativeX, relativeY;
@@ -338,4 +452,24 @@ CLCWSAL_API void wsal::calcWindowLayout(
 	windowYOut = y;
 	windowWidthOut = width;
 	windowHeightOut = height;
+}
+
+CLCWSAL_API void VirtualWindow::redrawChildWindows() {
+	for (auto i : _childWindows) {
+		i->onExpose();
+	}
+}
+
+CLCWSAL_API void VirtualWindow::findWindowsAtPos(int x, int y, peff::Map<Window *, std::pair<int, int>> &childWindowsOut) {
+	for (auto i : _childWindows) {
+		int windowX, windowY, windowWidth, windowHeight;
+		i->getPos(windowX, windowY);
+		i->getSize(windowWidth, windowHeight);
+
+		if ((x >= windowX) &&
+			(y >= windowY) &&
+			(x < windowX + windowWidth) &&
+			(y < windowY + windowHeight))
+			childWindowsOut.insert(i.get(), { x - windowX, y - windowY });
+	}
 }

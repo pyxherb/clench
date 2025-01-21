@@ -12,7 +12,10 @@ namespace clench {
 		public:
 			std::set<uint32_t> keyboardPressedKeys;
 
-			CLCWSAL_API MainWindow(wsal::WindowScope *windowScope, wsal::NativeWindowHandle nativeWindowHandle);
+			CLCWSAL_API MainWindow(
+				peff::Alloc *selfAllocator,
+				wsal::Window *parent
+			);
 			CLCWSAL_API virtual ~MainWindow();
 
 			CLCWSAL_API virtual void onMove(int x, int y) override;
@@ -20,10 +23,13 @@ namespace clench {
 
 			CLCWSAL_API virtual bool isKeyDown(wsal::KeyboardKeyCode keyCode) const;
 
-			CLCWSAL_API static MainWindow *alloc(wsal::WindowScope *windowScope, wsal::NativeWindowHandle nativeWindowHandle);
+			CLCWSAL_API static MainWindow *alloc(
+				peff::Alloc *selfAllocator,
+				wsal::Window *parent
+			);
 		};
 
-		extern std::unique_ptr<wsal::WindowScope, peff::DeallocableDeleter> g_mainWindowScope;
+		extern peff::RcObjectPtr<wsal::Window> g_mainNativeWindow;
 		extern peff::RcObjectPtr<MainWindow> g_mainWindow;
 	}
 }

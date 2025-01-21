@@ -4,7 +4,7 @@ using namespace clench;
 using namespace clench::vwc;
 
 CLCVWC_API Control::Control(
-	wsal::WindowScope *windowScope,
+	peff::Alloc *selfAllocator,
 	wsal::CreateWindowFlags createWindowFlags,
 	ghal::GHALDevice *ghalDevice,
 	ghal::GHALDeviceContext *ghalDeviceContext,
@@ -14,7 +14,7 @@ CLCVWC_API Control::Control(
 	int y,
 	int width,
 	int height)
-	: VirtualWindow(windowScope, createWindowFlags, parent, x, y, width, height),
+	: VirtualWindow(selfAllocator, createWindowFlags, parent, x, y, width, height),
 	  ghalDevice(ghalDevice),
 	  ghalDeviceContext(ghalDeviceContext),
 	  renderBufferFormat(renderBufferFormat) {

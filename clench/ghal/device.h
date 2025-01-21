@@ -31,7 +31,7 @@ namespace clench {
 
 			virtual GHALBackend *getBackend() = 0;
 
-			virtual GHALDeviceContext *createDeviceContextForWindow(wsal::NativeWindow *window) = 0;
+			virtual GHALDeviceContext *createDeviceContextForWindow(wsal::Window *window) = 0;
 
 			virtual VertexLayout *createVertexLayout(
 				VertexLayoutElementDesc *elementDescs,

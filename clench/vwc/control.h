@@ -14,7 +14,7 @@ namespace clench {
 			std::unique_ptr<wsal::LayoutAttributes> layoutAttributes;
 
 			CLCVWC_API Control(
-				wsal::WindowScope *windowScope,
+				peff::Alloc *selfAllocator,
 				wsal::CreateWindowFlags createWindowFlags,
 				ghal::GHALDevice *ghalDevice,
 				ghal::GHALDeviceContext *ghalDeviceContext,

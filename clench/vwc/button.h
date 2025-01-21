@@ -8,7 +8,7 @@ namespace clench {
 		class Button : public Control {
 		public:
 			CLCVWC_API Button(
-				wsal::WindowScope *windowScope,
+				peff::Alloc *selfAllocator,
 				ghal::GHALDevice *ghalDevice,
 				ghal::GHALDeviceContext *ghalDeviceContext,
 				ghal::TextureFormat renderBufferFormat,
@@ -44,7 +44,7 @@ namespace clench {
 			float hoverBackgroundColor[3] = { 0.8f, 0.8f, 0.8f };
 
 			CLCVWC_API DefaultButton(
-				wsal::WindowScope *windowScope,
+				peff::Alloc *selfAllocator,
 				ghal::GHALDevice *ghalDevice,
 				ghal::GHALDeviceContext *ghalDeviceContext,
 				ghal::TextureFormat renderBufferFormat,

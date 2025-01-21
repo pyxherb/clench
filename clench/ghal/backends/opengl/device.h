@@ -44,7 +44,7 @@ namespace clench {
 			CLCGHAL_API virtual GHALBackend *getBackend() override;
 
 			CLCGHAL_API virtual GHALDeviceContext *createDeviceContextForWindow(
-				clench::wsal::NativeWindow *window) override;
+				clench::wsal::Window *window) override;
 
 			CLCGHAL_API virtual VertexLayout *createVertexLayout(
 				VertexLayoutElementDesc *elementDescs,

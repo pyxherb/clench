@@ -1,7 +1,6 @@
 #ifndef _CLENCH_WSAL_WINDOW_H_
 #define _CLENCH_WSAL_WINDOW_H_
 
-#include "basedefs.h"
 #include "keyboard.h"
 #include "mouse.h"
 #include <peff/base/rcobj.h>
@@ -11,113 +10,16 @@
 #include <peff/containers/map.h>
 #include <peff/containers/bitarray.h>
 #include <string_view>
-#include <set>
-#include <map>
-#include <functional>
 #include <climits>
 #include <string>
-#include <stdexcept>
-
-#ifdef _WIN32
-	#include <Windows.h>
-#elif defined(__unix__)
-	#include <X11/Xlib.h>
-	#include <X11/Xresource.h>
-	#include <X11/Xutil.h>
-	// #include <X11/extensions/Xrandr.h>
-	#include <X11/Xatom.h>
-	#include <X11/Xproto.h>
-	#include <X11/extensions/shapeproto.h>
-
-constexpr static auto X11_None = 0L;
-	#undef None
-#endif
+#include <cstdint>
+#include <functional>
 
 namespace clench {
 	namespace wsal {
-		class Window;
+		class Backend;
 
-#ifdef _WIN32
-		using NativeWindowHandle = HWND;
-#elif defined(__unix__)
-		struct NativeWindowHandle {
-			enum class Kind {
-				Uninitialized = 0,
-				X11,
-				Wayland
-			};
-			union {
-				struct {
-					XID windowId;
-					Display *display;
-				} x11;
-			} data;
-			Kind kind;
-
-			NativeWindowHandle() = default;
-			CLENCH_FORCEINLINE NativeWindowHandle(Display *display, XID windowId) : kind(Kind::X11) {
-				data.x11.display = display;
-				data.x11.windowId = windowId;
-			}
-
-			CLENCH_FORCEINLINE bool operator<(const NativeWindowHandle &rhs) const {
-				if (kind < rhs.kind) {
-					return true;
-				} else if (kind > rhs.kind) {
-					return false;
-				}
-
-				switch (kind) {
-					case Kind::X11:
-						if (data.x11.display > rhs.data.x11.display) {
-							return false;
-						} else if (data.x11.display < rhs.data.x11.display) {
-							return true;
-						}
-						if (data.x11.windowId > rhs.data.x11.windowId) {
-							return false;
-						}
-						if (data.x11.windowId < rhs.data.x11.windowId) {
-							return true;
-						}
-						break;
-					default:
-						assert(false);
-				}
-				return false;
-			}
-		};
-#endif
-
-		class WindowScope final : public peff::Deallocable {
-		public:
-			peff::RcObjectPtr<peff::Alloc> selfAllocator, allocator;
-			peff::Set<Window *> childWindows;
-			peff::Map<NativeWindowHandle, Window *> handleToWindowMap;
-			#ifdef _WIN32
-			#elif defined(__unix__)
-			peff::Map<unsigned int, KeyboardKeyCode> builtNativeKeyMap;
-			#endif
-
-			CLCWSAL_API WindowScope(peff::Alloc *selfAllocator, peff::Alloc *allocator);
-			CLCWSAL_API ~WindowScope();
-
-			CLCWSAL_API virtual void dealloc() override;
-
-			CLCWSAL_API static WindowScope *alloc(peff::Alloc *selfAllocator, peff::Alloc *allocator);
-
-			template <typename T, typename... Args>
-			CLENCH_FORCEINLINE T *newWindow(Args... args) {
-				T *ptr = peff::allocAndConstruct<T>(allocator.get(), sizeof(std::max_align_t), std::forward<Args>(args)...);
-
-				if(!ptr)
-					return nullptr;
-
-				return (T *)ptr;
-			}
-		};
-
-		using CreateWindowFlags = std::uint32_t;
+		using CreateWindowFlags = uint32_t;
 		constexpr CreateWindowFlags
 			CREATEWINDOW_MIN = 1,
 			CREATEWINDOW_MAX = 2,
@@ -163,14 +65,14 @@ namespace clench {
 
 		class Window : public peff::RcObject {
 		public:
-			WindowScope *windowScope;
+			Backend *backend;
 
 			CLENCH_NO_COPY_MOVE_METHODS(Window);
 
-			CLCWSAL_API Window(WindowScope *windowScope);
+			CLCWSAL_API Window(Backend *backend);
 			CLCWSAL_API virtual ~Window();
 
-			virtual void onRefZero() noexcept override;
+			CLCWSAL_API virtual void onRefZero() noexcept override;
 
 			virtual void show() = 0;
 			virtual void hide() = 0;
@@ -217,88 +119,6 @@ namespace clench {
 			virtual void onExpose() = 0;
 			virtual void onDraw() = 0;
 		};
-
-		class NativeWindow : public Window {
-		private:
-			bool _isClosed = false;
-
-		protected:
-			std::set<Window *> prevHoveredWindows;
-
-		public:
-			bool wasCursorInCapturedWindow = false;
-			bool wasCursorInCapturedRootWindow = false;
-			Window *curCapturedWindow = nullptr;
-
-#ifdef _WIN32
-			CLCWSAL_API static LRESULT CALLBACK _win32WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-#endif
-
-			NativeWindowHandle nativeHandle;
-#ifdef _WIN32
-			bool isHovered = false;
-#elif defined(__unix__)
-			XSetWindowAttributes _setWindowAttribs;
-			XSizeHints *_sizeHints;
-			std::map<uint32_t, Time> _keyPressedTimes;
-#endif
-
-			CLENCH_NO_COPY_MOVE_METHODS(NativeWindow);
-
-			CLCWSAL_API NativeWindow(
-				WindowScope *windowScope,
-				NativeWindowHandle nativeWindowHandle);
-			CLCWSAL_API virtual ~NativeWindow();
-
-			CLCWSAL_API virtual void show() override;
-			CLCWSAL_API virtual void hide() override;
-			CLCWSAL_API virtual bool isVisible() const override;
-
-			CLCWSAL_API virtual bool isClosed() const override;
-
-			CLCWSAL_API virtual void setPos(int x, int y) override;
-			CLCWSAL_API virtual void getPos(int &xOut, int &yOut) const override;
-
-			CLCWSAL_API virtual void setSize(int width, int height) override;
-			CLCWSAL_API virtual void getSize(int &widthOut, int &heightOut) const override;
-
-			CLCWSAL_API virtual void setTitle(const char *title) override;
-
-			CLCWSAL_API virtual void setParent(Window *window) override;
-			CLCWSAL_API virtual Window *getParent() const override;
-
-			CLCWSAL_API virtual void addChildWindow(Window *window) override;
-			CLCWSAL_API virtual void removeChildWindow(Window *window) override;
-			CLCWSAL_API virtual bool hasChildWindow(Window *window) const override;
-
-			CLCWSAL_API virtual void enumChildWindows(ChildWindowEnumer &&enumer) override;
-
-			CLCWSAL_API virtual void getWindowProperties(WindowProperties &propertiesOut) const override;
-
-			CLCWSAL_API virtual void invalidate() override;
-
-			CLCWSAL_API virtual void pollEvents() override;
-
-			CLCWSAL_API virtual void onResize(int width, int height) override;
-			CLCWSAL_API virtual void onMove(int x, int y) override;
-			CLCWSAL_API virtual bool onClose() override;
-			CLCWSAL_API virtual void onKeyDown(KeyboardKeyCode keyCode) override;
-			CLCWSAL_API virtual void onKeyUp(KeyboardKeyCode keyCode) override;
-			CLCWSAL_API virtual void onMouseButtonPress(MouseButton button, int x, int y) override;
-			CLCWSAL_API virtual void onMouseButtonRelease(MouseButton button, int x, int y) override;
-			CLCWSAL_API virtual void onMouseHover(int x, int y) override;
-			CLCWSAL_API virtual void onMouseLeave() override;
-			CLCWSAL_API virtual void onMouseMove(int x, int y) override;
-			CLCWSAL_API virtual void onExpose() override;
-			CLCWSAL_API virtual void onDraw() override;
-		};
-
-		NativeWindowHandle createNativeWindow(CreateWindowFlags flags,
-			NativeWindow *parent,
-			int x,
-			int y,
-			int width,
-			int height);
 
 		constexpr static int UNSET = INT_MIN;
 
@@ -364,15 +184,18 @@ namespace clench {
 			Window *_parent = nullptr;
 			bool _closed = false;
 			bool _shown = false;
-			std::set<peff::RcObjectPtr<VirtualWindow>> _childWindows;
+			peff::Set<peff::RcObjectPtr<VirtualWindow>> _childWindows;
 			int _x, _y;
 			int _width, _height;
+			peff::Set<Window *> hoveredChildWindows;
 
 		public:
+			peff::RcObjectPtr<peff::Alloc> selfAllocator;
+
 			CLENCH_NO_COPY_MOVE_METHODS(VirtualWindow);
 
 			CLCWSAL_API VirtualWindow(
-				WindowScope *windowScope,
+				peff::Alloc *selfAllocator,
 				CreateWindowFlags flags,
 				Window *parent,
 				int x,
@@ -380,6 +203,8 @@ namespace clench {
 				int width,
 				int height);
 			CLCWSAL_API virtual ~VirtualWindow();
+
+			CLCWSAL_API virtual void onRefZero() noexcept override;
 
 			CLCWSAL_API virtual void show() override;
 			CLCWSAL_API virtual void hide() override;
@@ -424,6 +249,9 @@ namespace clench {
 			CLCWSAL_API virtual void onDraw() override;
 
 			CLCWSAL_API virtual const LayoutAttributes *getLayoutAttributes() const;
+
+			CLCWSAL_API void redrawChildWindows();
+			CLCWSAL_API void findWindowsAtPos(int x, int y, peff::Map<Window *, std::pair<int, int>> &childWindowsOut);
 		};
 
 		CLCWSAL_API void getAbsoluteOffsetToRootNativeWindow(Window *window, int &xOut, int &yOut);

@@ -30,7 +30,11 @@ uint32_t indices[] = {
 };
 
 int main(int argc, char **argv) {
-	wsal::init();
+	if(!wsal::registerBuiltinWSALBackends(peff::getDefaultAlloc(), peff::getDefaultAlloc()))
+		throw std::bad_alloc();
+	if(auto result = wsal::scanAndInitRegisteredWSALBackends();
+		result.has_value())
+		throw std::runtime_error((std::string)"Error initializing WSAL backend " + result->second);
 
 	ghal::registerBuiltinGHALBackends(peff::getDefaultAlloc());
 	if(auto result = ghal::scanAndInitRegisteredGHALBackends();
@@ -45,13 +49,7 @@ int main(int argc, char **argv) {
 	if (!g_mainGhalDevice)
 		throw std::runtime_error("Error creating main GHAL device");
 
-	g_mainWindowScope = std::unique_ptr<wsal::WindowScope, peff::DeallocableDeleter>(
-		wsal::WindowScope::alloc(peff::getDefaultAlloc(), peff::getDefaultAlloc()));
-	if (!g_mainWindowScope)
-		throw std::bad_alloc();
-
-	g_mainWindow = MainWindow::alloc(g_mainWindowScope.get(),
-		wsal::createNativeWindow(
+	g_mainNativeWindow = wsal::createWindow(
 			wsal::CREATEWINDOW_MIN |
 				wsal::CREATEWINDOW_MAX |
 				wsal::CREATEWINDOW_RESIZE,
@@ -59,11 +57,15 @@ int main(int argc, char **argv) {
 			0,
 			0,
 			640,
-			480));
+			480);
+	if(!g_mainNativeWindow)
+		throw std::runtime_error("Error creating main native window");
+	g_mainNativeWindow->setTitle("Clench Editor");
+	g_mainWindow = MainWindow::alloc(peff::getDefaultAlloc(), g_mainNativeWindow.get());
 	if (!g_mainWindow)
 		throw std::bad_alloc();
 
-	g_mainWindow->show();
+	g_mainNativeWindow->show();
 
 	peff::RcObjectPtr<clench::ghal::VertexShader> vertexShader;
 	peff::RcObjectPtr<clench::ghal::FragmentShader> fragmentShader;
@@ -130,8 +132,10 @@ int main(int argc, char **argv) {
 	}
 
 	peff::RcObjectPtr<clench::vwc::DefaultButton> button =
-		g_mainWindowScope->newWindow<clench::vwc::DefaultButton>(
-			g_mainWindowScope.get(),
+		peff::allocAndConstruct<clench::vwc::DefaultButton>(
+			peff::getDefaultAlloc(),
+			sizeof(std::max_align_t),
+			peff::getDefaultAlloc(),
 			g_mainGhalDevice.get(),
 			g_mainWindow->ghalDeviceContext.get(),
 			clench::ghal::TextureFormat::RGBA8,
@@ -150,9 +154,9 @@ int main(int argc, char **argv) {
 	button->layoutAttributes->marginBox.top = 100;
 	button->layoutAttributes->marginBox.bottom = 100;
 
-	while (!g_mainWindow->isClosed()) {
-		g_mainWindow->onDraw();
-		g_mainWindow->pollEvents();
+	while (!g_mainNativeWindow->isClosed()) {
+		g_mainNativeWindow->onDraw();
+		g_mainNativeWindow->pollEvents();
 
 		// g_mainWindow->onExpose();
 		/*
@@ -185,7 +189,7 @@ int main(int argc, char **argv) {
 	// g_mainGhalDeviceContext.reset();
 
 	g_mainWindow.reset();
-	g_mainWindowScope.reset();
+	g_mainNativeWindow.reset();
 
 	g_mainGhalDevice.reset();
 
@@ -193,5 +197,7 @@ int main(int argc, char **argv) {
 		result.has_value())
 		throw std::runtime_error((std::string)"Error deinitializing GHAL backend " + result->second);
 
-	wsal::deinit();
+	if(auto result = wsal::deinitInitedRegisteredWSALBackends();
+		result.has_value())
+		throw std::runtime_error((std::string)"Error deinitializing WSAL backend " + result->second);
 }
