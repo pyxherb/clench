@@ -9,7 +9,8 @@ namespace clench {
 			EXCEPTION_TYPE_GHAL = CLENCH_UUID(0aac8fa6, 3b34, 47c4, 8f6e, 7aae71666d88);
 
 		enum class GHALExceptionCode : uint32_t {
-
+			InvalidContext = 0,
+			InvalidArgs
 		};
 
 		class GHALException {

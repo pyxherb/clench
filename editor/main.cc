@@ -33,6 +33,9 @@ int main(int argc, char **argv) {
 	wsal::init();
 
 	ghal::registerBuiltinGHALBackends(peff::getDefaultAlloc());
+	if(auto result = ghal::scanAndInitRegisteredGHALBackends();
+		result.has_value())
+		throw std::runtime_error((std::string)"Error initializing GHAL backend " + result->second);
 
 	peff::List<std::string_view> preferredBackendList;
 	if(!preferredBackendList.build({ "opengl" }))
@@ -185,6 +188,10 @@ int main(int argc, char **argv) {
 	g_mainWindowScope.reset();
 
 	g_mainGhalDevice.reset();
+
+	if(auto result = ghal::deinitInitedRegisteredGHALBackends();
+		result.has_value())
+		throw std::runtime_error((std::string)"Error deinitializing GHAL backend " + result->second);
 
 	wsal::deinit();
 }

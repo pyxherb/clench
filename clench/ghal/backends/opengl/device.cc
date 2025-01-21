@@ -78,10 +78,11 @@ CLCGHAL_API GHALDeviceContext *GLGHALDevice::createDeviceContextForWindow(clench
 
 	deviceContext->eglDisplay = eglGetDisplay((EGLNativeDisplayType)window->nativeHandle.data.x11.display);
 	if (auto it = g_initializedEglDisplays.find(deviceContext->eglDisplay); it != g_initializedEglDisplays.end()) {
-		++it->second;
+		++it.value();
 	} else {
-		eglInitialize(deviceContext->eglDisplay, &eglMajor, &eglMinor);
-		g_initializedEglDisplays[deviceContext->eglDisplay] = 1;
+		EGLDisplay eglDisplay = deviceContext->eglDisplay;
+		eglInitialize(eglDisplay, &eglMajor, &eglMinor);
+		g_initializedEglDisplays.insert(std::move(eglDisplay), 1);
 	}
 
 	deviceContext->eglWindow = (EGLNativeWindowType)window->nativeHandle.data.x11.windowId;
@@ -479,9 +480,9 @@ CLCGHAL_API GLGHALDeviceContext::~GLGHALDeviceContext() {
 
 	if (eglDisplay != EGL_NO_DISPLAY) {
 		if (auto it = g_initializedEglDisplays.find(eglDisplay); it != g_initializedEglDisplays.end()) {
-			if (!--it->second) {
+			if (!--it.value()) {
 				eglTerminate(eglDisplay);
-				g_initializedEglDisplays.erase(it);
+				g_initializedEglDisplays.remove(it);
 			}
 		} else {
 			eglTerminate(eglDisplay);
