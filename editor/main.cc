@@ -196,8 +196,10 @@ int main(int argc, char **argv) {
 	if(auto result = ghal::deinitInitedRegisteredGHALBackends();
 		result.has_value())
 		throw std::runtime_error((std::string)"Error deinitializing GHAL backend " + result->second);
+	ghal::g_registeredGHALBackends.clear();
 
 	if(auto result = wsal::deinitInitedRegisteredWSALBackends();
 		result.has_value())
 		throw std::runtime_error((std::string)"Error deinitializing WSAL backend " + result->second);
+	wsal::g_registeredWSALBackends.clear();
 }

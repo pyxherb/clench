@@ -5,8 +5,12 @@
 #include "views.h"
 #include "texture.h"
 
+#if _WIN32
+	#include <clench/wsal/backends/win32/window.h>
+#endif
+
 #if __unix__
-#include <clench/wsal/backends/x11/window.h>
+	#include <clench/wsal/backends/x11/window.h>
 #endif
 
 using namespace clench;
@@ -35,7 +39,7 @@ CLCGHAL_API GHALDeviceContext *GLGHALDevice::createDeviceContextForWindow(clench
 	if (!deviceContext)
 		return nullptr;
 #ifdef _WIN32
-	deviceContext->hWnd = window->nativeHandle;
+	deviceContext->hWnd = ((wsal::Win32Window*)window)->nativeHandle;
 	deviceContext->hdc = GetDC(deviceContext->hWnd);
 	{
 		PIXELFORMATDESCRIPTOR pfd = { 0 };
@@ -80,7 +84,7 @@ CLCGHAL_API GHALDeviceContext *GLGHALDevice::createDeviceContextForWindow(clench
 
 	EGLint eglMinor, eglMajor;
 
-	deviceContext->eglDisplay = eglGetDisplay((EGLNativeDisplayType)((wsal::X11Window*)window)->nativeHandle.display);
+	deviceContext->eglDisplay = eglGetDisplay((EGLNativeDisplayType)((wsal::X11Window *)window)->nativeHandle.display);
 	if (auto it = g_initializedEglDisplays.find(deviceContext->eglDisplay); it != g_initializedEglDisplays.end()) {
 		++it.value();
 	} else {
@@ -89,7 +93,7 @@ CLCGHAL_API GHALDeviceContext *GLGHALDevice::createDeviceContextForWindow(clench
 		g_initializedEglDisplays.insert(std::move(eglDisplay), 1);
 	}
 
-	deviceContext->eglWindow = (EGLNativeWindowType)((wsal::X11Window*)window)->nativeHandle.window;
+	deviceContext->eglWindow = (EGLNativeWindowType)((wsal::X11Window *)window)->nativeHandle.window;
 
 	EGLint nConfigs;
 	eglChooseConfig(deviceContext->eglDisplay, configAttribs, &deviceContext->eglConfig, 1, &nConfigs);
@@ -170,6 +174,7 @@ CLCGHAL_API VertexLayout *GLGHALDevice::createVertexLayout(
 }
 
 CLCGHAL_API bool GLGHALDevice::isVertexDataTypeSupported(const VertexDataType &vertexDataType) {
+	return true;
 }
 
 CLCGHAL_API VertexShader *GLGHALDevice::createVertexShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo) {

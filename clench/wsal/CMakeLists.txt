@@ -1,3 +1,5 @@
+find_package(peff REQUIRED)
+
 clench_add_component(clcwsal)
 
 file(GLOB HEADERS *.h)

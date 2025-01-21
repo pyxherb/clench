@@ -6,7 +6,7 @@
 
 namespace clench {
 	namespace wsal {
-		extern CLCWSAL_API const std::map<UINT, KeyboardKeyCode> g_win32KeyMap;
+		extern CLCWSAL_API const std::initializer_list<std::pair<UINT, KeyboardKeyCode>> g_win32KeyMap;
 	}
 }
 

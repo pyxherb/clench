@@ -1,3 +1,5 @@
+find_package(peff REQUIRED)
+
 file(GLOB HEADERS *.h)
 file(GLOB SRC *.cc)
 

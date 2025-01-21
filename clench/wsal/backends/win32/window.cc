@@ -1,4 +1,5 @@
 #include "window.h"
+#include "backend.h"
 #include "keymap.h"
 #include <clench/utils/logger.h>
 
@@ -10,26 +11,25 @@
 using namespace clench;
 using namespace clench::wsal;
 
-CLCWSAL_API std::map<HWND, NativeWindow *> clench::wsal::g_win32CreatedWindows;
-
-CLCWSAL_API LRESULT CALLBACK NativeWindow::_win32WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-	if (auto it = g_win32CreatedWindows.find(hWnd); it != g_win32CreatedWindows.end()) {
-		auto window = it->second;
+CLCWSAL_API LRESULT CALLBACK Win32Window::_win32WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+	Win32Window *window = (Win32Window *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+	if (window) {
+		Win32Backend *backend = (Win32Backend *)window->backend;
 
 		switch (uMsg) {
 			case WM_KEYDOWN: {
 				UINT key = wParam;
 
-				if (auto k = g_win32KeyMap.find(key); k != g_win32KeyMap.end())
-					window->onKeyDown((KeyboardKeyCode)k->second);
+				if (auto k = backend->builtNativeKeyMap.find(key); k != backend->builtNativeKeyMap.end())
+					window->onKeyDown((KeyboardKeyCode)k.value());
 
 				break;
 			}
 			case WM_KEYUP: {
 				UINT key = wParam;
 
-				if (auto k = g_win32KeyMap.find(key); k != g_win32KeyMap.end())
-					window->onKeyUp((KeyboardKeyCode)k->second);
+				if (auto k = backend->builtNativeKeyMap.find(key); k != backend->builtNativeKeyMap.end())
+					window->onKeyUp((KeyboardKeyCode)k.value());
 
 				break;
 			}
@@ -122,68 +122,36 @@ CLCWSAL_API LRESULT CALLBACK NativeWindow::_win32WndProc(HWND hWnd, UINT uMsg, W
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
-CLCWSAL_API NativeWindow::NativeWindow(
-	WindowScope *windowScope,
-	CreateWindowFlags flags,
-	NativeWindow *parent,
-	int x,
-	int y,
-	int width,
-	int height): Window(windowScope) {
-	DWORD style = parent ? WS_CHILDWINDOW : WS_OVERLAPPEDWINDOW;
-
-	if (!(flags & CREATEWINDOW_MIN))
-		style &= ~WS_MINIMIZEBOX;
-
-	if (!(flags & CREATEWINDOW_MAX))
-		style &= ~WS_MAXIMIZEBOX;
-
-	if (!(flags & CREATEWINDOW_RESIZE))
-		style &= ~WS_SIZEBOX;
-
-	if (flags & CREATEWINDOW_NOFRAME)
-		style &= ~WS_THICKFRAME;
-
-	if (!(nativeHandle = CreateWindow(
-			  CLENCH_WNDCLASS_NAME,
-			  "",
-			  style,
-			  x == DEFAULT_WINDOW_POS ? CW_USEDEFAULT : x,
-			  y == DEFAULT_WINDOW_POS ? CW_USEDEFAULT : y,
-			  width,
-			  height,
-			  parent ? ((NativeWindow *)parent)->nativeHandle : NULL,
-			  NULL,
-			  GetModuleHandle(NULL),
-			  0)))
-		throw std::runtime_error("Error creating new window");
-
-	g_win32CreatedWindows[nativeHandle] = this;
+CLCWSAL_API Win32Window::Win32Window(
+	Win32Backend *backend,
+	Win32WindowHandle nativeHandle) : Window(backend), nativeHandle(nativeHandle) {
+	SetWindowLongPtr(nativeHandle, GWLP_USERDATA, (LONG_PTR)this);
+	backend->handleToWindowMap.insert(std::move(nativeHandle), this);
 }
 
-CLCWSAL_API NativeWindow::~NativeWindow() {
-	g_win32CreatedWindows.erase(nativeHandle);
+CLCWSAL_API Win32Window::~Win32Window() {
+	((Win32Backend *)backend)->handleToWindowMap.remove(nativeHandle);
 
 	DestroyWindow(nativeHandle);
 }
 
-CLCWSAL_API void NativeWindow::show() {
+CLCWSAL_API void Win32Window::show() {
 	ShowWindow(nativeHandle, SW_SHOW);
 }
 
-CLCWSAL_API void NativeWindow::hide() {
+CLCWSAL_API void Win32Window::hide() {
 	ShowWindow(nativeHandle, SW_HIDE);
 }
 
-CLCWSAL_API bool NativeWindow::isVisible() const {
+CLCWSAL_API bool Win32Window::isVisible() const {
 	return IsWindowVisible(nativeHandle);
 }
 
-CLCWSAL_API bool NativeWindow::isClosed() const {
+CLCWSAL_API bool Win32Window::isClosed() const {
 	return _isClosed;
 }
 
-CLCWSAL_API void NativeWindow::setPos(int x, int y) {
+CLCWSAL_API void Win32Window::setPos(int x, int y) {
 	RECT rect;
 
 	GetClientRect(nativeHandle, &rect);
@@ -191,7 +159,7 @@ CLCWSAL_API void NativeWindow::setPos(int x, int y) {
 	MoveWindow(nativeHandle, x, y, rect.right - rect.left, rect.top - rect.bottom, FALSE);
 }
 
-CLCWSAL_API void NativeWindow::getPos(int &xOut, int &yOut) const {
+CLCWSAL_API void Win32Window::getPos(int &xOut, int &yOut) const {
 	RECT rect;
 	GetWindowRect(nativeHandle, &rect);
 
@@ -199,7 +167,7 @@ CLCWSAL_API void NativeWindow::getPos(int &xOut, int &yOut) const {
 	yOut = rect.top;
 }
 
-CLCWSAL_API void NativeWindow::setSize(int width, int height) {
+CLCWSAL_API void Win32Window::setSize(int width, int height) {
 	RECT rect;
 
 	GetClientRect(nativeHandle, &rect);
@@ -207,7 +175,7 @@ CLCWSAL_API void NativeWindow::setSize(int width, int height) {
 	MoveWindow(nativeHandle, rect.left, rect.top, width, height, FALSE);
 }
 
-CLCWSAL_API void NativeWindow::getSize(int &widthOut, int &heightOut) const {
+CLCWSAL_API void Win32Window::getSize(int &widthOut, int &heightOut) const {
 	RECT rect;
 
 	GetClientRect(nativeHandle, &rect);
@@ -216,97 +184,104 @@ CLCWSAL_API void NativeWindow::getSize(int &widthOut, int &heightOut) const {
 	heightOut = rect.bottom - rect.top;
 }
 
-CLCWSAL_API void NativeWindow::setTitle(const char *title) {
+CLCWSAL_API void Win32Window::setTitle(const char *title) {
 	SetWindowTextA(nativeHandle, title);
 }
 
-CLCWSAL_API void NativeWindow::setParent(Window *window) {
+CLCWSAL_API void Win32Window::setParent(Window *window) {
 	WindowProperties windowProperties;
 	window->getWindowProperties(windowProperties);
 
 	if (!windowProperties.isNative)
 		throw std::logic_error("Cannot set parent of a native window to a non-native window");
 
-	SetParent(nativeHandle, ((NativeWindow *)window)->nativeHandle);
+	SetParent(nativeHandle, ((Win32Window *)window)->nativeHandle);
 }
 
-CLCWSAL_API Window *NativeWindow::getParent() const {
+CLCWSAL_API Window *Win32Window::getParent() const {
+	Win32Backend *backend = (Win32Backend *)backend;
 	HWND parentHandle = GetParent(nativeHandle);
 
-	if (auto it = g_win32CreatedWindows.find(parentHandle);
-		it != g_win32CreatedWindows.end())
-		return it->second;
+	if (auto it = backend->handleToWindowMap.find(parentHandle);
+		it != backend->handleToWindowMap.end())
+		return it.value();
 
 	return nullptr;
 }
 
-CLCWSAL_API void NativeWindow::addChildWindow(Window *window) {
-	WindowProperties windowProperties;
-	window->getWindowProperties(windowProperties);
-
-	if (!windowProperties.isNative)
-		throw std::logic_error("Native window accepts native child windows only by default");
+CLCWSAL_API void Win32Window::addChildWindow(Window *window) {
+	if (!window->backend) {
+		_childVirtualWindows.insert((VirtualWindow *)window);
+	}
 }
 
-CLCWSAL_API void NativeWindow::removeChildWindow(Window *window) {
-	WindowProperties windowProperties;
-	window->getWindowProperties(windowProperties);
+CLCWSAL_API void Win32Window::removeChildWindow(Window *window) {
+	if (!window->backend) {
+		WindowProperties windowProperties;
+		window->getWindowProperties(windowProperties);
 
-	if (!windowProperties.isNative)
-		return;
+		if (!windowProperties.isNative)
+			return;
 
-	HWND hWnd = ((NativeWindow *)window)->nativeHandle;
+		HWND hWnd = ((Win32Window *)window)->nativeHandle;
 
-	if (GetParent(hWnd) != nativeHandle)
-		return;
+		if (GetParent(hWnd) != nativeHandle)
+			return;
 
-	ShowWindow(hWnd, SW_HIDE);
+		ShowWindow(hWnd, SW_HIDE);
 
-	SetParent(hWnd, NULL);
+		SetParent(hWnd, NULL);
+	} else {
+		_childVirtualWindows.remove((VirtualWindow *)window);
+	}
 }
 
-CLCWSAL_API bool NativeWindow::hasChildWindow(Window *window) const {
+CLCWSAL_API bool Win32Window::hasChildWindow(Window *window) const {
 	WindowProperties windowProperties;
 	window->getWindowProperties(windowProperties);
 
 	if (!windowProperties.isNative)
 		return false;
 
-	return GetParent(((NativeWindow *)window)->nativeHandle) == nativeHandle;
+	return GetParent(((Win32Window *)window)->nativeHandle) == nativeHandle;
 }
 
 struct EnumChildWindowsContext {
+	Win32Backend *backend;
 	ChildWindowEnumer enumer;
 };
 
-CLCWSAL_API void NativeWindow::enumChildWindows(ChildWindowEnumer &&enumer) {
+CLCWSAL_API void Win32Window::enumChildWindows(ChildWindowEnumer &&enumer) {
+	Win32Backend *backend = (Win32Backend *)backend;
 	EnumChildWindowsContext context;
 
+	context.backend = backend;
 	context.enumer = enumer;
 
 	EnumChildWindows(
 		nativeHandle,
 		[](HWND hWnd, LPARAM lParam) -> BOOL {
-			if (auto it = g_win32CreatedWindows.find(hWnd);
-				it != g_win32CreatedWindows.end())
-				return ((EnumChildWindowsContext *)lParam)->enumer(it->second);
+			EnumChildWindowsContext *context = ((EnumChildWindowsContext *)lParam);
+			if (auto it = context->backend->handleToWindowMap.find(hWnd);
+				it != context->backend->handleToWindowMap.end())
+				return context->enumer(it.value());
 			return true;
 		},
 		(LPARAM)&context);
 }
 
-CLCWSAL_API void NativeWindow::getWindowProperties(WindowProperties &propertiesOut) const {
+CLCWSAL_API void Win32Window::getWindowProperties(WindowProperties &propertiesOut) const {
 	propertiesOut = {};
 	propertiesOut.isNative = true;
 }
 
-CLCWSAL_API void NativeWindow::invalidate() {
+CLCWSAL_API void Win32Window::invalidate() {
 	RECT clientRect;
 	GetClientRect(nativeHandle, &clientRect);
 	InvalidateRect(nativeHandle, &clientRect, false);
 }
 
-CLCWSAL_API void NativeWindow::pollEvents() {
+CLCWSAL_API void Win32Window::pollEvents() {
 	MSG msg;
 
 	while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
@@ -315,93 +290,195 @@ CLCWSAL_API void NativeWindow::pollEvents() {
 	}
 }
 
-CLCWSAL_API void NativeWindow::onResize(int width, int height) {
+CLCWSAL_API void Win32Window::onResize(int width, int height) {
+	for (auto i : _childVirtualWindows) {
+		if (const wsal::LayoutAttributes *layoutAttribs =
+				((wsal::VirtualWindow *)i.get())->getLayoutAttributes();
+			layoutAttribs) {
+			int windowX, windowY, windowWidth, windowHeight;
+			int newX, newY, newWidth, newHeight;
+
+			i->getPos(windowX, windowY);
+			i->getSize(windowWidth, windowHeight);
+
+			wsal::calcWindowLayout(
+				layoutAttribs,
+				0, 0,
+				width, height,
+				windowX, windowY,
+				windowWidth, windowHeight,
+				newX, newY,
+				newWidth, newHeight);
+
+			i->setPos(newX, newY);
+			i->setSize(newWidth, newHeight);
+		}
+	}
 }
 
-CLCWSAL_API void NativeWindow::onMove(int x, int y) {
+CLCWSAL_API void Win32Window::onMove(int x, int y) {
 }
 
-CLCWSAL_API bool NativeWindow::onClose() {
+CLCWSAL_API bool Win32Window::onClose() {
 	return false;
 }
 
-CLCWSAL_API void NativeWindow::onKeyDown(KeyboardKeyCode keyCode) {
+CLCWSAL_API void Win32Window::onKeyDown(KeyboardKeyCode keyCode) {
 }
 
-CLCWSAL_API void NativeWindow::onKeyUp(KeyboardKeyCode keyCode) {
+CLCWSAL_API void Win32Window::onKeyUp(KeyboardKeyCode keyCode) {
 }
 
-CLCWSAL_API void NativeWindow::onMouseButtonPress(MouseButton button, int x, int y) {
+CLCWSAL_API void Win32Window::onMouseButtonPress(MouseButton button, int x, int y) {
+	if (auto capturedWindow = wsal::getMouseCapture(); capturedWindow) {
+		int xOffset, yOffset;
+		wsal::getAbsoluteOffsetToRootNativeWindow(capturedWindow, xOffset, yOffset);
+
+		capturedWindow->onMouseButtonPress(button, x - xOffset, y - yOffset);
+	} else {
+		peff::Map<VirtualWindow *, std::pair<int, int>> childWindows;
+
+		findWindowsAtPos(x, y, childWindows);
+
+		for (auto i = childWindows.begin(); i != childWindows.end(); ++i) {
+			i.key()->onMouseButtonPress(button, i.value().first, i.value().second);
+		}
+	}
 }
 
-CLCWSAL_API void NativeWindow::onMouseButtonRelease(MouseButton button, int x, int y) {
+CLCWSAL_API void Win32Window::onMouseButtonRelease(MouseButton button, int x, int y) {
+	if (auto capturedWindow = wsal::getMouseCapture(); capturedWindow) {
+		int xOffset, yOffset;
+		wsal::getAbsoluteOffsetToRootNativeWindow(capturedWindow, xOffset, yOffset);
+
+		capturedWindow->onMouseButtonRelease(button, x - xOffset, y - yOffset);
+	} else {
+		peff::Map<VirtualWindow *, std::pair<int, int>> childWindows;
+
+		findWindowsAtPos(x, y, childWindows);
+
+		for (auto i = childWindows.begin(); i != childWindows.end(); ++i) {
+			i.key()->onMouseButtonRelease(button, i.value().first, i.value().second);
+		}
+	}
 }
 
-CLCWSAL_API void NativeWindow::onMouseHover(int x, int y) {
+CLCWSAL_API void Win32Window::onMouseHover(int x, int y) {
+	if (auto capturedWindow = wsal::getMouseCapture(); capturedWindow) {
+		int xOffset, yOffset;
+		wsal::getAbsoluteOffsetToRootNativeWindow(capturedWindow, xOffset, yOffset);
+
+		capturedWindow->onMouseHover(x - xOffset, y - yOffset);
+	} else {
+		peff::Map<VirtualWindow *, std::pair<int, int>> childWindows;
+
+		findWindowsAtPos(x, y, childWindows);
+
+		for (auto i = childWindows.begin(); i != childWindows.end(); ++i) {
+			i.key()->onMouseHover(i.value().first, i.value().second);
+		}
+	}
 }
 
-CLCWSAL_API void NativeWindow::onMouseLeave() {
+CLCWSAL_API void Win32Window::onMouseLeave() {
 }
 
-CLCWSAL_API void NativeWindow::onMouseMove(int x, int y) {
+CLCWSAL_API void Win32Window::onMouseMove(int x, int y) {
+	if (auto capturedWindow = wsal::getMouseCapture(); capturedWindow) {
+		int xOffset, yOffset;
+		wsal::getAbsoluteOffsetToRootNativeWindow(capturedWindow, xOffset, yOffset);
+
+		int width, height;
+
+		capturedWindow->getSize(width, height);
+
+		if ((x >= xOffset) &&
+			(x < xOffset + width) &&
+			(y >= yOffset) &&
+			(y < yOffset + height)) {
+			if (!hoveredChildWindows.contains(capturedWindow)) {
+				auto copiedCapturedWindow = capturedWindow;
+
+				capturedWindow->onMouseHover(x - xOffset, y - yOffset);
+				hoveredChildWindows.insert(std::move(copiedCapturedWindow));
+			} else {
+				capturedWindow->onMouseMove(x - xOffset, y - yOffset);
+			}
+		} else {
+			if (hoveredChildWindows.contains(capturedWindow)) {
+				capturedWindow->onMouseLeave();
+				hoveredChildWindows.remove(capturedWindow);
+			}
+		}
+	} else {
+		peff::Map<VirtualWindow *, std::pair<int, int>> childWindows;
+
+		findWindowsAtPos(x, y, childWindows);
+
+		{
+			peff::Set<Window *> leftWindows;
+			for (auto i : hoveredChildWindows) {
+				if (!i->backend) {
+					if (!childWindows.contains((VirtualWindow *)i)) {
+						auto copiedI = i;
+						leftWindows.insert(std::move(copiedI));
+					}
+				}
+			}
+
+			for (auto i : leftWindows) {
+				auto copiedI = i;
+				i->onMouseLeave();
+				hoveredChildWindows.remove(std::move(copiedI));
+			}
+		}
+
+		for (auto i = childWindows.begin(); i != childWindows.end(); ++i) {
+			if (!hoveredChildWindows.contains(i.key())) {
+				i.key()->onMouseHover(x, y);
+				Window *copiedWindow = i.key();
+				hoveredChildWindows.insert(std::move(copiedWindow));
+			} else
+				i.key()->onMouseMove(i.value().first, i.value().second);
+		}
+	}
 }
 
-CLCWSAL_API void NativeWindow::onExpose() {
+CLCWSAL_API void Win32Window::onExpose() {
 	onDraw();
 }
 
-CLCWSAL_API void NativeWindow::onDraw() {
-}
+CLCWSAL_API void Win32Window::onDraw() {
+	int width, height;
+	getSize(width, height);
 
-static Window *_g_curMouseCapturedWindow = nullptr;
-static NativeWindow *_g_curMouseCapturedTopLevelWindow = nullptr;
+	for (auto i : _childVirtualWindows) {
+		int subwindowX, subwindowY;
+		int subwindowWidth, subwindowHeight;
 
-CLCWSAL_API void clench::wsal::setMouseCapture(Window *window) {
-	CLENCH_DEBUG_LOG("WSAL", "Setting mouse capture for window: %p", window);
-	if(_g_curMouseCapturedWindow)
-		releaseMouseCapture();
+		i->getPos(subwindowX, subwindowY);
+		i->getSize(subwindowWidth, subwindowHeight);
 
-	WindowProperties windowProperties;
-
-	window->getWindowProperties(windowProperties);
-
-	Window *i = window->getParent();
-
-	while (i) {
-		i->getWindowProperties(windowProperties);
-
-		if (windowProperties.isNative) {
-			_g_curMouseCapturedTopLevelWindow = (NativeWindow *)i;
-			SetCapture(((NativeWindow *)i)->nativeHandle);
-			((NativeWindow *)i)->curCapturedWindow = i == window ? nullptr : window;
-			goto foundTopLevelWindow;
-		}
-
-		i = i->getParent();
+		i->onDraw();
 	}
-
-	throw std::logic_error("Window to be captured must have a native parent window on the window chain");
-
-foundTopLevelWindow:
-
-	_g_curMouseCapturedWindow = window;
 }
 
-CLCWSAL_API void clench::wsal::releaseMouseCapture() {
-	CLENCH_DEBUG_LOG("WSAL", "Releasing mouse capture");
-	_releaseMouseCapture();
-
-	ReleaseCapture();
+CLCWSAL_API Win32Window *Win32Window::alloc(
+	Win32Backend *backend,
+	Win32WindowHandle nativeHandle) {
+	return peff::allocAndConstruct<Win32Window>(backend->resourceAllocator.get(), sizeof(std::max_align_t), backend, nativeHandle);
 }
 
-CLCWSAL_API Window *wsal::getMouseCapture() {
-	return _g_curMouseCapturedWindow;
-}
+CLCWSAL_API void Win32Window::findWindowsAtPos(int x, int y, peff::Map<clench::wsal::VirtualWindow *, std::pair<int, int>> &childWindowsOut) {
+	for (auto i : _childVirtualWindows) {
+		int windowX, windowY, windowWidth, windowHeight;
+		i->getPos(windowX, windowY);
+		i->getSize(windowWidth, windowHeight);
 
-CLCWSAL_API void wsal::_releaseMouseCapture() {
-	if (_g_curMouseCapturedTopLevelWindow) {
-		_g_curMouseCapturedTopLevelWindow->curCapturedWindow = nullptr;
-		_g_curMouseCapturedTopLevelWindow = nullptr;
+		if ((x >= windowX) &&
+			(y >= windowY) &&
+			(x < windowX + windowWidth) &&
+			(y < windowY + windowHeight))
+			childWindowsOut.insert(i.get(), { x - windowX, y - windowY });
 	}
-	_g_curMouseCapturedWindow = nullptr;
 }

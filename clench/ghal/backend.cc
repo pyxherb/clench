@@ -13,7 +13,7 @@ CLCGHAL_API clench::ghal::GHALBackend::~GHALBackend() {
 }
 
 CLCGHAL_API void GHALBackend::onRefZero() noexcept {
-	peff::destroyAndRelease(selfAllocator.get(), this, sizeof(std::max_align_t));
+	peff::destroyAndRelease<GHALBackend>(selfAllocator.get(), this, sizeof(std::max_align_t));
 }
 
 bool GHALBackend::init() {

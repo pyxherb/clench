@@ -7,5 +7,5 @@ target_sources(clcghal_static PRIVATE ${HEADERS} ${SRC})
 add_subdirectory("opengl")
 
 if(WIN32)
-    add_subdirectory("d3d11")
+    #add_subdirectory("d3d11")
 endif()

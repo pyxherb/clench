@@ -2,7 +2,7 @@
 
 using namespace clench::wsal;
 
-CLCWSAL_API const std::map<UINT, KeyboardKeyCode> clench::wsal::g_win32KeyMap = {
+CLCWSAL_API const std::initializer_list<std::pair<UINT, KeyboardKeyCode>> clench::wsal::g_win32KeyMap = {
 	{ VK_SPACE, (KeyboardKeyCode)' ' },
 	{ VK_OEM_7, (KeyboardKeyCode)'\'' },
 	{ ',', (KeyboardKeyCode)',' },

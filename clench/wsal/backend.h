@@ -19,7 +19,7 @@ namespace clench {
 		public:
 			peff::RcObjectPtr<peff::Alloc> selfAllocator, resourceAllocator;
 			const char *backendId;
-			bool isInited;
+			bool isInited = false;
 
 			CLENCH_NO_COPY_MOVE_METHODS(Backend);
 
