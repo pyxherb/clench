@@ -13,8 +13,6 @@ namespace clench {
 
 		class Window;
 
-		CLCWSAL_API void _releaseMouseCapture();
-
 		CLCWSAL_API void setMouseCapture(Window *window);
 		CLCWSAL_API void releaseMouseCapture();
 		CLCWSAL_API Window *getMouseCapture();

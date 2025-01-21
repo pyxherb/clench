@@ -1,7 +1,6 @@
 #include "window.h"
 #include "backend.h"
 
-// Fuck <Windows.h>, we have to undefine them to use std::min and std::max.
 #ifdef _WIN32
 	#undef min
 	#undef max
