@@ -118,6 +118,10 @@ namespace clench {
 			virtual void onMouseMove(int x, int y) = 0;
 			virtual void onExpose() = 0;
 			virtual void onDraw() = 0;
+
+			CLENCH_FORCEINLINE bool isNative() {
+				return backend;
+			}
 		};
 
 		constexpr static int UNSET = INT_MIN;

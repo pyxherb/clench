@@ -282,13 +282,13 @@ CLCWSAL_API wsal::Window *X11Window::getParent() const {
 }
 
 CLCWSAL_API void X11Window::addChildWindow(wsal::Window *window) {
-	if (!window->backend) {
+	if (!window->isNative()) {
 		_childVirtualWindows.insert((VirtualWindow *)window);
 	}
 }
 
 CLCWSAL_API void X11Window::removeChildWindow(wsal::Window *window) {
-	if (!window->backend) {
+	if (!window->isNative()) {
 		X11Window *nativeWindow = ((X11Window *)window);
 
 		if (nativeWindow->getParent() != this)
@@ -479,7 +479,7 @@ CLCWSAL_API void X11Window::onMouseMove(int x, int y) {
 		{
 			peff::Set<Window *> leftWindows;
 			for (auto i : hoveredChildWindows) {
-				if (!i->backend) {
+				if (!i->isNative()) {
 					if (!childWindows.contains((VirtualWindow *)i)) {
 						auto copiedI = i;
 						leftWindows.insert(std::move(copiedI));

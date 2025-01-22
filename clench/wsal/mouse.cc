@@ -16,7 +16,7 @@ CLCWSAL_API void clench::wsal::setMouseCapture(Window *window) {
 	Window *i = window;
 
 	while (i) {
-		if (i->backend) {
+		if (i->isNative()) {
 			_g_curMouseCapturedTopLevelWindow = i;
 			_g_curMouseCapturedTopLevelWindow->backend->setMouseCapture(_g_curMouseCapturedTopLevelWindow, _g_curMouseCapturedWindow);
 			goto foundTopLevelWindow;

@@ -1,6 +1,7 @@
 #ifndef _CLENCH_PLAT_FS_H_
 #define _CLENCH_PLAT_FS_H_
 
+#include "basedefs.h"
 #include <clench/utils/stream.h>
 #include <cstdint>
 
@@ -31,49 +32,49 @@ namespace clench {
 			OPENFILE_BINARY = 0x4000,
 			OPENFILE_TRUNCATE = 0x8000;
 
-		class FileStream : virtual public utils::InputOutputStream {
+		class FileStream : public utils::InputOutputStream {
 		public:
-			CLCUTILS_API FileStream();
-			CLCUTILS_API virtual ~FileStream();
+			CLCPLAT_API FileStream();
+			CLCPLAT_API virtual ~FileStream();
 
 			virtual void close() = 0;
 		};
 
 		class FileSystem {
 		public:
-			CLCUTILS_API FileSystem();
-			CLCUTILS_API virtual ~FileSystem();
+			CLCPLAT_API FileSystem();
+			CLCPLAT_API virtual ~FileSystem();
 
 			virtual FileStream *openFile(const char *path, FileOpenMode mode) = 0;
 			virtual FileStream *createFile(const char *path, FileOpenMode mode) = 0;
 		};
 
-		class NativeFileStream : virtual public FileStream {
+		class NativeFileStream : public FileStream {
 		public:
 #ifdef _WIN32
 			HANDLE handle;
 
-			CLCUTILS_API NativeFileStream(HANDLE handle);
+			CLCPLAT_API NativeFileStream(HANDLE handle);
 #else
 			int fd;
 
-			CLCUTILS_API NativeFileStream(int fd);
+			CLCPLAT_API NativeFileStream(int fd);
 #endif
-			CLCUTILS_API virtual ~NativeFileStream();
+			CLCPLAT_API virtual ~NativeFileStream();
 
-			CLCUTILS_API virtual bool seek(utils::StreamSeekMode mode, long long offset) override;
-			CLCUTILS_API virtual size_t tell() override;
-			CLCUTILS_API virtual size_t read(void *buffer, size_t size) override;
-			CLCUTILS_API virtual size_t write(const void *buffer, size_t size) override;
-			CLCUTILS_API virtual void close() override;
+			CLCPLAT_API virtual bool seek(utils::StreamSeekMode mode, long long offset) override;
+			CLCPLAT_API virtual size_t tell() override;
+			CLCPLAT_API virtual size_t read(void *buffer, size_t size) override;
+			CLCPLAT_API virtual size_t write(const void *buffer, size_t size) override;
+			CLCPLAT_API virtual void close() override;
 		};
 
 		class NativeFileSystem : public FileSystem {
 		public:
-			CLCUTILS_API NativeFileSystem();
-			CLCUTILS_API virtual ~NativeFileSystem();
+			CLCPLAT_API NativeFileSystem();
+			CLCPLAT_API virtual ~NativeFileSystem();
 
-			CLCUTILS_API virtual FileStream *openFile(const char *path, FileOpenMode mode) override;
+			CLCPLAT_API virtual FileStream *openFile(const char *path, FileOpenMode mode) override;
 		};
 	}
 }

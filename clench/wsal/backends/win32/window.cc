@@ -210,13 +210,13 @@ CLCWSAL_API Window *Win32Window::getParent() const {
 }
 
 CLCWSAL_API void Win32Window::addChildWindow(Window *window) {
-	if (!window->backend) {
+	if (!window->isNative()) {
 		_childVirtualWindows.insert((VirtualWindow *)window);
 	}
 }
 
 CLCWSAL_API void Win32Window::removeChildWindow(Window *window) {
-	if (!window->backend) {
+	if (!window->isNative()) {
 		WindowProperties windowProperties;
 		window->getWindowProperties(windowProperties);
 
@@ -418,7 +418,7 @@ CLCWSAL_API void Win32Window::onMouseMove(int x, int y) {
 		{
 			peff::Set<Window *> leftWindows;
 			for (auto i : hoveredChildWindows) {
-				if (!i->backend) {
+				if (!i->isNative()) {
 					if (!childWindows.contains((VirtualWindow *)i)) {
 						auto copiedI = i;
 						leftWindows.insert(std::move(copiedI));

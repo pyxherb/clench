@@ -76,7 +76,7 @@ CLCWSAL_API void VirtualWindow::setSize(int width, int height) {
 	_height = height;
 
 	for (auto i = _childWindows.begin(); i != _childWindows.end(); ++i) {
-		if ((*i)->backend)
+		if ((*i)->isNative())
 			continue;
 
 		if (const wsal::LayoutAttributes *layoutAttribs =
@@ -122,7 +122,7 @@ CLCWSAL_API wsal::Window *VirtualWindow::getParent() const {
 }
 
 CLCWSAL_API void VirtualWindow::addChildWindow(Window *window) {
-	if (window->backend)
+	if (window->isNative())
 		throw std::logic_error("Cannot add a native window onto a virtual window");
 	assert(("Cannot add a virtual window onto itself", this != window));
 	_childWindows.insert((VirtualWindow *)window);
@@ -311,7 +311,7 @@ CLCWSAL_API void wsal::getAbsoluteOffsetToRootNativeWindow(Window *window, int &
 	WindowProperties windowProperties;
 
 	while (true) {
-		if (window->backend)
+		if (window->isNative())
 			return;
 
 		int relativeX, relativeY;

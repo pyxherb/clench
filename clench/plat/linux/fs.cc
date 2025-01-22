@@ -3,20 +3,24 @@
 using namespace clench;
 using namespace clench::plat;
 
-NativeFileStream::NativeFileStream(int fd) : fd(fd) {
+CLCPLAT_API NativeFileStream::NativeFileStream(int fd) : fd(fd) {
 }
 
-CLCUTILS_API bool NativeFileStream::seek(StreamSeekMode mode, long long offset) {
+CLCPLAT_API NativeFileStream::~NativeFileStream() {
+	close();
+}
+
+CLCPLAT_API bool NativeFileStream::seek(utils::StreamSeekMode mode, long long offset) {
 	int whence;
 
 	switch (mode) {
-		case StreamSeekMode::Set:
+		case utils::StreamSeekMode::Set:
 			whence = SEEK_SET;
 			break;
-		case StreamSeekMode::Current:
+		case utils::StreamSeekMode::Current:
 			whence = SEEK_CUR;
 			break;
-		case StreamSeekMode::End:
+		case utils::StreamSeekMode::End:
 			whence = SEEK_END;
 			break;
 	}
@@ -27,31 +31,36 @@ CLCUTILS_API bool NativeFileStream::seek(StreamSeekMode mode, long long offset) 
 	return true;
 }
 
-CLCUTILS_API size_t NativeFileStream::tell() {
+CLCPLAT_API size_t NativeFileStream::tell() {
 	if (long offset = lseek64(fd, SEEK_CUR, 0); offset > -1)
 		return (size_t)offset;
-	return INVALID_STREAM_POS;
+	return utils::INVALID_STREAM_POS;
 }
 
-CLCUTILS_API size_t NativeFileStream::read(void *buffer, size_t size) {
-	ssize_t size = ::read(fd, buffer, size);
+CLCPLAT_API size_t NativeFileStream::read(void *buffer, size_t size) {
+	ssize_t readSize = ::read(fd, buffer, size);
 
-	if (size < 0)
+	if (readSize < 0)
 		return 0;
 
-	return (size_t)size;
+	return (size_t)readSize;
 }
 
-CLCUTILS_API size_t NativeFileStream::write(const void *buffer, size_t size) {
-	ssize_t size = ::write(fd, buffer, size);
+CLCPLAT_API size_t NativeFileStream::write(const void *buffer, size_t size) {
+	ssize_t writtenSize = ::write(fd, buffer, size);
 
-	if (size < 0)
+	if (writtenSize < 0)
 		return 0;
 
-	return (size_t)size;
+	return (size_t)writtenSize;
 }
 
-CLCUTILS_API FileStream *NativeFileSystem::openFile(const char *path, FileOpenMode mode) {
+CLCPLAT_API void NativeFileStream::close() {
+	if(!(fd < 0))
+		::close(fd);
+}
+
+CLCPLAT_API FileStream *NativeFileSystem::openFile(const char *path, FileOpenMode mode) {
 	int openFlags;
 
 	if (mode & OPENFILE_WRITE) {

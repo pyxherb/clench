@@ -26,7 +26,7 @@ CLCPLAT_API void Thread::start() {
 		this);
 }
 
-CLCPLAT_API clench::plat::Thread::~Thread() {
+CLCPLAT_API Thread::~Thread() {
 	if (_threadStack)
 		delete[] _threadStack;
 }
