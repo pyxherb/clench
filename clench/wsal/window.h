@@ -74,6 +74,8 @@ namespace clench {
 
 			CLCWSAL_API virtual void onRefZero() noexcept override;
 
+			virtual void dealloc() = 0;
+
 			virtual void show() = 0;
 			virtual void hide() = 0;
 			virtual bool isVisible() const = 0;
@@ -207,8 +209,6 @@ namespace clench {
 				int width,
 				int height);
 			CLCWSAL_API virtual ~VirtualWindow();
-
-			CLCWSAL_API virtual void onRefZero() noexcept override;
 
 			CLCWSAL_API virtual void show() override;
 			CLCWSAL_API virtual void hide() override;

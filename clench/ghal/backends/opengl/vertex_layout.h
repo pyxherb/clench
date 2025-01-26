@@ -17,10 +17,11 @@ namespace clench {
 				GLuint vertexArrayHandle);
 			CLCGHAL_API virtual ~GLVertexLayout();
 
+			CLCGHAL_API virtual void dealloc() override;
+
 			CLCGHAL_API static GLVertexLayout *alloc(
 				GHALDevice *ownerDevice,
-				GLuint vertexArrayHandle
-			);
+				GLuint vertexArrayHandle);
 		};
 	}
 }

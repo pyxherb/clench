@@ -14,6 +14,10 @@ CLCGHAL_API GLVertexShader::~GLVertexShader() {
 	glDeleteShader(shaderHandle);
 }
 
+CLCGHAL_API void GLVertexShader::dealloc() {
+	peff::destroyAndRelease<GLVertexShader>(ownerDevice->resourceAllocator.get(), this, sizeof(std::max_align_t));
+}
+
 CLCGHAL_API GLVertexShader *GLVertexShader::alloc(
 	GHALDevice *ownedDevice,
 	GLuint shaderHandle) {
@@ -28,6 +32,10 @@ CLCGHAL_API GLFragmentShader::GLFragmentShader(GHALDevice *ownedDevice, GLuint s
 
 CLCGHAL_API GLFragmentShader::~GLFragmentShader() {
 	glDeleteShader(shaderHandle);
+}
+
+CLCGHAL_API void GLFragmentShader::dealloc() {
+	peff::destroyAndRelease<GLFragmentShader>(ownerDevice->resourceAllocator.get(), this, sizeof(std::max_align_t));
 }
 
 CLCGHAL_API GLFragmentShader *GLFragmentShader::alloc(
@@ -46,6 +54,10 @@ CLCGHAL_API GLGeometryShader::~GLGeometryShader() {
 	glDeleteShader(shaderHandle);
 }
 
+CLCGHAL_API void GLGeometryShader::dealloc() {
+	peff::destroyAndRelease<GLGeometryShader>(ownerDevice->resourceAllocator.get(), this, sizeof(std::max_align_t));
+}
+
 CLCGHAL_API GLGeometryShader *GLGeometryShader::alloc(
 	GHALDevice *ownedDevice,
 	GLuint shaderHandle) {
@@ -59,6 +71,10 @@ CLCGHAL_API GLShaderProgram::GLShaderProgram(GHALDevice *ownerDevice, GLuint pro
 
 CLCGHAL_API GLShaderProgram::~GLShaderProgram() {
 	glDeleteProgram(programHandle);
+}
+
+CLCGHAL_API void GLShaderProgram::dealloc() {
+	peff::destroyAndRelease<GLShaderProgram>(ownerDevice->resourceAllocator.get(), this, sizeof(std::max_align_t));
 }
 
 CLCGHAL_API GLShaderProgram *GLShaderProgram::alloc(

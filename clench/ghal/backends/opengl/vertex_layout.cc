@@ -14,6 +14,10 @@ CLCGHAL_API GLVertexLayout::~GLVertexLayout() {
 	glDeleteVertexArrays(1, &vertexArrayHandle);
 }
 
+CLCGHAL_API void GLVertexLayout::dealloc() {
+	peff::destroyAndRelease<GLVertexLayout>(ownerDevice->resourceAllocator.get(), this, sizeof(std::max_align_t));
+}
+
 CLCGHAL_API GLVertexLayout *GLVertexLayout::alloc(
 	GHALDevice *ownerDevice,
 	GLuint vertexArrayHandle) {

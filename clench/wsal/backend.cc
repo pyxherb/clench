@@ -18,7 +18,7 @@ CLCWSAL_API Backend::~Backend(){
 }
 
 CLCWSAL_API void Backend::onRefZero() noexcept {
-	peff::destroyAndRelease<Backend>(selfAllocator.get(), this, sizeof(std::max_align_t));
+	dealloc();
 }
 
 bool Backend::init() {

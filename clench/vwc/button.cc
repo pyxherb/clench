@@ -29,6 +29,10 @@ CLCVWC_API Button::Button(
 CLCVWC_API Button::~Button() {
 }
 
+CLCVWC_API void Button::dealloc() {
+	peff::destroyAndRelease<Button>(selfAllocator.get(), this, sizeof(std::max_align_t));
+}
+
 CLCVWC_API void Button::onMouseButtonPress(wsal::MouseButton button, int x, int y) {
 	if (button == wsal::MouseButton::Left) {
 		onPress();
@@ -71,6 +75,10 @@ CLCVWC_API DefaultButton::DefaultButton(
 }
 
 CLCVWC_API DefaultButton::~DefaultButton() {
+}
+
+CLCVWC_API void DefaultButton::dealloc() {
+	peff::destroyAndRelease<DefaultButton>(selfAllocator.get(), this, sizeof(std::max_align_t));
 }
 
 CLCVWC_API void DefaultButton::onDraw() {

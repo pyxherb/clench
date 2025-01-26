@@ -67,6 +67,8 @@ namespace clench {
 
 			CLCGHAL_API virtual RenderTargetView *createRenderTargetViewForTexture2D(Texture2D *texture) override;
 
+			CLCGHAL_API virtual void dealloc() override;
+
 			CLCGHAL_API static GLGHALDevice *alloc(peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator, GLGHALBackend *backend);
 		};
 
@@ -162,6 +164,8 @@ namespace clench {
 			CLCGHAL_API void saveCurrentGLContext();
 			CLCGHAL_API void restoreCurrentGLContext();
 			CLCGHAL_API bool makeContextCurrent();
+
+			CLCGHAL_API virtual void dealloc() override;
 
 			CLCGHAL_API static GLGHALDeviceContext *alloc(GLGHALDevice *device);
 		};

@@ -11,5 +11,5 @@ CLCACRI_API ACRIResource::~ACRIResource() {
 }
 
 CLCACRI_API void ACRIResource::onRefZero() noexcept {
-	peff::destroyAndRelease(device->resourceAllocator.get(), this, sizeof(std::max_align_t));
+	dealloc();
 }

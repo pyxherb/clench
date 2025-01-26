@@ -12,7 +12,7 @@
 
 namespace clench {
 	namespace acri {
-		class ACRIDevice : public peff::Deallocable {
+		class ACRIDevice {
 		public:
 			peff::RcObjectPtr<peff::Alloc> selfAllocator, resourceAllocator;
 			ghal::GHALDevice *associatedDevice;
@@ -21,7 +21,7 @@ namespace clench {
 			CLCACRI_API ACRIDevice(ghal::GHALDevice *associatedDevice, peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator);
 			CLCACRI_API ~ACRIDevice();
 
-			CLCACRI_API virtual void dealloc() override;
+			virtual void dealloc() = 0;
 		};
 
 		struct RenderResources {

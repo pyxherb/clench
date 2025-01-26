@@ -59,6 +59,8 @@ namespace clench {
 				X11WindowHandle nativeHandle);
 			CLCWSAL_API virtual ~X11Window();
 
+			CLCWSAL_API virtual void dealloc() override;
+
 			CLCWSAL_API virtual void show() override;
 			CLCWSAL_API virtual void hide() override;
 			CLCWSAL_API virtual bool isVisible() const override;

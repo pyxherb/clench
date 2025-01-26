@@ -32,6 +32,8 @@ namespace clench {
 
 			CLCACRI_API TriangleGeometry(ACRIDevice *device);
 			CLCACRI_API virtual ~TriangleGeometry();
+
+			CLCACRI_API virtual void dealloc() override;
 		};
 
 		class EllipseGeometry : public Geometry {
@@ -43,6 +45,8 @@ namespace clench {
 
 			CLCACRI_API EllipseGeometry(ACRIDevice *device);
 			CLCACRI_API virtual ~EllipseGeometry();
+
+			CLCACRI_API virtual void dealloc() override;
 		};
 
 		enum class PathInstructionOpcode {
@@ -82,6 +86,8 @@ namespace clench {
 
 			CLCACRI_API PathGeometry(ACRIDevice *device);
 			CLCACRI_API virtual ~PathGeometry();
+
+			CLCACRI_API virtual void dealloc() override;
 		};
 	}
 }

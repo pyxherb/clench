@@ -13,6 +13,10 @@ CLCACRI_API ACRIDevice *createDevice(ghal::GHALDevice *ghalDevice, peff::Alloc *
 
 }
 
+CLCACRI_API void GLACRIBackend::dealloc() {
+	peff::destroyAndRelease<GLACRIBackend>(selfAllocator.get(), this, sizeof(std::max_align_t));
+}
+
 CLCACRI_API GLACRIBackend *GLACRIBackend::alloc(peff::Alloc *selfAllocator) {
 	return peff::allocAndConstruct<GLACRIBackend>(selfAllocator, sizeof(std::max_align_t), selfAllocator);
 }

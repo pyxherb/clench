@@ -18,6 +18,8 @@ namespace clench {
 			CLCACRI_API ACRIResource(ACRIDevice *device);
 			CLCACRI_API virtual ~ACRIResource();
 
+			virtual void dealloc() = 0;
+
 			CLCACRI_API virtual void onRefZero() noexcept override;
 		};
 	}

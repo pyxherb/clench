@@ -453,8 +453,12 @@ CLCGHAL_API RenderTargetView *GLGHALDevice::createRenderTargetViewForTexture2D(T
 	return GLRenderTargetView::alloc(this, RenderTargetViewType::Texture2D, ((GLTexture2D *)texture)->textureHandle);
 }
 
+CLCGHAL_API void GLGHALDevice::dealloc() {
+	peff::destroyAndRelease<GLGHALDevice>(selfAllocator.get(), this, sizeof(std::max_align_t));
+}
+
 CLCGHAL_API GLGHALDevice *GLGHALDevice::alloc(peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator, GLGHALBackend *backend) {
-	std::unique_ptr<GLGHALDevice, peff::DeallocableDeleter> ptr(
+	std::unique_ptr<GLGHALDevice, peff::DeallocableDeleter<GLGHALDevice>> ptr(
 		peff::allocAndConstruct<GLGHALDevice>(
 			selfAllocator, sizeof(std::max_align_t),
 			selfAllocator, resourceAllocator, backend));
@@ -785,6 +789,10 @@ CLCGHAL_API GLGHALDeviceContext *GLGHALDeviceContext::alloc(GLGHALDevice *device
 	return peff::allocAndConstruct<GLGHALDeviceContext>(
 		device->resourceAllocator.get(), sizeof(std::max_align_t),
 		device);
+}
+
+CLCGHAL_API void GLGHALDeviceContext::dealloc() {
+	peff::destroyAndRelease<GLGHALDeviceContext>(ownerDevice->resourceAllocator.get(), this, sizeof(std::max_align_t));
 }
 
 CLCGHAL_API GLenum clench::ghal::toGLVertexDataType(const VertexDataType &vertexDataType, size_t &sizeOut) {

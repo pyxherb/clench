@@ -15,6 +15,10 @@ CLCGHAL_API GLBuffer::~GLBuffer() {
 	glDeleteBuffers(1, &bufferHandle);
 }
 
+CLCGHAL_API void GLBuffer::dealloc() {
+	peff::destroyAndRelease<GLBuffer>(ownerDevice->resourceAllocator.get(), this, sizeof(std::max_align_t));
+}
+
 CLCGHAL_API GLBuffer *GLBuffer::alloc(
 	GHALDevice *ownerDevice,
 	const BufferDesc &bufferDesc,

@@ -19,6 +19,8 @@ namespace clench {
 				int height);
 			CLCVWC_API virtual ~Button();
 
+			CLCVWC_API virtual void dealloc() override;
+
 			CLCVWC_API virtual void onMouseButtonPress(wsal::MouseButton button, int x, int y) override;
 			CLCVWC_API virtual void onMouseButtonRelease(wsal::MouseButton button, int x, int y) override;
 			CLCVWC_API virtual void onMouseHover(int x, int y) override;
@@ -54,6 +56,8 @@ namespace clench {
 				int width,
 				int height);
 			CLCVWC_API virtual ~DefaultButton();
+
+			CLCVWC_API virtual void dealloc() override;
 
 			CLCVWC_API virtual void onDraw() override;
 

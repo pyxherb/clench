@@ -28,6 +28,8 @@ namespace clench {
 
 			CLCWSAL_API virtual void onRefZero() noexcept override;
 
+			virtual void dealloc() = 0;
+
 			bool init();
 			bool deinit();
 

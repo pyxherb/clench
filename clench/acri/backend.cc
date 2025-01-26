@@ -12,7 +12,7 @@ CLCACRI_API ACRIBackend::~ACRIBackend() {
 }
 
 CLCACRI_API void ACRIBackend::onRefZero() noexcept {
-	peff::destroyAndRelease(selfAllocator.get(), this, sizeof(std::max_align_t));
+	dealloc();
 }
 
 CLCACRI_API bool clench::acri::registerBackend(ACRIBackend *backend) {

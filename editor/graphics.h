@@ -6,12 +6,12 @@
 #include <memory>
 
 namespace clench {
-	namespace engine {
+	namespace editor {
 		struct GraphicsContext {
 			std::unique_ptr<clench::ghal::GHALDevice> g_mainGhalDevice;
 		};
 
-		extern std::unique_ptr<clench::ghal::GHALDevice, peff::DeallocableDeleter> g_mainGhalDevice;
+		extern std::unique_ptr<clench::ghal::GHALDevice, peff::DeallocableDeleter<clench::ghal::GHALDevice>> g_mainGhalDevice;
 	}
 }
 

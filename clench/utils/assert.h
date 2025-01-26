@@ -16,7 +16,7 @@ namespace clench {
 	}
 }
 
-#ifdef NDEBUG
+#if NDEBUG
 
 	#define CLENCH_ASSERT(cond, failMessage)
 

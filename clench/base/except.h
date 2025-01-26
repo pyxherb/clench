@@ -64,7 +64,7 @@ namespace clench {
 
 			CLCBASE_API void unwrap() noexcept {
 				if (_ptr) {
-					assert(("Unhandled WandXML internal exception: ", false));
+					assert(("Unhandled Clench internal exception: ", false));
 				}
 			}
 

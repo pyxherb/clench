@@ -22,6 +22,10 @@ CLCWSAL_API X11Backend::X11Backend(
 }
 CLCWSAL_API X11Backend::~X11Backend() {}
 
+CLCWSAL_API void X11Backend::dealloc() {
+	peff::destroyAndRelease<X11Backend>(selfAllocator.get(), this, sizeof(std::max_align_t));
+}
+
 CLCWSAL_API wsal::Window *X11Backend::createWindow(
 	CreateWindowFlags flags,
 	Window *parent,

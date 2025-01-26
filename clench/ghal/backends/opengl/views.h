@@ -18,6 +18,8 @@ namespace clench {
 				GLuint frameBufferHandle);
 			CLCGHAL_API virtual ~GLRenderTargetView();
 
+			CLCGHAL_API virtual void dealloc() override;
+
 			CLCGHAL_API static GLRenderTargetView *alloc(
 				GHALDevice *ownerDevice,
 				RenderTargetViewType type,
@@ -40,6 +42,8 @@ namespace clench {
 				GLuint depthBufferHandle,
 				GLuint stencilBufferHandle);
 			CLCGHAL_API virtual ~GLDepthStencilView();
+
+			CLCGHAL_API virtual void dealloc() override;
 
 			CLCGHAL_API static GLDepthStencilView *alloc(
 				GHALDevice *ownerDevice,

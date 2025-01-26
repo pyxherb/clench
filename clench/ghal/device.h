@@ -17,7 +17,7 @@ namespace clench {
 	namespace ghal {
 		class GHALDeviceContext;
 
-		class GHALDevice : public peff::Deallocable {
+		class GHALDevice {
 		public:
 			peff::RcObjectPtr<peff::Alloc> selfAllocator, resourceAllocator;
 			std::set<GHALDeviceResource *> createdResources;
@@ -27,7 +27,7 @@ namespace clench {
 			CLCGHAL_API GHALDevice(peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator);
 			CLCGHAL_API virtual ~GHALDevice();
 
-			CLCGHAL_API virtual void dealloc() override;
+			virtual void dealloc() = 0;
 
 			virtual GHALBackend *getBackend() = 0;
 

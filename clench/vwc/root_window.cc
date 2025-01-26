@@ -22,6 +22,10 @@ CLCVWC_API VWCRootWindow::VWCRootWindow(
 CLCVWC_API VWCRootWindow::~VWCRootWindow() {
 }
 
+CLCVWC_API void VWCRootWindow::dealloc() {
+	peff::destroyAndRelease<VWCRootWindow>(selfAllocator.get(), this, sizeof(std::max_align_t));
+}
+
 CLCVWC_API void VWCRootWindow::onResize(int width, int height) {
 	ghalDeviceContext->onResize(width, height);
 

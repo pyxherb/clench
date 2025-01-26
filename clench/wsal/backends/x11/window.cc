@@ -24,6 +24,10 @@ CLCWSAL_API X11Window::~X11Window() {
 	XCloseDisplay(nativeHandle.display);
 }
 
+CLCWSAL_API void X11Window::dealloc() {
+	peff::destroyAndRelease<X11Window>(backend->resourceAllocator.get(), this, sizeof(std::max_align_t));
+}
+
 CLCWSAL_API void X11Window::pollEvents() {
 	X11Backend *backend = ((X11Backend *)this->backend);
 	XEvent ev;

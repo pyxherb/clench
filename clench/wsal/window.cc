@@ -15,7 +15,7 @@ CLCWSAL_API wsal::Window::~Window() {
 }
 
 CLCWSAL_API void wsal::Window::onRefZero() noexcept {
-	peff::destroyAndRelease<Window>(backend->resourceAllocator.get(), this, sizeof(std::max_align_t));
+	dealloc();
 }
 
 CLCWSAL_API VirtualWindow::VirtualWindow(
@@ -39,10 +39,6 @@ CLCWSAL_API VirtualWindow::VirtualWindow(
 }
 
 CLCWSAL_API VirtualWindow::~VirtualWindow() {
-}
-
-CLCWSAL_API void VirtualWindow::onRefZero() noexcept {
-	peff::destroyAndRelease<Window>(selfAllocator.get(), this, sizeof(std::max_align_t));
 }
 
 CLCWSAL_API void VirtualWindow::show() {

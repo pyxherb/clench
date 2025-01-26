@@ -18,6 +18,8 @@ namespace clench {
 			CLCGHAL_API GHALDeviceResource(GHALDevice *ownerDevice);
 			CLCGHAL_API virtual ~GHALDeviceResource();
 
+			virtual void dealloc() = 0;
+
 			CLCGHAL_API virtual void onRefZero() noexcept override;
 		};
 	}

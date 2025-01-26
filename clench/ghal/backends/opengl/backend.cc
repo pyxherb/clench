@@ -30,6 +30,10 @@ CLCGHAL_API GLGHALBackend::GLGHALBackend(peff::Alloc *selfAllocator) : GHALBacke
 CLCGHAL_API GLGHALBackend::~GLGHALBackend() {
 }
 
+CLCGHAL_API void GLGHALBackend::dealloc() {
+	peff::destroyAndRelease<GLGHALBackend>(selfAllocator.get(), this, sizeof(std::max_align_t));
+}
+
 bool GLGHALBackend::doInit() {
 #if _WIN32
 	if (!(g_hOpenGL32Dll = LoadLibraryA("opengl32.dll")))

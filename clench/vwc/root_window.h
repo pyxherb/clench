@@ -18,6 +18,8 @@ namespace clench {
 				ghal::GHALDevice *ghalDevice);
 			CLCVWC_API virtual ~VWCRootWindow();
 
+			CLCVWC_API virtual void dealloc() override;
+
 			CLCVWC_API virtual void onResize(int width, int height) override;
 			CLCVWC_API virtual void onMove(int x, int y) override;
 			CLCVWC_API virtual bool onClose() override;

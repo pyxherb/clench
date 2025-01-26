@@ -22,6 +22,8 @@ namespace clench {
 				peff::Alloc *resourceAllocator);
 			CLCWSAL_API virtual ~X11Backend();
 
+			CLCWSAL_API virtual void dealloc() override;
+
 			CLCWSAL_API virtual Window *createWindow(
 				CreateWindowFlags flags,
 				Window *parent,

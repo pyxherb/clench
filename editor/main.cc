@@ -8,7 +8,7 @@
 #include <clench/vwc/button.h>
 
 using namespace clench;
-using namespace clench::engine;
+using namespace clench::editor;
 
 float vertices[] = {
 	0.5f, 0.5f, 0.0f,
@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
 	peff::List<std::string_view> preferredBackendList;
 	if(!preferredBackendList.build({ "opengl" }))
 		throw std::bad_alloc();
-	g_mainGhalDevice = std::unique_ptr<ghal::GHALDevice, peff::DeallocableDeleter>(ghal::createGHALDevice(preferredBackendList));
+	g_mainGhalDevice = std::unique_ptr<ghal::GHALDevice, peff::DeallocableDeleter<ghal::GHALDevice>>(ghal::createGHALDevice(preferredBackendList));
 
 	if (!g_mainGhalDevice)
 		throw std::runtime_error("Error creating main GHAL device");

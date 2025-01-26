@@ -18,6 +18,8 @@ namespace clench {
 			CLCACRI_API ACRIBackend(const char *name, peff::Alloc *selfAllocator);
 			CLCACRI_API virtual ~ACRIBackend();
 
+			virtual void dealloc() = 0;
+
 			CLCACRI_API virtual void onRefZero() noexcept override;
 
 			virtual ACRIDevice *createDevice(ghal::GHALDevice *ghalDevice, peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator) = 0;

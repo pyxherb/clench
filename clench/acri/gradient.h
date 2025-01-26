@@ -25,6 +25,8 @@ namespace clench {
 			float angle;
 			peff::Map<float, ghal::Color> colorStops;
 
+			CLCACRI_API virtual void dealloc() override;
+
 			CLCACRI_API LinearGradient(ACRIDevice *device);
 			CLCACRI_API virtual ~LinearGradient();
 		};

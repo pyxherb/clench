@@ -17,10 +17,6 @@ CLCACRI_API ACRIDevice::~ACRIDevice() {
 	assert(("Not all ACRI resources are released", false));
 }
 
-CLCACRI_API void ACRIDevice::dealloc() {
-	peff::destroyAndRelease<ACRIDevice>(selfAllocator.get(), this, sizeof(std::max_align_t));
-}
-
 CLCACRI_API ACRIDeviceContext::ACRIDeviceContext(ACRIDevice *acriDevice, ghal::GHALDeviceContext *ghalDeviceContext) : ACRIResource(acriDevice), ghalDeviceContext(ghalDeviceContext) {
 }
 

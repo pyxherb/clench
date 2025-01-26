@@ -32,6 +32,8 @@ namespace clench {
 			CLCACRI_API SolidColorBrush(ACRIDevice *device, const ghal::Color &color);
 			CLCACRI_API virtual ~SolidColorBrush();
 
+			CLCACRI_API virtual void dealloc() override;
+
 			CLCACRI_API static SolidColorBrush *alloc(ACRIDevice *device, const ghal::Color &color);
 		};
 	}

@@ -25,6 +25,8 @@ namespace clench {
 			CLCGHAL_API GLGHALBackend(peff::Alloc *selfAllocator);
 			CLCGHAL_API virtual ~GLGHALBackend();
 
+			CLCGHAL_API virtual void dealloc() override;
+
 			CLCGHAL_API virtual GHALDevice *createDevice() override;
 
 			CLCGHAL_API static GLGHALBackend *alloc(peff::Alloc *selfAllocator);

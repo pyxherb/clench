@@ -14,6 +14,10 @@ CLCGHAL_API GLRenderTargetView::GLRenderTargetView(
 CLCGHAL_API GLRenderTargetView::~GLRenderTargetView() {
 }
 
+CLCGHAL_API void GLRenderTargetView::dealloc() {
+	peff::destroyAndRelease<GLRenderTargetView>(ownerDevice->resourceAllocator.get(), this, sizeof(std::max_align_t));
+}
+
 CLCGHAL_API GLRenderTargetView *GLRenderTargetView::alloc(
 	GHALDevice *ownerDevice,
 	RenderTargetViewType type,
@@ -36,6 +40,10 @@ CLCGHAL_API GLDepthStencilView::GLDepthStencilView(
 }
 
 CLCGHAL_API GLDepthStencilView::~GLDepthStencilView() {
+}
+
+CLCGHAL_API void GLDepthStencilView::dealloc() {
+	peff::destroyAndRelease<GLDepthStencilView>(ownerDevice->resourceAllocator.get(), this, sizeof(std::max_align_t));
 }
 
 CLCGHAL_API GLDepthStencilView *GLDepthStencilView::alloc(

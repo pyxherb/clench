@@ -19,7 +19,7 @@
 
 #else
 
-#error Compiler is not supported
+#error The compiler is not supported
 
 #endif
 

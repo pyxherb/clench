@@ -18,6 +18,8 @@ namespace clench {
 				GLuint bufferHandle);
 			CLCGHAL_API virtual ~GLBuffer();
 
+			CLCGHAL_API virtual void dealloc() override;
+
 			CLCGHAL_API static GLBuffer *alloc(
 				GHALDevice *ownerDevice,
 				const BufferDesc &bufferDesc,

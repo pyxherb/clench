@@ -28,6 +28,8 @@ namespace clench {
 			CLCGHAL_API GHALBackend(const char *backendId, peff::Alloc *selfAllocator);
 			CLCGHAL_API virtual ~GHALBackend();
 
+			virtual void dealloc() = 0;
+
 			CLCGHAL_API virtual void onRefZero() noexcept override;
 
 			bool init();
