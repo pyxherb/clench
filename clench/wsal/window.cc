@@ -117,11 +117,13 @@ CLCWSAL_API wsal::Window *VirtualWindow::getParent() const {
 	return _parent;
 }
 
-CLCWSAL_API void VirtualWindow::addChildWindow(Window *window) {
+CLCWSAL_API base::ExceptionPointer VirtualWindow::addChildWindow(Window *window) {
 	if (window->isNative())
 		throw std::logic_error("Cannot add a native window onto a virtual window");
 	assert(("Cannot add a virtual window onto itself", this != window));
-	_childWindows.insert((VirtualWindow *)window);
+	if (!_childWindows.insert((VirtualWindow *)window))
+		return base::OutOfMemoryException::alloc();
+	return {};
 }
 
 CLCWSAL_API void VirtualWindow::removeChildWindow(Window *window) {
