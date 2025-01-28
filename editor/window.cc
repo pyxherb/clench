@@ -28,7 +28,7 @@ CLCWSAL_API bool clench::editor::MainWindow::onClose() {
 }
 
 CLCWSAL_API bool clench::editor::MainWindow::isKeyDown(wsal::KeyboardKeyCode keyCode) const {
-	return keyboardPressedKeys.count((uint32_t)keyCode);
+	return keyboardPressedKeys.contains((uint32_t)keyCode);
 }
 
 CLCWSAL_API MainWindow *MainWindow::alloc(

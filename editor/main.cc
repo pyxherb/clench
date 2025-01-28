@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
 	if (!g_mainGhalDevice)
 		throw std::runtime_error("Error creating main GHAL device");
 
-	g_mainNativeWindow = wsal::createWindow(
+	if(auto e = wsal::createWindow(
 			wsal::CREATEWINDOW_MIN |
 				wsal::CREATEWINDOW_MAX |
 				wsal::CREATEWINDOW_RESIZE,
@@ -57,7 +57,10 @@ int main(int argc, char **argv) {
 			0,
 			0,
 			640,
-			480);
+			480,
+			g_mainNativeWindow.getRef());
+			e)
+		throw std::runtime_error(e->what());
 	if(!g_mainNativeWindow)
 		throw std::runtime_error("Error creating main native window");
 	g_mainNativeWindow->setTitle("Clench Editor");
@@ -186,7 +189,7 @@ int main(int argc, char **argv) {
 	fragmentShader.reset();
 	vertexShader.reset();
 
-	// g_mainGhalDeviceContext.reset();
+	// g_mainGhalDeviceContAext.reset();
 
 	g_mainWindow.reset();
 	g_mainNativeWindow.reset();

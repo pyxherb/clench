@@ -1,85 +1,60 @@
 #ifndef _CLENCH_BASE_EXCEPT_H_
 #define _CLENCH_BASE_EXCEPT_H_
 
-#include "uuid.h"
-#include <peff/base/alloc.h>
+#include "except_base.h"
+#include <string_view>
 
 namespace clench {
 	namespace base {
 		constexpr UUID
 			EXCEPTION_TYPE_GENERAL = CLENCH_UUID(319ac148, d8a5, 4f4c, b984, 8f93a3c29a98);
 
-		class InternalException {
-		public:
-			mutable peff::RcObjectPtr<peff::Alloc> allocator;
-			UUID typeUUID;
-
-			CLCBASE_API InternalException(peff::Alloc *allocator, const UUID &typeUUID);
-			CLCBASE_API virtual ~InternalException();
-
-			virtual const char *what() const = 0;
-
-			virtual void dealloc() = 0;
+		enum class GeneralExceptionCode : uint32_t {
+			/// @brief Indicates an out of memory error.
+			OutOfMemory = 0,
+			/// @brief Indicates that one or more arguments are invalid.
+			InvalidArgs,
 		};
 
-		class InternalExceptionPointer {
-		private:
-			InternalException *_ptr = nullptr;
-
+		class GeneralException : public Exception {
 		public:
-			CLCBASE_API InternalExceptionPointer() noexcept = default;
-			CLCBASE_API InternalExceptionPointer(InternalException *exception) noexcept : _ptr(exception) {
-			}
+			GeneralExceptionCode errorCode;
 
-			CLCBASE_API ~InternalExceptionPointer() noexcept {
-				unwrap();
-				reset();
-			}
-
-			InternalExceptionPointer(const InternalExceptionPointer &) = delete;
-			InternalExceptionPointer &operator=(const InternalExceptionPointer &) = delete;
-			CLCBASE_API InternalExceptionPointer(InternalExceptionPointer &&other) noexcept {
-				_ptr = other._ptr;
-				other._ptr = nullptr;
-			}
-			CLCBASE_API InternalExceptionPointer &operator=(InternalExceptionPointer &&other) noexcept {
-				_ptr = other._ptr;
-				other._ptr = nullptr;
-				return *this;
-			}
-
-			CLCBASE_API InternalException *get() noexcept {
-				return _ptr;
-			}
-			CLCBASE_API const InternalException *get() const noexcept {
-				return _ptr;
-			}
-
-			CLCBASE_API void reset() noexcept {
-				if (_ptr) {
-					_ptr->dealloc();
-				}
-				_ptr = nullptr;
-			}
-
-			CLCBASE_API void unwrap() noexcept {
-				if (_ptr) {
-					assert(("Unhandled Clench internal exception: ", false));
-				}
-			}
-
-			CLCBASE_API explicit operator bool() noexcept {
-				return (bool)_ptr;
-			}
-
-			CLCBASE_API InternalException *operator->() noexcept {
-				return _ptr;
-			}
-
-			CLCBASE_API const InternalException *operator->() const noexcept {
-				return _ptr;
-			}
+			CLCBASE_API GeneralException(peff::Alloc *allocator, GeneralExceptionCode errorCode);
+			CLCBASE_API virtual ~GeneralException();
 		};
+
+		class OutOfMemoryException final : public GeneralException {
+		public:
+			CLCBASE_API OutOfMemoryException();
+			CLCBASE_API virtual ~OutOfMemoryException();
+
+			CLCBASE_API virtual const char *what() const override;
+
+			CLCBASE_API virtual void dealloc() override;
+
+			CLCBASE_API static OutOfMemoryException *alloc();
+		};
+
+		extern OutOfMemoryException g_outOfMemoryException;
+
+		class InvalidArgsException final : public GeneralException {
+		public:
+			CLCBASE_API InvalidArgsException(peff::Alloc *allocator);
+			CLCBASE_API virtual ~InvalidArgsException();
+
+			CLCBASE_API virtual const char *what() const override;
+
+			CLCBASE_API virtual void dealloc() override;
+
+			CLCBASE_API static InvalidArgsException *alloc(peff::Alloc *allocator);
+		};
+
+		PEFF_FORCEINLINE ExceptionPointer wrapIfExceptAllocFailed(Exception *exceptionPtr) {
+			if(!exceptionPtr)
+				return OutOfMemoryException::alloc();
+			return exceptionPtr;
+		}
 	}
 }
 

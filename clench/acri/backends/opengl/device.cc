@@ -14,6 +14,35 @@ CLCACRI_API GLACRIDevice *GLACRIDevice::alloc(ghal::GHALDevice *associatedDevice
 		return nullptr;
 	}
 
+	{
+		peff::RcObjectPtr<ghal::VertexShader> solidColorVertexShader;
+		peff::RcObjectPtr<ghal::FragmentShader> solidColorFragmentShader;
+
+		if (!(solidColorVertexShader = associatedDevice->createVertexShader(
+				  g_triangle_solidcolor_vertex_330,
+				  g_triangle_solidcolor_vertex_330_len,
+				  nullptr))) {
+			return nullptr;
+		}
+
+		if (!(solidColorFragmentShader = associatedDevice->createFragmentShader(
+				  g_triangle_solidcolor_fragment_330,
+				  g_triangle_solidcolor_fragment_330_len,
+				  nullptr))) {
+			return nullptr;
+		}
+
+		ghal::Shader *shaders[] = {
+			solidColorVertexShader.get(),
+			solidColorFragmentShader.get()
+		};
+
+		if (!(ptr->deviceResources.forTriangle.solidColorShaderProgram =
+					associatedDevice->linkShaderProgram(shaders, std::size(shaders)))) {
+			return nullptr;
+		}
+	}
+
 	return ptr.release();
 }
 
@@ -34,10 +63,10 @@ CLCACRI_API void GLACRIDeviceContext::drawTriangle(TriangleGeometry *geometry, B
 
 			std::lock_guard<std::mutex> triangleSolidColorMutex(localDeviceResources.forTriangle.solidColorLock);
 
-			ghalDeviceContext->bindVertexLayout(((GLACRIDevice*)device)->deviceResources.forTriangle.solidColorVertexLayout.get());
+			ghalDeviceContext->bindVertexLayout(((GLACRIDevice *)device)->deviceResources.forTriangle.solidColorVertexLayout.get());
 			ghalDeviceContext->bindVertexBuffer(localDeviceResources.forTriangle.solidColorVertexBuffer.get(), sizeof(vertices));
 			ghalDeviceContext->setData(localDeviceResources.forTriangle.solidColorVertexBuffer.get(), vertices);
-			ghalDeviceContext->setShaderProgram(((GLACRIDevice*)device)->deviceResources.forTriangle.solidColorShaderProgram.get());
+			ghalDeviceContext->setShaderProgram(((GLACRIDevice *)device)->deviceResources.forTriangle.solidColorShaderProgram.get());
 
 			break;
 		}

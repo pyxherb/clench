@@ -26,20 +26,24 @@ CLCWSAL_API void X11Backend::dealloc() {
 	peff::destroyAndRelease<X11Backend>(selfAllocator.get(), this, sizeof(std::max_align_t));
 }
 
-CLCWSAL_API wsal::Window *X11Backend::createWindow(
+CLCWSAL_API base::ExceptionPointer X11Backend::createWindow(
 	CreateWindowFlags flags,
 	Window *parent,
 	int x,
 	int y,
 	int width,
-	int height) {
+	int height,
+	Window *&windowOut) {
 	X11WindowHandle nativeHandle;
 
 	Display *display;
 	::Window window;
 
 	if (!(nativeHandle.display = (display = XOpenDisplay(nullptr))))
-		throw std::runtime_error("Error opening default display");
+		return base::wrapIfExceptAllocFailed(ErrorOpeningDisplayException::alloc(resourceAllocator.get()));
+	peff::ScopeGuard closeDisplayGuard([display]() noexcept {
+		XCloseDisplay(display);
+	});
 
 	nativeHandle.window = (window = XCreateSimpleWindow(
 							   display,
@@ -50,6 +54,20 @@ CLCWSAL_API wsal::Window *X11Backend::createWindow(
 							   0,
 							   WhitePixel(display, DefaultScreen(display)),
 							   BlackPixel(display, DefaultScreen(display))));
+
+	peff::ScopeGuard deleteWindowGuard([display, window]() noexcept {
+		XEvent ev;
+		ev.type = ClientMessage;
+		ev.xclient.window = window;
+		ev.xclient.message_type = XInternAtom(display, "WM_PROTOCOL", true);
+		ev.xclient.format = 32;
+		ev.xclient.data.l[0] = XInternAtom(display, "WM_DELETE_WINDOW", false);
+		ev.xclient.data.l[1] = CurrentTime;
+
+		XSendEvent(display, window, false, NoEventMask, &ev);
+
+		XFlush(display);
+	});
 
 	auto deleteWindowAtom = XInternAtom(display, "WM_DELETE_WINDOW", true);
 	XSetWMProtocols(display, window, &deleteWindowAtom, 1);
@@ -74,11 +92,16 @@ CLCWSAL_API wsal::Window *X11Backend::createWindow(
 	std::unique_ptr<X11Window, peff::RcObjectUniquePtrDeleter> windowPtr(X11Window::alloc(this, nativeHandle));
 
 	if (!windowPtr) {
-		// TODO: Destroy the native window handle;
-		return nullptr;
+		return base::wrapIfExceptAllocFailed(ErrorCreatingWindowException::alloc(resourceAllocator.get(), base::OutOfMemoryException::alloc()));
 	}
 
-	return windowPtr.release();
+	closeDisplayGuard.release();
+	deleteWindowGuard.release();
+
+	windowOut = windowPtr.release();
+	windowOut->incRef();
+
+	return {};
 }
 
 CLCWSAL_API void X11Backend::setMouseCapture(Window *window, Window *childWindow) {

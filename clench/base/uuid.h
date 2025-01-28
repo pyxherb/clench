@@ -24,6 +24,10 @@ namespace clench {
 			CLENCH_FORCEINLINE bool operator==(const UUID &other) const {
 				return !memcmp((void *)this, (void *)&other, sizeof(UUID));
 			}
+
+			CLENCH_FORCEINLINE bool operator!=(const UUID &other) const {
+				return memcmp((void *)this, (void *)&other, sizeof(UUID));
+			}
 		};
 	}
 }

@@ -13,7 +13,7 @@ CLCWSAL_API Backend::Backend(const char *backendId, peff::Alloc *selfAllocator, 
 	  resourceAllocator(resourceAllocator) {
 }
 
-CLCWSAL_API Backend::~Backend(){
+CLCWSAL_API Backend::~Backend() {
 	assert(("The backend has not been deinitialized yet", !isInited));
 }
 
@@ -129,13 +129,14 @@ CLCWSAL_API bool clench::wsal::deinitRegisteredWSALBackend(const char *id) {
 	return false;
 }
 
-CLCWSAL_API Window *clench::wsal::createWindow(
+CLCWSAL_API base::ExceptionPointer clench::wsal::createWindow(
 	CreateWindowFlags flags,
 	Window *parent,
 	int x,
 	int y,
 	int width,
 	int height,
+	Window *&windowOut,
 	const peff::List<std::string_view> &preferredBackendNames) {
 	if (parent) {
 		// TODO: Virtual windows do not have backend, add something for them.
@@ -145,8 +146,8 @@ CLCWSAL_API Window *clench::wsal::createWindow(
 			x,
 			y,
 			width,
-			height
-		);
+			height,
+			windowOut);
 	} else {
 		peff::DynArray<Backend *> deviceCreationQueue;
 		if (!deviceCreationQueue.resize(g_registeredWSALBackends.size()))
@@ -184,16 +185,24 @@ CLCWSAL_API Window *clench::wsal::createWindow(
 				continue;
 			}
 			CLENCH_DEBUG_LOG("WSAL", "Creating window using WSAL backend: %s", curBackend->backendId);
-			if (auto device = curBackend->createWindow(
-					flags,
-					parent,
-					x,
-					y,
-					width,
-					height);
-				device) {
+
+			base::ExceptionPointer e = curBackend->createWindow(
+				flags,
+				parent,
+				x,
+				y,
+				width,
+				height,
+				windowOut);
+			if (e) {
+				if (e->typeUUID != EXCEPTION_TYPE_WSAL) {
+					return e;
+				}
+				CLENCH_DEBUG_LOG("WSAL", "Error creating window using WSAL backend `%s`: %s", curBackend->backendId, e->what());
+				e.reset();
+			} else {
 				CLENCH_DEBUG_LOG("WSAL", "Created window using WSAL backend: %s", curBackend->backendId);
-				return device;
+				return e.get();
 			}
 		}
 	}

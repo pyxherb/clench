@@ -33,7 +33,12 @@ namespace clench {
 			bool init();
 			bool deinit();
 
-			virtual Window *createWindow(CreateWindowFlags flags, Window *parent, int x, int y, int width, int height) = 0;
+			virtual base::ExceptionPointer createWindow(
+				CreateWindowFlags flags,
+				Window *parent,
+				int x, int y,
+				int width, int height,
+				Window *&windowOut) = 0;
 			virtual void setMouseCapture(Window *window, Window *childWindow) = 0;
 			virtual void releaseMouseCapture(Window *window, Window *childWindow) = 0;
 		};
@@ -50,13 +55,14 @@ namespace clench {
 
 		CLCWSAL_API bool registerBuiltinWSALBackends(peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator);
 
-		CLCWSAL_API Window *createWindow(
+		CLCWSAL_API base::ExceptionPointer createWindow(
 			CreateWindowFlags flags,
 			Window *parent,
 			int x,
 			int y,
 			int width,
 			int height,
+			Window *&windowOut,
 			const peff::List<std::string_view> &preferredBackendNames = peff::List<std::string_view>());
 	}
 }

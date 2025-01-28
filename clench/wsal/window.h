@@ -1,6 +1,7 @@
 #ifndef _CLENCH_WSAL_WINDOW_H_
 #define _CLENCH_WSAL_WINDOW_H_
 
+#include "except.h"
 #include "keyboard.h"
 #include "mouse.h"
 #include <peff/base/rcobj.h>

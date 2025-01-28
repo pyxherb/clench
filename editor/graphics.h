@@ -8,10 +8,10 @@
 namespace clench {
 	namespace editor {
 		struct GraphicsContext {
-			std::unique_ptr<clench::ghal::GHALDevice> g_mainGhalDevice;
+			std::unique_ptr<ghal::GHALDevice> g_mainGhalDevice;
 		};
 
-		extern std::unique_ptr<clench::ghal::GHALDevice, peff::DeallocableDeleter<clench::ghal::GHALDevice>> g_mainGhalDevice;
+		extern std::unique_ptr<ghal::GHALDevice, peff::DeallocableDeleter<ghal::GHALDevice>> g_mainGhalDevice;
 	}
 }
 
