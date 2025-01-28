@@ -46,6 +46,7 @@ CLCBASE_API const char *InvalidArgsException::what() const {
 }
 
 CLCBASE_API void InvalidArgsException::dealloc() {
+	peff::destroyAndRelease<InvalidArgsException>(allocator.get(), this, sizeof(std::max_align_t));
 }
 
 CLCBASE_API InvalidArgsException *InvalidArgsException::alloc(peff::Alloc *allocator) {

@@ -32,7 +32,7 @@ CLCWSAL_API void X11Backend::dealloc() {
 CLCWSAL_API int X11Backend::_x11ErrorHandler(Display *display, XErrorEvent *error) {
 	switch (error->error_code) {
 		case BadAlloc:
-			g_x11Backend->lastExceptionPtr = base::OutOfMemoryException::alloc();
+			g_x11Backend->lastExceptionPtr = base::wrapIfExceptAllocFailed(base::OutOfMemoryException::alloc());
 			break;
 		default:
 			abort();

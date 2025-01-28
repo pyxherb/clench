@@ -1,6 +1,7 @@
 #ifndef _CLENCH_GHAL_BACKENDS_OPENGL_DEVICE_H_
 #define _CLENCH_GHAL_BACKENDS_OPENGL_DEVICE_H_
 
+#include "except.h"
 #include "backend.h"
 #include "views.h"
 // #include "buffer.h"
@@ -43,8 +44,8 @@ namespace clench {
 
 			CLCGHAL_API virtual GHALBackend *getBackend() override;
 
-			CLCGHAL_API virtual GHALDeviceContext *createDeviceContextForWindow(
-				clench::wsal::Window *window) override;
+			CLCGHAL_API virtual base::ExceptionPtr createDeviceContextForWindow(
+				clench::wsal::Window *window, GHALDeviceContext *&deviceContextOut) override;
 
 			CLCGHAL_API virtual VertexLayout *createVertexLayout(
 				VertexLayoutElementDesc *elementDescs,

@@ -30,26 +30,31 @@ uint32_t indices[] = {
 };
 
 int main(int argc, char **argv) {
-	if(!wsal::registerBuiltinWSALBackends(peff::getDefaultAlloc(), peff::getDefaultAlloc()))
+	if (!wsal::registerBuiltinWSALBackends(peff::getDefaultAlloc(), peff::getDefaultAlloc()))
 		throw std::bad_alloc();
-	if(auto result = wsal::scanAndInitRegisteredWSALBackends();
+	if (auto result = wsal::scanAndInitRegisteredWSALBackends();
 		result.has_value())
-		throw std::runtime_error((std::string)"Error initializing WSAL backend " + result->second);
+		throw std::runtime_error((std::string) "Error initializing WSAL backend " + result->second);
 
 	ghal::registerBuiltinGHALBackends(peff::getDefaultAlloc());
-	if(auto result = ghal::scanAndInitRegisteredGHALBackends();
+	if (auto result = ghal::scanAndInitRegisteredGHALBackends();
 		result.has_value())
-		throw std::runtime_error((std::string)"Error initializing GHAL backend " + result->second);
+		throw std::runtime_error((std::string) "Error initializing GHAL backend " + result->second);
 
 	peff::List<std::string_view> preferredBackendList;
-	if(!preferredBackendList.build({ "opengl" }))
+	if (!preferredBackendList.build({ "opengl" }))
 		throw std::bad_alloc();
-	g_mainGhalDevice = std::unique_ptr<ghal::GHALDevice, peff::DeallocableDeleter<ghal::GHALDevice>>(ghal::createGHALDevice(preferredBackendList));
+	{
+		ghal::GHALDevice *mainGhalDevice;
+		if (auto e = ghal::createGHALDevice(mainGhalDevice, preferredBackendList))
+			throw std::runtime_error(e->what());
+		g_mainGhalDevice = std::unique_ptr<ghal::GHALDevice, peff::DeallocableDeleter<ghal::GHALDevice>>(mainGhalDevice);
+	}
 
 	if (!g_mainGhalDevice)
 		throw std::runtime_error("Error creating main GHAL device");
 
-	if(auto e = wsal::createWindow(
+	if (auto e = wsal::createWindow(
 			wsal::CREATEWINDOW_MIN |
 				wsal::CREATEWINDOW_MAX |
 				wsal::CREATEWINDOW_RESIZE,
@@ -59,9 +64,9 @@ int main(int argc, char **argv) {
 			640,
 			480,
 			g_mainNativeWindow.getRef());
-			e)
+		e)
 		throw std::runtime_error(e->what());
-	if(!g_mainNativeWindow)
+	if (!g_mainNativeWindow)
 		throw std::runtime_error("Error creating main native window");
 	g_mainNativeWindow->setTitle("Clench Editor");
 	g_mainWindow = MainWindow::alloc(peff::getDefaultAlloc(), g_mainNativeWindow.get());
@@ -196,13 +201,13 @@ int main(int argc, char **argv) {
 
 	g_mainGhalDevice.reset();
 
-	if(auto result = ghal::deinitInitedRegisteredGHALBackends();
+	if (auto result = ghal::deinitInitedRegisteredGHALBackends();
 		result.has_value())
-		throw std::runtime_error((std::string)"Error deinitializing GHAL backend " + result->second);
+		throw std::runtime_error((std::string) "Error deinitializing GHAL backend " + result->second);
 	ghal::g_registeredGHALBackends.clear();
 
-	if(auto result = wsal::deinitInitedRegisteredWSALBackends();
+	if (auto result = wsal::deinitInitedRegisteredWSALBackends();
 		result.has_value())
-		throw std::runtime_error((std::string)"Error deinitializing WSAL backend " + result->second);
+		throw std::runtime_error((std::string) "Error deinitializing WSAL backend " + result->second);
 	wsal::g_registeredWSALBackends.clear();
 }

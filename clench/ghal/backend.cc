@@ -24,7 +24,7 @@ bool GHALBackend::init() {
 }
 
 bool GHALBackend::deinit() {
-	if(!doDeinit())
+	if (!doDeinit())
 		return false;
 	isInited = false;
 	return true;
@@ -127,7 +127,7 @@ CLCGHAL_API bool clench::ghal::deinitRegisteredGHALBackend(const char *id) {
 	return false;
 }
 
-CLCGHAL_API GHALDevice *clench::ghal::createGHALDevice(const peff::List<std::string_view> &preferredBackendNames) {
+CLCGHAL_API base::ExceptionPtr clench::ghal::createGHALDevice(GHALDevice *&ghalDeviceOut, const peff::List<std::string_view> &preferredBackendNames) {
 	peff::DynArray<GHALBackend *> deviceCreationQueue;
 	if (!deviceCreationQueue.resize(g_registeredGHALBackends.size()))
 		return nullptr;
@@ -157,6 +157,7 @@ CLCGHAL_API GHALDevice *clench::ghal::createGHALDevice(const peff::List<std::str
 		}
 	}
 
+	GHALDevice *device;
 	for (size_t i = 0; i < deviceCreationQueue.size(); ++i) {
 		auto curBackend = deviceCreationQueue.at(i);
 		if (!curBackend->isInited) {
@@ -164,9 +165,17 @@ CLCGHAL_API GHALDevice *clench::ghal::createGHALDevice(const peff::List<std::str
 			continue;
 		}
 		CLENCH_DEBUG_LOG("GHAL", "Creating GHAL device using GHAL backend: %s", curBackend->backendId);
-		if (auto device = curBackend->createDevice(); device) {
+		base::ExceptionPtr e = curBackend->createDevice(device);
+		if (e) {
+			if (e->typeUUID != EXCEPTION_TYPE_GHAL) {
+				return e;
+			}
+			CLENCH_DEBUG_LOG("WSAL", "Error creating window using GHAL backend `%s`: %s", curBackend->backendId, e->what());
+			e.reset();
+		} else {
 			CLENCH_DEBUG_LOG("GHAL", "Created GHAL device using GHAL backend: %s", curBackend->backendId);
-			return device;
+			ghalDeviceOut = device;
+			return {};
 		}
 	}
 

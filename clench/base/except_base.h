@@ -14,6 +14,8 @@ namespace clench {
 			CLCBASE_API Exception(peff::Alloc *allocator, const UUID &typeUUID);
 			CLCBASE_API virtual ~Exception();
 
+			/// @brief Get a simple description for the exception.
+			/// @return Description of the exception, the string must be a constant string.
 			virtual const char *what() const = 0;
 
 			virtual void dealloc() = 0;

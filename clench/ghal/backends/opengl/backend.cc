@@ -50,8 +50,12 @@ bool GLGHALBackend::doDeinit() {
 	return true;
 }
 
-CLCGHAL_API GHALDevice *GLGHALBackend::createDevice() {
-	return GLGHALDevice::alloc(peff::getDefaultAlloc(), peff::getDefaultAlloc(), this);
+CLCGHAL_API base::ExceptionPtr GLGHALBackend::createDevice(GHALDevice *&ghalDeviceOut) {
+	GHALDevice *ptr = GLGHALDevice::alloc(peff::getDefaultAlloc(), peff::getDefaultAlloc(), this);
+	if(!ptr)
+		return base::OutOfMemoryException::alloc();
+	ghalDeviceOut = ptr;
+	return {};
 }
 
 CLCGHAL_API GLGHALBackend *GLGHALBackend::alloc(peff::Alloc *selfAllocator) {

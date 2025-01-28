@@ -28,7 +28,7 @@ CLCGHAL_API GHALBackend *GLGHALDevice::getBackend() {
 	return backend;
 }
 
-CLCGHAL_API GHALDeviceContext *GLGHALDevice::createDeviceContextForWindow(clench::wsal::Window *window) {
+CLCGHAL_API base::ExceptionPtr GLGHALDevice::createDeviceContextForWindow(clench::wsal::Window *window, GHALDeviceContext *&deviceContextOut) {
 	int width, height;
 	window->getSize(width, height);
 
@@ -39,7 +39,7 @@ CLCGHAL_API GHALDeviceContext *GLGHALDevice::createDeviceContextForWindow(clench
 	if (!deviceContext)
 		return nullptr;
 #ifdef _WIN32
-	deviceContext->hWnd = ((wsal::Win32Window*)window)->nativeHandle;
+	deviceContext->hWnd = ((wsal::Win32Window *)window)->nativeHandle;
 	deviceContext->hdc = GetDC(deviceContext->hWnd);
 	{
 		PIXELFORMATDESCRIPTOR pfd = { 0 };
@@ -104,7 +104,10 @@ CLCGHAL_API GHALDeviceContext *GLGHALDevice::createDeviceContextForWindow(clench
 		deviceContext->eglWindow,
 		nullptr);
 	if (deviceContext->eglSurface == EGL_NO_SURFACE)
-		throw std::runtime_error("Error creating EGL surface");
+		return base::wrapIfExceptAllocFailed(
+			ErrorCreatingDeviceContextException::alloc(
+				resourceAllocator.get(),
+				base::wrapIfExceptAllocFailed(ErrorCreatingEGLSurfaceException::alloc(resourceAllocator.get()))));
 
 	eglBindAPI(EGL_OPENGL_API);
 
@@ -123,7 +126,10 @@ CLCGHAL_API GHALDeviceContext *GLGHALDevice::createDeviceContextForWindow(clench
 	if (!g_glInitialized) {
 		int version = gladLoadGL((GLADloadfunc)_loadGlProc);
 		if (!version)
-			throw std::runtime_error("Error initializing GLAD");
+		return base::wrapIfExceptAllocFailed(
+			ErrorCreatingDeviceContextException::alloc(
+				resourceAllocator.get(),
+				base::wrapIfExceptAllocFailed(ErrorInitializingGLLoaderException::alloc(resourceAllocator.get()))));
 		g_glInitialized = true;
 	}
 #endif
@@ -132,7 +138,11 @@ CLCGHAL_API GHALDeviceContext *GLGHALDevice::createDeviceContextForWindow(clench
 	deviceContext->defaultRenderTargetView = GLRenderTargetView::alloc(this, RenderTargetViewType::Buffer, defaultFramebuffer);
 
 	deviceContext->onResize(width, height);
-	return deviceContext.release();
+
+	deviceContext->incRef();
+	deviceContextOut = deviceContext.release();
+
+	return {};
 }
 
 CLCGHAL_API VertexLayout *GLGHALDevice::createVertexLayout(

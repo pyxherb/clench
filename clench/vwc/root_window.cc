@@ -16,7 +16,7 @@ CLCVWC_API VWCRootWindow::VWCRootWindow(
 		  0,
 		  0),
 	  ghalDevice(ghalDevice) {
-	ghalDeviceContext = ghalDevice->createDeviceContextForWindow(parent);
+	ghalDevice->createDeviceContextForWindow(parent, ghalDeviceContext.getRef());
 }
 
 CLCVWC_API VWCRootWindow::~VWCRootWindow() {

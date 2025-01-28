@@ -1,7 +1,7 @@
 #ifndef _CLENCH_GHAL_BACKEND_H_
 #define _CLENCH_GHAL_BACKEND_H_
 
-#include "basedefs.h"
+#include "except.h"
 #include <memory>
 #include <peff/containers/string.h>
 #include <peff/containers/hashmap.h>
@@ -35,7 +35,7 @@ namespace clench {
 			bool init();
 			bool deinit();
 
-			virtual GHALDevice *createDevice() = 0;
+			[[nodiscard]] virtual base::ExceptionPtr createDevice(GHALDevice *&ghalDeviceOut) = 0;
 		};
 
 		class GHALError : public std::runtime_error {
@@ -56,7 +56,7 @@ namespace clench {
 
 		CLCGHAL_API void registerBuiltinGHALBackends(peff::Alloc *selfAllocator);
 
-		CLCGHAL_API GHALDevice *createGHALDevice(const peff::List<std::string_view> &preferredBackendNames = peff::List<std::string_view>());
+		[[nodiscard]] CLCGHAL_API base::ExceptionPtr createGHALDevice(GHALDevice *&ghalDeviceOut, const peff::List<std::string_view> &preferredBackendNames = peff::List<std::string_view>());
 	}
 }
 
