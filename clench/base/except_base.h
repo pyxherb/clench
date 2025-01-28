@@ -76,6 +76,12 @@ namespace clench {
 				_ptr = nullptr;
 			}
 
+			CLCBASE_API Exception *release() noexcept {
+				Exception *ptr = _ptr;
+				_ptr = nullptr;
+				return ptr;
+			}
+
 			CLCBASE_API void unwrap() noexcept {
 				if (_ptr) {
 					assert(("Unhandled Clench internal exception: ", false));

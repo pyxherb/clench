@@ -4,9 +4,12 @@
 using namespace clench;
 using namespace clench::wsal;
 
+X11Backend *wsal::g_x11Backend = nullptr;
+
 CLCWSAL_API bool X11Backend::doInit() {
 	if (!builtNativeKeyMap.build(x11KeyMap))
 		return false;
+	XSetErrorHandler(_x11ErrorHandler);
 	return true;
 }
 
@@ -18,12 +21,24 @@ CLCWSAL_API bool X11Backend::doDeinit() {
 CLCWSAL_API X11Backend::X11Backend(
 	peff::Alloc *selfAllocator,
 	peff::Alloc *resourceAllocator)
-	: Backend("x11", selfAllocator, resourceAllocator) {
+	: Backend("x11", selfAllocator, resourceAllocator), operationMutex(this) {
 }
 CLCWSAL_API X11Backend::~X11Backend() {}
 
 CLCWSAL_API void X11Backend::dealloc() {
 	peff::destroyAndRelease<X11Backend>(selfAllocator.get(), this, sizeof(std::max_align_t));
+}
+
+CLCWSAL_API int X11Backend::_x11ErrorHandler(Display *display, XErrorEvent *error) {
+	switch (error->error_code) {
+		case BadAlloc:
+			g_x11Backend->lastExceptionPointer = base::OutOfMemoryException::alloc();
+			break;
+		default:
+			abort();
+	}
+
+	return 0;
 }
 
 CLCWSAL_API base::ExceptionPointer X11Backend::createWindow(
@@ -34,6 +49,7 @@ CLCWSAL_API base::ExceptionPointer X11Backend::createWindow(
 	int width,
 	int height,
 	Window *&windowOut) {
+	std::lock_guard operationMutexGuard(operationMutex);
 	X11WindowHandle nativeHandle;
 
 	Display *display;
@@ -54,6 +70,10 @@ CLCWSAL_API base::ExceptionPointer X11Backend::createWindow(
 							   0,
 							   WhitePixel(display, DefaultScreen(display)),
 							   BlackPixel(display, DefaultScreen(display))));
+	XFlush(display);
+	if (lastExceptionPointer) {
+		return base::wrapIfExceptAllocFailed(ErrorCreatingWindowException::alloc(resourceAllocator.get(), lastExceptionPointer.release()));
+	}
 
 	peff::ScopeGuard deleteWindowGuard([display, window]() noexcept {
 		XEvent ev;
@@ -71,7 +91,6 @@ CLCWSAL_API base::ExceptionPointer X11Backend::createWindow(
 
 	auto deleteWindowAtom = XInternAtom(display, "WM_DELETE_WINDOW", true);
 	XSetWMProtocols(display, window, &deleteWindowAtom, 1);
-	// XSetErrorHandler(_xErrorHandler);
 	// XSetIOErrorHandler(_xIoErrorHandler);
 	// XSetIOErrorExitHandler(display, _xIoErrorExitHandler, nullptr);
 
