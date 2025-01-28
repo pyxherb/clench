@@ -33,7 +33,7 @@ namespace clench {
 			bool init();
 			bool deinit();
 
-			virtual base::ExceptionPointer createWindow(
+			virtual base::ExceptionPtr createWindow(
 				CreateWindowFlags flags,
 				Window *parent,
 				int x, int y,
@@ -55,7 +55,7 @@ namespace clench {
 
 		CLCWSAL_API bool registerBuiltinWSALBackends(peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator);
 
-		CLCWSAL_API base::ExceptionPointer createWindow(
+		CLCWSAL_API base::ExceptionPtr createWindow(
 			CreateWindowFlags flags,
 			Window *parent,
 			int x,

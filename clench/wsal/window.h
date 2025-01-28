@@ -97,7 +97,7 @@ namespace clench {
 			virtual void setParent(Window *window) = 0;
 			virtual Window *getParent() const = 0;
 
-			[[nodiscard]] virtual base::ExceptionPointer addChildWindow(Window *window) = 0;
+			[[nodiscard]] virtual base::ExceptionPtr addChildWindow(Window *window) = 0;
 			virtual void removeChildWindow(Window *window) = 0;
 			virtual bool hasChildWindow(Window *window) const = 0;
 
@@ -228,7 +228,7 @@ namespace clench {
 			CLCWSAL_API virtual void setParent(Window *window) override;
 			CLCWSAL_API virtual Window *getParent() const override;
 
-			CLCWSAL_API virtual base::ExceptionPointer addChildWindow(Window *window) override;
+			CLCWSAL_API virtual base::ExceptionPtr addChildWindow(Window *window) override;
 			CLCWSAL_API virtual void removeChildWindow(Window *window) override;
 			CLCWSAL_API virtual bool hasChildWindow(Window *window) const override;
 

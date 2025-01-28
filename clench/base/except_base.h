@@ -19,27 +19,27 @@ namespace clench {
 			virtual void dealloc() = 0;
 		};
 
-		class ExceptionPointer {
+		class ExceptionPtr {
 		private:
 			Exception *_ptr = nullptr;
 
 		public:
-			CLCBASE_API ExceptionPointer() noexcept = default;
-			CLCBASE_API ExceptionPointer(Exception *exception) noexcept : _ptr(exception) {
+			CLCBASE_API ExceptionPtr() noexcept = default;
+			CLCBASE_API ExceptionPtr(Exception *exception) noexcept : _ptr(exception) {
 			}
 
-			CLCBASE_API ~ExceptionPointer() noexcept {
+			CLCBASE_API ~ExceptionPtr() noexcept {
 				unwrap();
 				reset();
 			}
 
-			ExceptionPointer(const ExceptionPointer &) = delete;
-			ExceptionPointer &operator=(const ExceptionPointer &) = delete;
-			CLCBASE_API ExceptionPointer(ExceptionPointer &&other) noexcept {
+			ExceptionPtr(const ExceptionPtr &) = delete;
+			ExceptionPtr &operator=(const ExceptionPtr &) = delete;
+			CLCBASE_API ExceptionPtr(ExceptionPtr &&other) noexcept {
 				_ptr = other._ptr;
 				other._ptr = nullptr;
 			}
-			CLCBASE_API ExceptionPointer &operator=(ExceptionPointer &&other) noexcept {
+			CLCBASE_API ExceptionPtr &operator=(ExceptionPtr &&other) noexcept {
 				_ptr = other._ptr;
 				other._ptr = nullptr;
 				return *this;
@@ -104,6 +104,6 @@ namespace clench {
 }
 
 #define CLENCH_RETURN_IF_EXCEPT(e) \
-	if (clench::base::ExceptionPointer ptr = (e); ptr) return ptr.release();
+	if (clench::base::ExceptionPtr ptr = (e); ptr) return ptr.release();
 
 #endif

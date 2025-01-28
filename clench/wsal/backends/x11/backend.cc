@@ -32,7 +32,7 @@ CLCWSAL_API void X11Backend::dealloc() {
 CLCWSAL_API int X11Backend::_x11ErrorHandler(Display *display, XErrorEvent *error) {
 	switch (error->error_code) {
 		case BadAlloc:
-			g_x11Backend->lastExceptionPointer = base::OutOfMemoryException::alloc();
+			g_x11Backend->lastExceptionPtr = base::OutOfMemoryException::alloc();
 			break;
 		default:
 			abort();
@@ -41,7 +41,7 @@ CLCWSAL_API int X11Backend::_x11ErrorHandler(Display *display, XErrorEvent *erro
 	return 0;
 }
 
-CLCWSAL_API base::ExceptionPointer X11Backend::createWindow(
+CLCWSAL_API base::ExceptionPtr X11Backend::createWindow(
 	CreateWindowFlags flags,
 	Window *parent,
 	int x,
@@ -71,8 +71,8 @@ CLCWSAL_API base::ExceptionPointer X11Backend::createWindow(
 							   WhitePixel(display, DefaultScreen(display)),
 							   BlackPixel(display, DefaultScreen(display))));
 	XFlush(display);
-	if (lastExceptionPointer) {
-		return base::wrapIfExceptAllocFailed(ErrorCreatingWindowException::alloc(resourceAllocator.get(), lastExceptionPointer.release()));
+	if (lastExceptionPtr) {
+		return base::wrapIfExceptAllocFailed(ErrorCreatingWindowException::alloc(resourceAllocator.get(), lastExceptionPtr.release()));
 	}
 
 	peff::ScopeGuard deleteWindowGuard([display, window]() noexcept {

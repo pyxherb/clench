@@ -283,7 +283,7 @@ CLCWSAL_API wsal::Window *X11Window::getParent() const {
 	return nullptr;
 }
 
-CLCWSAL_API base::ExceptionPointer X11Window::addChildWindow(wsal::Window *window) {
+CLCWSAL_API base::ExceptionPtr X11Window::addChildWindow(wsal::Window *window) {
 	if (!window->isNative()) {
 		if (!_childVirtualWindows.insert((VirtualWindow *)window))
 			return base::OutOfMemoryException::alloc();

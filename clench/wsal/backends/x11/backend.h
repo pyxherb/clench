@@ -17,7 +17,7 @@ namespace clench {
 		public:
 			peff::Map<X11WindowHandle, Window *> handleToWindowMap;
 			peff::Map<unsigned int, KeyboardKeyCode> builtNativeKeyMap;
-			base::ExceptionPointer lastExceptionPointer;
+			base::ExceptionPtr lastExceptionPtr;
 
 			struct CheckedMutex {
 				X11Backend *backend;
@@ -31,7 +31,7 @@ namespace clench {
 				}
 
 				CLENCH_FORCEINLINE void unlock() {
-					backend->lastExceptionPointer.unwrap();
+					backend->lastExceptionPtr.unwrap();
 					mutex.unlock();
 				}
 			};
@@ -46,7 +46,7 @@ namespace clench {
 
 			CLCWSAL_API virtual void dealloc() override;
 
-			CLCWSAL_API virtual base::ExceptionPointer createWindow(
+			CLCWSAL_API virtual base::ExceptionPtr createWindow(
 				CreateWindowFlags flags,
 				Window *parent,
 				int x,

@@ -37,7 +37,7 @@ namespace clench {
 
 		class ErrorCreatingWindowException : public WSALException {
 		public:
-			base::ExceptionPointer minorException;
+			base::ExceptionPtr minorException;
 
 			CLCBASE_API ErrorCreatingWindowException(peff::Alloc *allocator, base::Exception *minorException);
 			CLCBASE_API virtual ~ErrorCreatingWindowException();

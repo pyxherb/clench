@@ -78,7 +78,7 @@ namespace clench {
 			CLCWSAL_API virtual void setParent(Window *window) override;
 			CLCWSAL_API virtual Window *getParent() const override;
 
-			CLCWSAL_API virtual base::ExceptionPointer addChildWindow(Window *window) override;
+			CLCWSAL_API virtual base::ExceptionPtr addChildWindow(Window *window) override;
 			CLCWSAL_API virtual void removeChildWindow(Window *window) override;
 			CLCWSAL_API virtual bool hasChildWindow(Window *window) const override;
 

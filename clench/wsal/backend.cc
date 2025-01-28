@@ -129,7 +129,7 @@ CLCWSAL_API bool clench::wsal::deinitRegisteredWSALBackend(const char *id) {
 	return false;
 }
 
-CLCWSAL_API base::ExceptionPointer clench::wsal::createWindow(
+CLCWSAL_API base::ExceptionPtr clench::wsal::createWindow(
 	CreateWindowFlags flags,
 	Window *parent,
 	int x,
@@ -186,7 +186,7 @@ CLCWSAL_API base::ExceptionPointer clench::wsal::createWindow(
 			}
 			CLENCH_DEBUG_LOG("WSAL", "Creating window using WSAL backend: %s", curBackend->backendId);
 
-			base::ExceptionPointer e = curBackend->createWindow(
+			base::ExceptionPtr e = curBackend->createWindow(
 				flags,
 				parent,
 				x,

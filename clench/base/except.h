@@ -50,7 +50,7 @@ namespace clench {
 			CLCBASE_API static InvalidArgsException *alloc(peff::Alloc *allocator);
 		};
 
-		PEFF_FORCEINLINE ExceptionPointer wrapIfExceptAllocFailed(Exception *exceptionPtr) {
+		PEFF_FORCEINLINE ExceptionPtr wrapIfExceptAllocFailed(Exception *exceptionPtr) {
 			if(!exceptionPtr)
 				return OutOfMemoryException::alloc();
 			return exceptionPtr;
