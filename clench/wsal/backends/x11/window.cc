@@ -43,9 +43,7 @@ CLCWSAL_API void X11Window::pollEvents() {
 				auto key = XLookupKeysym(&ev.xkey, 0);
 
 				if (!_keyPressedTimes.contains(key)) {
-					auto copiedKey = key;
-					Time copiedTime = ev.xkey.time;
-					if (!_keyPressedTimes.insert(std::move(copiedKey), std::move(copiedTime)))
+					if (!_keyPressedTimes.insert(+key, +ev.xkey.time))
 						break;
 				}
 
@@ -462,10 +460,8 @@ CLCWSAL_API void X11Window::onMouseMove(int x, int y) {
 			(y >= yOffset) &&
 			(y < yOffset + height)) {
 			if (!hoveredChildWindows.contains(capturedWindow)) {
-				auto copiedCapturedWindow = capturedWindow;
-
 				capturedWindow->onMouseHover(x - xOffset, y - yOffset);
-				hoveredChildWindows.insert(std::move(copiedCapturedWindow));
+				hoveredChildWindows.insert(+capturedWindow);
 			} else {
 				capturedWindow->onMouseMove(x - xOffset, y - yOffset);
 			}
@@ -485,24 +481,21 @@ CLCWSAL_API void X11Window::onMouseMove(int x, int y) {
 			for (auto i : hoveredChildWindows) {
 				if (!i->isNative()) {
 					if (!childWindows.contains((VirtualWindow *)i)) {
-						auto copiedI = i;
-						leftWindows.insert(std::move(copiedI));
+						leftWindows.insert(+i);
 					}
 				}
 			}
 
 			for (auto i : leftWindows) {
-				auto copiedI = i;
 				i->onMouseLeave();
-				hoveredChildWindows.remove(std::move(copiedI));
+				hoveredChildWindows.remove(+i);
 			}
 		}
 
 		for (auto i = childWindows.begin(); i != childWindows.end(); ++i) {
 			if (!hoveredChildWindows.contains(i.key())) {
 				i.key()->onMouseHover(x, y);
-				Window *copiedWindow = i.key();
-				hoveredChildWindows.insert(std::move(copiedWindow));
+				hoveredChildWindows.insert(+i.key());
 			} else
 				i.key()->onMouseMove(i.value().first, i.value().second);
 		}

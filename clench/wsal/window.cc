@@ -251,23 +251,20 @@ CLCWSAL_API void VirtualWindow::onMouseMove(int x, int y) {
 		peff::Set<Window *> leftWindows;
 		for (auto i : hoveredChildWindows) {
 			if (!childWindows.contains(i)) {
-				auto copiedI = i;
-				leftWindows.insert(std::move(copiedI));
+				leftWindows.insert(+i);
 			}
 		}
 
 		for (auto i : leftWindows) {
-			auto copiedI = i;
 			i->onMouseLeave();
-			hoveredChildWindows.remove(std::move(copiedI));
+			hoveredChildWindows.remove(+i);
 		}
 	}
 
 	for (auto i = childWindows.begin(); i != childWindows.end(); ++i) {
 		if (!hoveredChildWindows.contains(i.key())) {
 			i.key()->onMouseHover(x, y);
-			Window *copiedWindow = i.key();
-			hoveredChildWindows.insert(std::move(copiedWindow));
+			hoveredChildWindows.insert(+i.key());
 		} else
 			i.key()->onMouseMove(i.value().first, i.value().second);
 	}
