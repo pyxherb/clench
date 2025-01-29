@@ -126,10 +126,10 @@ CLCGHAL_API base::ExceptionPtr GLGHALDevice::createDeviceContextForWindow(clench
 	if (!g_glInitialized) {
 		int version = gladLoadGL((GLADloadfunc)_loadGlProc);
 		if (!version)
-		return base::wrapIfExceptAllocFailed(
-			ErrorCreatingDeviceContextException::alloc(
-				resourceAllocator.get(),
-				base::wrapIfExceptAllocFailed(ErrorInitializingGLLoaderException::alloc(resourceAllocator.get()))));
+			return base::wrapIfExceptAllocFailed(
+				ErrorCreatingDeviceContextException::alloc(
+					resourceAllocator.get(),
+					base::wrapIfExceptAllocFailed(ErrorInitializingGLLoaderException::alloc(resourceAllocator.get()))));
 		g_glInitialized = true;
 	}
 #endif
@@ -145,10 +145,11 @@ CLCGHAL_API base::ExceptionPtr GLGHALDevice::createDeviceContextForWindow(clench
 	return {};
 }
 
-CLCGHAL_API VertexLayout *GLGHALDevice::createVertexLayout(
+CLCGHAL_API base::ExceptionPtr GLGHALDevice::createVertexLayout(
 	VertexLayoutElementDesc *elementDescs,
 	size_t nElementDescs,
-	VertexShader *vertexShader) {
+	VertexShader *vertexShader,
+	VertexLayout *&vertexLayoutOut) {
 	GLuint vao;
 	glGenVertexArrays(1, &vao);
 
@@ -163,6 +164,8 @@ CLCGHAL_API VertexLayout *GLGHALDevice::createVertexLayout(
 	});
 
 	std::unique_ptr<GLVertexLayout, peff::RcObjectUniquePtrDeleter> vertexArray(GLVertexLayout::alloc(this, vao));
+	if (!vertexArray)
+		return base::OutOfMemoryException::alloc();
 
 	for (size_t i = 0; i < nElementDescs; ++i) {
 		VertexLayoutElementDesc &curDesc = elementDescs[i];
@@ -172,7 +175,7 @@ CLCGHAL_API VertexLayout *GLGHALDevice::createVertexLayout(
 		size_t sizeOut;
 		GLenum glType;
 		if ((glType = toGLVertexDataType(curDesc.dataType, sizeOut)) == GL_INVALID_ENUM) {
-			return nullptr;
+			return base::wrapIfExceptAllocFailed(InvalidVertexDataTypeException::alloc(resourceAllocator.get(), i));
 		}
 
 		glVertexAttribPointer(i, sizeOut * curDesc.dataType.nElements, glType, false, curDesc.stride, (void *)curDesc.off);
@@ -180,14 +183,17 @@ CLCGHAL_API VertexLayout *GLGHALDevice::createVertexLayout(
 
 	deleteVaoGuard.release();
 
-	return vertexArray.release();
+	vertexArray->incRef();
+	vertexLayoutOut = vertexArray.release();
+
+	return {};
 }
 
 CLCGHAL_API bool GLGHALDevice::isVertexDataTypeSupported(const VertexDataType &vertexDataType) {
 	return true;
 }
 
-CLCGHAL_API VertexShader *GLGHALDevice::createVertexShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo) {
+CLCGHAL_API base::ExceptionPtr GLGHALDevice::createVertexShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo, VertexShader *&vertexShaderOut) {
 	GLuint shader = glCreateShader(GL_VERTEX_SHADER);
 	peff::ScopeGuard deleteShaderGuard([shader]() noexcept {
 		glDeleteShader(shader);
@@ -199,23 +205,34 @@ CLCGHAL_API VertexShader *GLGHALDevice::createVertexShader(const char *source, s
 	GLint success;
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 	if (!success) {
-		char log[1024 + 1];
-		log[1024] = '\0';
-		GLsizei size = 1024;
-		glGetShaderInfoLog(shader, 1024, &size, log);
-		throw std::runtime_error("Error compiling shader: " + std::string(log));
+		GLsizei size;
+		glGetShaderInfoLog(shader, 0, &size, NULL);
+
+		peff::String log;
+		if (!log.resize(size)) {
+			return base::OutOfMemoryException::alloc();
+		}
+
+		glGetShaderInfoLog(shader, 1024, &size, log.data());
+		return base::wrapIfExceptAllocFailed(
+			ErrorCompilingShaderException::alloc(
+				resourceAllocator.get(),
+				std::move(log)));
 	}
 
 	std::unique_ptr<GLVertexShader, peff::RcObjectUniquePtrDeleter> vertexShader(GLVertexShader::alloc(this, shader));
 	if (!vertexShader)
-		return nullptr;
+		return base::OutOfMemoryException::alloc();
 
 	deleteShaderGuard.release();
 
-	return vertexShader.release();
+	vertexShader->incRef();
+	vertexShaderOut = vertexShader.release();
+
+	return {};
 }
 
-CLCGHAL_API FragmentShader *GLGHALDevice::createFragmentShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo) {
+CLCGHAL_API base::ExceptionPtr GLGHALDevice::createFragmentShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo, FragmentShader *&fragmentShaderOut) {
 	GLuint shader = glCreateShader(GL_FRAGMENT_SHADER);
 	peff::ScopeGuard deleteShaderGuard([shader]() noexcept {
 		glDeleteShader(shader);
@@ -227,27 +244,38 @@ CLCGHAL_API FragmentShader *GLGHALDevice::createFragmentShader(const char *sourc
 	GLint success;
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 	if (!success) {
-		char log[1024 + 1];
-		log[1024] = '\0';
-		GLsizei size = 1024;
-		glGetShaderInfoLog(shader, 1024, &size, log);
-		throw std::runtime_error("Error compiling shader: " + std::string(log));
+		GLsizei size;
+		glGetShaderInfoLog(shader, 0, &size, NULL);
+
+		peff::String log;
+		if (!log.resize(size)) {
+			return base::OutOfMemoryException::alloc();
+		}
+
+		glGetShaderInfoLog(shader, 1024, &size, log.data());
+		return base::wrapIfExceptAllocFailed(
+			ErrorCompilingShaderException::alloc(
+				resourceAllocator.get(),
+				std::move(log)));
 	}
 
 	std::unique_ptr<GLFragmentShader, peff::RcObjectUniquePtrDeleter> fragmentShader(GLFragmentShader::alloc(this, shader));
 	if (!fragmentShader)
-		return nullptr;
+		return base::OutOfMemoryException::alloc();
 
 	deleteShaderGuard.release();
 
-	return fragmentShader.release();
+	fragmentShader->incRef();
+	fragmentShaderOut = fragmentShader.release();
+
+	return {};
 }
 
-CLCGHAL_API GeometryShader *GLGHALDevice::createGeometryShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo) {
-	return nullptr;
+CLCGHAL_API base::ExceptionPtr GLGHALDevice::createGeometryShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo, GeometryShader *&geometryShaderOut) {
+	return {};
 }
 
-CLCGHAL_API ShaderProgram *GLGHALDevice::linkShaderProgram(Shader **shaders, size_t nShaders) {
+CLCGHAL_API base::ExceptionPtr GLGHALDevice::linkShaderProgram(Shader **shaders, size_t nShaders, ShaderProgram *&shaderProgramOut) {
 	GLVertexShader *vertexShader = nullptr;
 	GLFragmentShader *fragmentShader = nullptr;
 
@@ -257,14 +285,16 @@ CLCGHAL_API ShaderProgram *GLGHALDevice::linkShaderProgram(Shader **shaders, siz
 		switch (curShader->shaderType) {
 			case ShaderType::Vertex: {
 				if (vertexShader) {
-					throw std::runtime_error("Duplicated vertex shader");
+					return base::wrapIfExceptAllocFailed(
+						DuplicatedShaderPartException::alloc(resourceAllocator.get(), i));
 				}
 				vertexShader = (GLVertexShader *)curShader;
 				break;
 			}
 			case ShaderType::Fragment: {
 				if (fragmentShader) {
-					throw std::runtime_error("Duplicated fragment shader");
+					return base::wrapIfExceptAllocFailed(
+						DuplicatedShaderPartException::alloc(resourceAllocator.get(), i));
 				}
 				fragmentShader = (GLFragmentShader *)curShader;
 				break;
@@ -275,10 +305,12 @@ CLCGHAL_API ShaderProgram *GLGHALDevice::linkShaderProgram(Shader **shaders, siz
 	}
 
 	if (!vertexShader)
-		throw std::logic_error("Missing vertex shader");
+		return base::wrapIfExceptAllocFailed(
+			MissingShaderPartException::alloc(resourceAllocator.get(), ShaderType::Vertex));
 
 	if (!fragmentShader)
-		throw std::logic_error("Missing fragment shader");
+		return base::wrapIfExceptAllocFailed(
+			MissingShaderPartException::alloc(resourceAllocator.get(), ShaderType::Fragment));
 
 	GLuint program = glCreateProgram();
 	peff::ScopeGuard deleteProgramGuard([program]() noexcept {
@@ -292,11 +324,19 @@ CLCGHAL_API ShaderProgram *GLGHALDevice::linkShaderProgram(Shader **shaders, siz
 	glLinkProgram(program);
 	glGetProgramiv(program, GL_LINK_STATUS, &success);
 	if (!success) {
-		char log[1024 + 1];
-		log[1024] = '\0';
-		GLsizei size = 1024;
-		glGetProgramInfoLog(program, 1024, &size, log);
-		throw std::runtime_error("Error linking shaders: " + std::string(log));
+		GLsizei size;
+		glGetProgramInfoLog(program, 0, &size, NULL);
+
+		peff::String log;
+		if (!log.resize(size)) {
+			return base::OutOfMemoryException::alloc();
+		}
+
+		glGetProgramInfoLog(program, 1024, &size, log.data());
+		return base::wrapIfExceptAllocFailed(
+			ErrorLinkingShaderException::alloc(
+				resourceAllocator.get(),
+				std::move(log)));
 	}
 
 	std::unique_ptr<GLShaderProgram, peff::RcObjectUniquePtrDeleter> shaderProgram(GLShaderProgram::alloc(this, program));
@@ -305,7 +345,10 @@ CLCGHAL_API ShaderProgram *GLGHALDevice::linkShaderProgram(Shader **shaders, siz
 
 	deleteProgramGuard.release();
 
-	return shaderProgram.release();
+	shaderProgram->incRef();
+	shaderProgramOut = shaderProgram.release();
+
+	return {};
 }
 
 CLCGHAL_API Buffer *GLGHALDevice::createBuffer(const BufferDesc &bufferDesc, const void *initialData) {

@@ -47,18 +47,19 @@ namespace clench {
 			CLCGHAL_API virtual base::ExceptionPtr createDeviceContextForWindow(
 				clench::wsal::Window *window, GHALDeviceContext *&deviceContextOut) override;
 
-			CLCGHAL_API virtual VertexLayout *createVertexLayout(
+			CLCGHAL_API virtual base::ExceptionPtr createVertexLayout(
 				VertexLayoutElementDesc *elementDescs,
 				size_t nElementDescs,
-				VertexShader *vertexShader) override;
+				VertexShader *vertexShader,
+				VertexLayout *&vertexLayoutOut) override;
 
 			CLCGHAL_API virtual bool isVertexDataTypeSupported(const VertexDataType &vertexDataType) override;
 
-			CLCGHAL_API virtual VertexShader *createVertexShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo) override;
-			CLCGHAL_API virtual FragmentShader *createFragmentShader(const char *sources, size_t size, ShaderSourceInfo *sourceInfo) override;
-			CLCGHAL_API virtual GeometryShader *createGeometryShader(const char *sources, size_t size, ShaderSourceInfo *sourceInfo) override;
+			CLCGHAL_API virtual base::ExceptionPtr createVertexShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo, VertexShader *&vertexShaderOut) override;
+			CLCGHAL_API virtual base::ExceptionPtr createFragmentShader(const char *sources, size_t size, ShaderSourceInfo *sourceInfo, FragmentShader *&fragmentShaderOut) override;
+			CLCGHAL_API virtual base::ExceptionPtr createGeometryShader(const char *sources, size_t size, ShaderSourceInfo *sourceInfo, GeometryShader *&geometryShaderOut) override;
 
-			CLCGHAL_API virtual ShaderProgram *linkShaderProgram(Shader **shaders, size_t nShaders) override;
+			CLCGHAL_API virtual base::ExceptionPtr linkShaderProgram(Shader **shaders, size_t nShaders, ShaderProgram *&shaderProgramOut) override;
 
 			CLCGHAL_API virtual Buffer *createBuffer(const BufferDesc &bufferDesc, const void *initialData) override;
 

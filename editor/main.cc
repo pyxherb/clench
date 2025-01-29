@@ -87,7 +87,8 @@ int main(int argc, char **argv) {
 		std::unique_ptr<char[]> vsSrc(std::make_unique<char[]>(size));
 		is.read(vsSrc.get(), size);
 
-		vertexShader = g_mainGhalDevice->createVertexShader(vsSrc.get(), size, nullptr);
+		if (auto e = g_mainGhalDevice->createVertexShader(vsSrc.get(), size, nullptr, vertexShader.getRef()); e)
+			throw std::runtime_error(e->what());
 	}
 	{
 		std::ifstream is("test_frag.glsl");
@@ -99,7 +100,8 @@ int main(int argc, char **argv) {
 		std::unique_ptr<char[]> fsSrc(std::make_unique<char[]>(size));
 		is.read(fsSrc.get(), size);
 
-		fragmentShader = g_mainGhalDevice->createFragmentShader(fsSrc.get(), size, nullptr);
+		if (auto e = g_mainGhalDevice->createFragmentShader(fsSrc.get(), size, nullptr, fragmentShader.getRef()); e)
+			throw std::runtime_error(e->what());
 	}
 
 	peff::RcObjectPtr<clench::ghal::VertexLayout> vertexArray;
@@ -117,7 +119,9 @@ int main(int argc, char **argv) {
 				sizeof(float) * 3 }
 		};
 
-		vertexArray = g_mainGhalDevice->createVertexLayout(descs, std::size(descs), vertexShader.get());
+		if (auto e = g_mainGhalDevice->createVertexLayout(descs, std::size(descs), vertexShader.get(), vertexArray.getRef()); e) {
+			throw std::runtime_error(e->what());
+		}
 	}
 
 	peff::RcObjectPtr<clench::ghal::Buffer> vertexBuffer, indexBuffer;

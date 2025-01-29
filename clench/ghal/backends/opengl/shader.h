@@ -56,6 +56,7 @@ namespace clench {
 		class GLShaderProgram : public ShaderProgram {
 		public:
 			GLuint programHandle;
+
 			CLCGHAL_API GLShaderProgram(
 				GHALDevice *ownerDevice,
 				GLuint programHandle

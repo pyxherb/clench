@@ -33,18 +33,19 @@ namespace clench {
 
 			[[nodiscard]] virtual base::ExceptionPtr createDeviceContextForWindow(wsal::Window *window, GHALDeviceContext *&deviceContextOut) = 0;
 
-			virtual VertexLayout *createVertexLayout(
+			virtual base::ExceptionPtr createVertexLayout(
 				VertexLayoutElementDesc *elementDescs,
 				size_t nElementDescs,
-				VertexShader *vertexShader) = 0;
+				VertexShader *vertexShader,
+				VertexLayout *&vertexLayoutOut) = 0;
 
 			virtual bool isVertexDataTypeSupported(const VertexDataType &vertexDataType) = 0;
 
-			virtual VertexShader *createVertexShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo) = 0;
-			virtual FragmentShader *createFragmentShader(const char *sources, size_t size, ShaderSourceInfo *sourceInfo) = 0;
-			virtual GeometryShader *createGeometryShader(const char *sources, size_t size, ShaderSourceInfo *sourceInfo) = 0;
+			virtual base::ExceptionPtr createVertexShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo, VertexShader *&vertexShaderOut) = 0;
+			virtual base::ExceptionPtr createFragmentShader(const char *sources, size_t size, ShaderSourceInfo *sourceInfo, FragmentShader *&fragmentShaderOut) = 0;
+			virtual base::ExceptionPtr createGeometryShader(const char *sources, size_t size, ShaderSourceInfo *sourceInfo, GeometryShader *&geometryShaderOut) = 0;
 
-			virtual ShaderProgram *linkShaderProgram(Shader **shaders, size_t nShaders) = 0;
+			virtual base::ExceptionPtr linkShaderProgram(Shader **shaders, size_t nShaders, ShaderProgram *&shaderProgramOut) = 0;
 
 			virtual Buffer *createBuffer(const BufferDesc &bufferDesc, const void *initialData) = 0;
 
