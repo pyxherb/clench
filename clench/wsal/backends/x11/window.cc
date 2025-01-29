@@ -12,7 +12,7 @@ using namespace clench::wsal;
 
 CLCWSAL_API X11Window::X11Window(
 	X11Backend *backend,
-	X11WindowHandle nativeHandle) : Window(backend), nativeHandle(nativeHandle) {
+	X11WindowHandle nativeHandle) : NativeWindow(backend), nativeHandle(nativeHandle) {
 }
 
 CLCWSAL_API X11Window::~X11Window() {
@@ -284,15 +284,13 @@ CLCWSAL_API wsal::Window *X11Window::getParent() const {
 }
 
 CLCWSAL_API base::ExceptionPtr X11Window::addChildWindow(wsal::Window *window) {
-	if (!window->isNative()) {
-		if (!_childVirtualWindows.insert((VirtualWindow *)window))
-			return base::OutOfMemoryException::alloc();
-	}
-	return {};
+	return NativeWindow::addChildWindow(window);
 }
 
 CLCWSAL_API void X11Window::removeChildWindow(wsal::Window *window) {
-	if (!window->isNative()) {
+	NativeWindow::removeChildWindow(window);
+
+	if (window->isNative()) {
 		X11Window *nativeWindow = ((X11Window *)window);
 
 		if (nativeWindow->getParent() != this)
@@ -307,19 +305,11 @@ CLCWSAL_API void X11Window::removeChildWindow(wsal::Window *window) {
 		XFree(children);
 
 		XReparentWindow(nativeHandle.display, nativeWindow->nativeHandle.window, rootWindow, 0, 0);
-	} else {
-		_childVirtualWindows.remove((VirtualWindow *)window);
 	}
 }
 
 CLCWSAL_API bool X11Window::hasChildWindow(wsal::Window *window) const {
-	WindowProperties windowProperties;
-	window->getWindowProperties(windowProperties);
-
-	if (!windowProperties.isNative)
-		return false;
-
-	return ((X11Window *)window)->getParent() == this;
+	return NativeWindow::hasChildWindow(window);
 }
 
 CLCWSAL_API void X11Window::enumChildWindows(ChildWindowEnumer &&enumer) {
@@ -355,190 +345,8 @@ CLCWSAL_API void X11Window::invalidate() {
 	onExpose();
 }
 
-CLCWSAL_API void X11Window::onResize(int width, int height) {
-	for (auto i : _childVirtualWindows) {
-		if (const wsal::LayoutAttributes *layoutAttribs =
-				((wsal::VirtualWindow *)i.get())->getLayoutAttributes();
-			layoutAttribs) {
-			int windowX, windowY, windowWidth, windowHeight;
-			int newX, newY, newWidth, newHeight;
-
-			i->getPos(windowX, windowY);
-			i->getSize(windowWidth, windowHeight);
-
-			wsal::calcWindowLayout(
-				layoutAttribs,
-				0, 0,
-				width, height,
-				windowX, windowY,
-				windowWidth, windowHeight,
-				newX, newY,
-				newWidth, newHeight);
-
-			i->setPos(newX, newY);
-			i->setSize(newWidth, newHeight);
-		}
-	}
-}
-
-CLCWSAL_API void X11Window::onMove(int x, int y) {
-}
-
-CLCWSAL_API bool X11Window::onClose() {
-	return false;
-}
-
-CLCWSAL_API void X11Window::onKeyDown(KeyboardKeyCode keyCode) {
-}
-
-CLCWSAL_API void X11Window::onKeyUp(KeyboardKeyCode keyCode) {
-}
-
-CLCWSAL_API void X11Window::onMouseButtonPress(MouseButton button, int x, int y) {
-	if (auto capturedWindow = wsal::getMouseCapture(); capturedWindow) {
-		int xOffset, yOffset;
-		wsal::getAbsoluteOffsetToRootNativeWindow(capturedWindow, xOffset, yOffset);
-
-		capturedWindow->onMouseButtonPress(button, x - xOffset, y - yOffset);
-	} else {
-		peff::Map<VirtualWindow *, std::pair<int, int>> childWindows;
-
-		findWindowsAtPos(x, y, childWindows);
-
-		for (auto i = childWindows.begin(); i != childWindows.end(); ++i) {
-			i.key()->onMouseButtonPress(button, i.value().first, i.value().second);
-		}
-	}
-}
-
-CLCWSAL_API void X11Window::onMouseButtonRelease(MouseButton button, int x, int y) {
-	if (auto capturedWindow = wsal::getMouseCapture(); capturedWindow) {
-		int xOffset, yOffset;
-		wsal::getAbsoluteOffsetToRootNativeWindow(capturedWindow, xOffset, yOffset);
-
-		capturedWindow->onMouseButtonRelease(button, x - xOffset, y - yOffset);
-	} else {
-		peff::Map<VirtualWindow *, std::pair<int, int>> childWindows;
-
-		findWindowsAtPos(x, y, childWindows);
-
-		for (auto i = childWindows.begin(); i != childWindows.end(); ++i) {
-			i.key()->onMouseButtonRelease(button, i.value().first, i.value().second);
-		}
-	}
-}
-
-CLCWSAL_API void X11Window::onMouseHover(int x, int y) {
-	if (auto capturedWindow = wsal::getMouseCapture(); capturedWindow) {
-		int xOffset, yOffset;
-		wsal::getAbsoluteOffsetToRootNativeWindow(capturedWindow, xOffset, yOffset);
-
-		capturedWindow->onMouseHover(x - xOffset, y - yOffset);
-	} else {
-		peff::Map<VirtualWindow *, std::pair<int, int>> childWindows;
-
-		findWindowsAtPos(x, y, childWindows);
-
-		for (auto i = childWindows.begin(); i != childWindows.end(); ++i) {
-			i.key()->onMouseHover(i.value().first, i.value().second);
-		}
-	}
-}
-
-CLCWSAL_API void X11Window::onMouseLeave() {
-}
-
-CLCWSAL_API void X11Window::onMouseMove(int x, int y) {
-	if (auto capturedWindow = wsal::getMouseCapture(); capturedWindow) {
-		int xOffset, yOffset;
-		wsal::getAbsoluteOffsetToRootNativeWindow(capturedWindow, xOffset, yOffset);
-
-		int width, height;
-
-		capturedWindow->getSize(width, height);
-
-		if ((x >= xOffset) &&
-			(x < xOffset + width) &&
-			(y >= yOffset) &&
-			(y < yOffset + height)) {
-			if (!hoveredChildWindows.contains(capturedWindow)) {
-				capturedWindow->onMouseHover(x - xOffset, y - yOffset);
-				hoveredChildWindows.insert(+capturedWindow);
-			} else {
-				capturedWindow->onMouseMove(x - xOffset, y - yOffset);
-			}
-		} else {
-			if (hoveredChildWindows.contains(capturedWindow)) {
-				capturedWindow->onMouseLeave();
-				hoveredChildWindows.remove(capturedWindow);
-			}
-		}
-	} else {
-		peff::Map<VirtualWindow *, std::pair<int, int>> childWindows;
-
-		findWindowsAtPos(x, y, childWindows);
-
-		{
-			peff::Set<Window *> leftWindows;
-			for (auto i : hoveredChildWindows) {
-				if (!i->isNative()) {
-					if (!childWindows.contains((VirtualWindow *)i)) {
-						leftWindows.insert(+i);
-					}
-				}
-			}
-
-			for (auto i : leftWindows) {
-				i->onMouseLeave();
-				hoveredChildWindows.remove(+i);
-			}
-		}
-
-		for (auto i = childWindows.begin(); i != childWindows.end(); ++i) {
-			if (!hoveredChildWindows.contains(i.key())) {
-				i.key()->onMouseHover(x, y);
-				hoveredChildWindows.insert(+i.key());
-			} else
-				i.key()->onMouseMove(i.value().first, i.value().second);
-		}
-	}
-}
-
-CLCWSAL_API void X11Window::onExpose() {
-	onDraw();
-}
-
-CLCWSAL_API void X11Window::onDraw() {
-	int width, height;
-	getSize(width, height);
-
-	for (auto i : _childVirtualWindows) {
-		int subwindowX, subwindowY;
-		int subwindowWidth, subwindowHeight;
-
-		i->getPos(subwindowX, subwindowY);
-		i->getSize(subwindowWidth, subwindowHeight);
-
-		i->onDraw();
-	}
-}
-
 CLCWSAL_API X11Window *X11Window::alloc(
 	X11Backend *backend,
 	X11WindowHandle nativeHandle) {
 	return peff::allocAndConstruct<X11Window>(backend->resourceAllocator.get(), sizeof(std::max_align_t), backend, nativeHandle);
-}
-
-CLCWSAL_API void X11Window::findWindowsAtPos(int x, int y, peff::Map<clench::wsal::VirtualWindow *, std::pair<int, int>> &childWindowsOut) {
-	for (auto i : _childVirtualWindows) {
-		int windowX, windowY, windowWidth, windowHeight;
-		i->getPos(windowX, windowY);
-		i->getSize(windowWidth, windowHeight);
-
-		if ((x >= windowX) &&
-			(y >= windowY) &&
-			(x < windowX + windowWidth) &&
-			(y < windowY + windowHeight))
-			childWindowsOut.insert(i.get(), { x - windowX, y - windowY });
-	}
 }

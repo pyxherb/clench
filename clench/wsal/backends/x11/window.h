@@ -34,7 +34,7 @@ namespace clench {
 			}
 		};
 
-		class X11Window : public Window {
+		class X11Window : public NativeWindow {
 		private:
 			bool _isClosed = false;
 
@@ -89,21 +89,6 @@ namespace clench {
 			CLCWSAL_API virtual void invalidate() override;
 
 			CLCWSAL_API virtual void pollEvents() override;
-
-			CLCWSAL_API virtual void onResize(int width, int height) override;
-			CLCWSAL_API virtual void onMove(int x, int y) override;
-			CLCWSAL_API virtual bool onClose() override;
-			CLCWSAL_API virtual void onKeyDown(KeyboardKeyCode keyCode) override;
-			CLCWSAL_API virtual void onKeyUp(KeyboardKeyCode keyCode) override;
-			CLCWSAL_API virtual void onMouseButtonPress(MouseButton button, int x, int y) override;
-			CLCWSAL_API virtual void onMouseButtonRelease(MouseButton button, int x, int y) override;
-			CLCWSAL_API virtual void onMouseHover(int x, int y) override;
-			CLCWSAL_API virtual void onMouseLeave() override;
-			CLCWSAL_API virtual void onMouseMove(int x, int y) override;
-			CLCWSAL_API virtual void onExpose() override;
-			CLCWSAL_API virtual void onDraw() override;
-
-			CLCWSAL_API void findWindowsAtPos(int x, int y, peff::Map<clench::wsal::VirtualWindow *, std::pair<int, int>> &childWindowsOut);
 
 			CLCWSAL_API static X11Window *alloc(
 				X11Backend *backend,

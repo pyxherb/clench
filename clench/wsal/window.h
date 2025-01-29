@@ -259,6 +259,40 @@ namespace clench {
 			CLCWSAL_API void findWindowsAtPos(int x, int y, peff::Map<Window *, std::pair<int, int>> &childWindowsOut);
 		};
 
+		/// @brief Basic native window class that forwards all input events to the child virtual windows.
+		class NativeWindow : public Window {
+		protected:
+			peff::Set<peff::RcObjectPtr<VirtualWindow>> childVirtualWindows;
+			peff::Set<Window *> hoveredChildWindows;
+
+		public:
+			CLENCH_NO_COPY_MOVE_METHODS(NativeWindow);
+
+			CLCWSAL_API NativeWindow(
+				Backend *backend
+			);
+			CLCWSAL_API virtual ~NativeWindow();
+
+			CLCWSAL_API virtual base::ExceptionPtr addChildWindow(Window *window) override;
+			CLCWSAL_API virtual void removeChildWindow(Window *window) override;
+			CLCWSAL_API virtual bool hasChildWindow(Window *window) const override;
+
+			CLCWSAL_API virtual void onResize(int width, int height) override;
+			CLCWSAL_API virtual void onMove(int x, int y) override;
+			CLCWSAL_API virtual bool onClose() override;
+			CLCWSAL_API virtual void onKeyDown(KeyboardKeyCode keyCode) override;
+			CLCWSAL_API virtual void onKeyUp(KeyboardKeyCode keyCode) override;
+			CLCWSAL_API virtual void onMouseButtonPress(MouseButton button, int x, int y) override;
+			CLCWSAL_API virtual void onMouseButtonRelease(MouseButton button, int x, int y) override;
+			CLCWSAL_API virtual void onMouseHover(int x, int y) override;
+			CLCWSAL_API virtual void onMouseLeave() override;
+			CLCWSAL_API virtual void onMouseMove(int x, int y) override;
+			CLCWSAL_API virtual void onExpose() override;
+			CLCWSAL_API virtual void onDraw() override;
+
+			CLCWSAL_API void findWindowsAtPos(int x, int y, peff::Map<clench::wsal::VirtualWindow *, std::pair<int, int>> &childWindowsOut);
+		};
+
 		CLCWSAL_API void getAbsoluteOffsetToRootNativeWindow(Window *window, int &xOut, int &yOut);
 		CLCWSAL_API Window *getRootNativeWindow(Window *childWindow);
 		CLCWSAL_API void calcWindowLayout(

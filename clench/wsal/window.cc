@@ -467,3 +467,213 @@ CLCWSAL_API void VirtualWindow::findWindowsAtPos(int x, int y, peff::Map<Window 
 			childWindowsOut.insert(i.get(), { x - windowX, y - windowY });
 	}
 }
+
+CLCWSAL_API wsal::NativeWindow::NativeWindow(Backend *backend) : Window(backend) {}
+
+CLCWSAL_API wsal::NativeWindow::~NativeWindow() {
+}
+
+CLCWSAL_API base::ExceptionPtr NativeWindow::addChildWindow(wsal::Window *window) {
+	if (!window->isNative()) {
+		if (!childVirtualWindows.insert((VirtualWindow *)window))
+			return base::OutOfMemoryException::alloc();
+	}
+	return {};
+}
+
+CLCWSAL_API void NativeWindow::removeChildWindow(wsal::Window *window) {
+	if (window->isNative()) {
+		NativeWindow *nativeWindow = ((NativeWindow *)window);
+
+		if (nativeWindow->getParent() != this)
+			return;
+	} else {
+		childVirtualWindows.remove((VirtualWindow *)window);
+	}
+}
+
+CLCWSAL_API bool NativeWindow::hasChildWindow(wsal::Window *window) const {
+	return ((NativeWindow *)window)->getParent() == this;
+}
+
+CLCWSAL_API void NativeWindow::onResize(int width, int height) {
+	for (auto i : childVirtualWindows) {
+		if (const wsal::LayoutAttributes *layoutAttribs =
+				((wsal::VirtualWindow *)i.get())->getLayoutAttributes();
+			layoutAttribs) {
+			int windowX, windowY, windowWidth, windowHeight;
+			int newX, newY, newWidth, newHeight;
+
+			i->getPos(windowX, windowY);
+			i->getSize(windowWidth, windowHeight);
+
+			wsal::calcWindowLayout(
+				layoutAttribs,
+				0, 0,
+				width, height,
+				windowX, windowY,
+				windowWidth, windowHeight,
+				newX, newY,
+				newWidth, newHeight);
+
+			i->setPos(newX, newY);
+			i->setSize(newWidth, newHeight);
+		}
+	}
+}
+
+CLCWSAL_API void NativeWindow::onMove(int x, int y) {
+}
+
+CLCWSAL_API bool NativeWindow::onClose() {
+	return false;
+}
+
+CLCWSAL_API void NativeWindow::onKeyDown(KeyboardKeyCode keyCode) {
+}
+
+CLCWSAL_API void NativeWindow::onKeyUp(KeyboardKeyCode keyCode) {
+}
+
+CLCWSAL_API void NativeWindow::onMouseButtonPress(MouseButton button, int x, int y) {
+	if (auto capturedWindow = wsal::getMouseCapture(); capturedWindow) {
+		int xOffset, yOffset;
+		wsal::getAbsoluteOffsetToRootNativeWindow(capturedWindow, xOffset, yOffset);
+
+		capturedWindow->onMouseButtonPress(button, x - xOffset, y - yOffset);
+	} else {
+		peff::Map<VirtualWindow *, std::pair<int, int>> childWindows;
+
+		findWindowsAtPos(x, y, childWindows);
+
+		for (auto i = childWindows.begin(); i != childWindows.end(); ++i) {
+			i.key()->onMouseButtonPress(button, i.value().first, i.value().second);
+		}
+	}
+}
+
+CLCWSAL_API void NativeWindow::onMouseButtonRelease(MouseButton button, int x, int y) {
+	if (auto capturedWindow = wsal::getMouseCapture(); capturedWindow) {
+		int xOffset, yOffset;
+		wsal::getAbsoluteOffsetToRootNativeWindow(capturedWindow, xOffset, yOffset);
+
+		capturedWindow->onMouseButtonRelease(button, x - xOffset, y - yOffset);
+	} else {
+		peff::Map<VirtualWindow *, std::pair<int, int>> childWindows;
+
+		findWindowsAtPos(x, y, childWindows);
+
+		for (auto i = childWindows.begin(); i != childWindows.end(); ++i) {
+			i.key()->onMouseButtonRelease(button, i.value().first, i.value().second);
+		}
+	}
+}
+
+CLCWSAL_API void NativeWindow::onMouseHover(int x, int y) {
+	if (auto capturedWindow = wsal::getMouseCapture(); capturedWindow) {
+		int xOffset, yOffset;
+		wsal::getAbsoluteOffsetToRootNativeWindow(capturedWindow, xOffset, yOffset);
+
+		capturedWindow->onMouseHover(x - xOffset, y - yOffset);
+	} else {
+		peff::Map<VirtualWindow *, std::pair<int, int>> childWindows;
+
+		findWindowsAtPos(x, y, childWindows);
+
+		for (auto i = childWindows.begin(); i != childWindows.end(); ++i) {
+			i.key()->onMouseHover(i.value().first, i.value().second);
+		}
+	}
+}
+
+CLCWSAL_API void NativeWindow::onMouseLeave() {
+}
+
+CLCWSAL_API void NativeWindow::onMouseMove(int x, int y) {
+	if (auto capturedWindow = wsal::getMouseCapture(); capturedWindow) {
+		int xOffset, yOffset;
+		wsal::getAbsoluteOffsetToRootNativeWindow(capturedWindow, xOffset, yOffset);
+
+		int width, height;
+
+		capturedWindow->getSize(width, height);
+
+		if ((x >= xOffset) &&
+			(x < xOffset + width) &&
+			(y >= yOffset) &&
+			(y < yOffset + height)) {
+			if (!hoveredChildWindows.contains(capturedWindow)) {
+				capturedWindow->onMouseHover(x - xOffset, y - yOffset);
+				hoveredChildWindows.insert(+capturedWindow);
+			} else {
+				capturedWindow->onMouseMove(x - xOffset, y - yOffset);
+			}
+		} else {
+			if (hoveredChildWindows.contains(capturedWindow)) {
+				capturedWindow->onMouseLeave();
+				hoveredChildWindows.remove(capturedWindow);
+			}
+		}
+	} else {
+		peff::Map<VirtualWindow *, std::pair<int, int>> childWindows;
+
+		findWindowsAtPos(x, y, childWindows);
+
+		{
+			peff::Set<Window *> leftWindows;
+			for (auto i : hoveredChildWindows) {
+				if (!i->isNative()) {
+					if (!childWindows.contains((VirtualWindow *)i)) {
+						leftWindows.insert(+i);
+					}
+				}
+			}
+
+			for (auto i : leftWindows) {
+				i->onMouseLeave();
+				hoveredChildWindows.remove(+i);
+			}
+		}
+
+		for (auto i = childWindows.begin(); i != childWindows.end(); ++i) {
+			if (!hoveredChildWindows.contains(i.key())) {
+				i.key()->onMouseHover(x, y);
+				hoveredChildWindows.insert(+i.key());
+			} else
+				i.key()->onMouseMove(i.value().first, i.value().second);
+		}
+	}
+}
+
+CLCWSAL_API void NativeWindow::onExpose() {
+	onDraw();
+}
+
+CLCWSAL_API void NativeWindow::onDraw() {
+	int width, height;
+	getSize(width, height);
+
+	for (auto i : childVirtualWindows) {
+		int subwindowX, subwindowY;
+		int subwindowWidth, subwindowHeight;
+
+		i->getPos(subwindowX, subwindowY);
+		i->getSize(subwindowWidth, subwindowHeight);
+
+		i->onDraw();
+	}
+}
+
+CLCWSAL_API void NativeWindow::findWindowsAtPos(int x, int y, peff::Map<clench::wsal::VirtualWindow *, std::pair<int, int>> &childWindowsOut) {
+	for (auto i : childVirtualWindows) {
+		int windowX, windowY, windowWidth, windowHeight;
+		i->getPos(windowX, windowY);
+		i->getSize(windowWidth, windowHeight);
+
+		if ((x >= windowX) &&
+			(y >= windowY) &&
+			(x < windowX + windowWidth) &&
+			(y < windowY + windowHeight))
+			childWindowsOut.insert(i.get(), { x - windowX, y - windowY });
+	}
+}
