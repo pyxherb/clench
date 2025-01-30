@@ -39,3 +39,11 @@ CLCACRI_API base::ExceptionPtr clench::acri::createDevice(ghal::Device *ghalDevi
 
 	std::terminate();
 }
+
+CLCACRI_API base::ExceptionPtr clench::acri::createDeviceContext(ghal::DeviceContext *ghalDeviceContext, Device *acriDevice, DeviceContext *&deviceContextOut) {
+	if(auto it = g_registeredBackends.find(ghalDeviceContext->ownerDevice->getBackend()->backendId); it != g_registeredBackends.end()) {
+		return it.value()->createDeviceContext(ghalDeviceContext, acriDevice, deviceContextOut);
+	}
+
+	std::terminate();
+}

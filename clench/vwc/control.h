@@ -2,6 +2,7 @@
 #define _CLENCH_VWC_CONTROL_H_
 
 #include "basedefs.h"
+#include <clench/acri/device.h>
 
 namespace clench {
 	namespace vwc {

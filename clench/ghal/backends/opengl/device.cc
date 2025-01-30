@@ -88,7 +88,7 @@ CLCGHAL_API base::ExceptionPtr GLDevice::createDeviceContextForWindow(clench::ws
 	if (auto it = backend->initializedEglDisplays.find(deviceContext->nativeGLContext.eglDisplay); it != backend->initializedEglDisplays.end()) {
 		++it.value();
 	} else {
-		if(!backend->initializedEglDisplays.insert(+deviceContext->nativeGLContext.eglDisplay, 1))
+		if (!backend->initializedEglDisplays.insert(+deviceContext->nativeGLContext.eglDisplay, 1))
 			return base::OutOfMemoryException::alloc();
 		eglInitialize(deviceContext->nativeGLContext.eglDisplay, &eglMajor, &eglMinor);
 	}
@@ -389,7 +389,9 @@ CLCGHAL_API base::ExceptionPtr GLDevice::createBuffer(const BufferDesc &bufferDe
 
 	deleteBufferGuard.release();
 
-	defaultContext->setData(glBuffer.get(), initialData);
+	if (initialData) {
+		defaultContext->setData(glBuffer.get(), initialData);
+	}
 
 	glBuffer->incRef();
 	bufferOut = glBuffer.release();
@@ -555,7 +557,7 @@ CLCGHAL_API base::ExceptionPtr GLDevice::createTexture3D(const char *data, size_
 CLCGHAL_API base::ExceptionPtr GLDevice::createRenderTargetViewForTexture2D(Texture2D *texture, RenderTargetView *&renderTargetViewOut) {
 	std::unique_ptr<GLRenderTargetView, peff::RcObjectUniquePtrDeleter> ptr(
 		GLRenderTargetView::alloc(this, RenderTargetViewType::Texture2D, ((GLTexture2D *)texture)->textureHandle));
-	if(!ptr)
+	if (!ptr)
 		return base::OutOfMemoryException::alloc();
 	return {};
 }

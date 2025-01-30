@@ -17,6 +17,11 @@ namespace clench {
 				peff::Alloc *selfAllocator,
 				peff::Alloc *resourceAllocator,
 				Device *&deviceOut) override;
+			CLCACRI_API virtual base::ExceptionPtr createDeviceContext(
+				ghal::DeviceContext *ghalDeviceContext,
+				Device *acriDevice,
+				DeviceContext *&deviceContextOut
+			) override;
 
 			CLCACRI_API virtual void dealloc() override;
 

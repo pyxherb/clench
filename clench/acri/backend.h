@@ -9,6 +9,7 @@
 namespace clench {
 	namespace acri {
 		class Device;
+		class DeviceContext;
 
 		class Backend : public peff::RcObject {
 		public:
@@ -27,6 +28,11 @@ namespace clench {
 				peff::Alloc *selfAllocator,
 				peff::Alloc *resourceAllocator,
 				Device *&deviceOut) = 0;
+			virtual base::ExceptionPtr createDeviceContext(
+				ghal::DeviceContext *ghalDeviceContext,
+				Device *acriDevice,
+				DeviceContext *&deviceContextOut
+			) = 0;
 		};
 
 		CLCACRI_API extern peff::HashMap<std::string_view, peff::RcObjectPtr<Backend>> g_registeredBackends;

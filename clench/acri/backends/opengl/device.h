@@ -49,6 +49,8 @@ namespace clench {
 			CLCACRI_API virtual void fillEllipse(const EllipseParams &params, Brush *brush) override;
 			CLCACRI_API virtual void drawPath(const PathParams &params, Brush *brush, float width) override;
 			CLCACRI_API virtual void fillPath(const PathParams &params, Brush *brush) override;
+
+			CLCACRI_API static GLDeviceContext *alloc(Device *device, ghal::DeviceContext *deviceContext);
 		};
 	}
 }

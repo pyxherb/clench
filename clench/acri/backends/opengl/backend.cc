@@ -67,6 +67,36 @@ CLCACRI_API base::ExceptionPtr GLBackend::createDevice(ghal::Device *ghalDevice,
 	return {};
 }
 
+base::ExceptionPtr GLBackend::createDeviceContext(
+	ghal::DeviceContext *ghalDeviceContext,
+	Device *acriDevice,
+	DeviceContext *&deviceContextOut) {
+	std::unique_ptr<GLDeviceContext, peff::RcObjectUniquePtrDeleter> ptr(
+		GLDeviceContext::alloc(acriDevice, ghalDeviceContext));
+	if (!ptr)
+		return base::OutOfMemoryException::alloc();
+
+	{
+		ghal::BufferDesc bufDesc;
+
+		bufDesc.size = sizeof(float) * 6;
+		bufDesc.usage = ghal::BufferUsage::Dynamic;
+		bufDesc.proposedTarget = ghal::BufferTarget::Vertex;
+		bufDesc.cpuWritable = true;
+		bufDesc.cpuReadable = false;
+
+		CLENCH_RETURN_IF_EXCEPT(
+			acriDevice->associatedDevice->createBuffer(
+				bufDesc,
+				nullptr,
+				ptr->localDeviceResources.forTriangle.solidColorVertexBuffer.getRef()));
+	}
+
+	ptr->incRef();
+	deviceContextOut = ptr.release();
+	return {};
+}
+
 CLCACRI_API void GLBackend::dealloc() {
 	peff::destroyAndRelease<GLBackend>(selfAllocator.get(), this, sizeof(std::max_align_t));
 }

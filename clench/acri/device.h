@@ -12,6 +12,8 @@
 
 namespace clench {
 	namespace acri {
+		class DeviceContext;
+
 		class Device {
 		public:
 			peff::RcObjectPtr<peff::Alloc> selfAllocator, resourceAllocator;
@@ -77,6 +79,7 @@ namespace clench {
 		};
 
 		CLCACRI_API base::ExceptionPtr createDevice(ghal::Device *ghalDevice, peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator, Device *&deviceOut);
+		CLCACRI_API base::ExceptionPtr createDeviceContext(ghal::DeviceContext *ghalDeviceContext, Device *acriDevice, DeviceContext *&deviceContextOut);
 	}
 }
 

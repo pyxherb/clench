@@ -20,11 +20,17 @@ CLCACRI_API GLDevice *GLDevice::alloc(ghal::Device *associatedDevice, peff::Allo
 	return ptr.release();
 }
 
+CLCACRI_API GLDeviceContext::GLDeviceContext(Device *device, ghal::DeviceContext *deviceContext) : DeviceContext(device, deviceContext) {}
+CLCACRI_API GLDeviceContext::~GLDeviceContext() {}
+
 CLCACRI_API void GLDeviceContext::dealloc() {
 	peff::destroyAndRelease<GLDeviceContext>(device->resourceAllocator.get(), this, sizeof(std::max_align_t));
 }
 
 CLCACRI_API void GLDeviceContext::drawTriangle(const TriangleParams &params, Brush *brush, float width) {
+}
+
+CLCACRI_API void GLDeviceContext::fillTriangle(const TriangleParams &params, Brush *brush) {
 	switch (brush->brushType) {
 		case BrushType::SolidColor: {
 			SolidColorBrush *b = (SolidColorBrush *)brush;
@@ -47,9 +53,6 @@ CLCACRI_API void GLDeviceContext::drawTriangle(const TriangleParams &params, Bru
 	}
 }
 
-CLCACRI_API void GLDeviceContext::fillTriangle(const TriangleParams &params, Brush *brush) {
-}
-
 CLCACRI_API void GLDeviceContext::drawEllipse(const EllipseParams &params, Brush *brush, float width) {
 }
 
@@ -60,4 +63,14 @@ CLCACRI_API void GLDeviceContext::drawPath(const PathParams &params, Brush *brus
 }
 
 CLCACRI_API void GLDeviceContext::fillPath(const PathParams &params, Brush *brush) {
+}
+
+CLCACRI_API GLDeviceContext *GLDeviceContext::alloc(Device *device, ghal::DeviceContext *deviceContext) {
+	std::unique_ptr<GLDeviceContext, peff::RcObjectUniquePtrDeleter> ptr(
+		peff::allocAndConstruct<GLDeviceContext>(device->resourceAllocator.get(), sizeof(std::max_align_t), device, deviceContext));
+	if (!ptr) {
+		return nullptr;
+	}
+
+	return ptr.release();
 }
