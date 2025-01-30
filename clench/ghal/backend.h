@@ -13,7 +13,7 @@ namespace clench {
 	namespace ghal {
 		class Device;
 
-		class GHALBackend : public peff::RcObject {
+		class Backend : public peff::RcObject {
 		protected:
 			virtual bool doInit() = 0;
 			virtual bool doDeinit() = 0;
@@ -23,10 +23,10 @@ namespace clench {
 			const char *backendId;
 			bool isInited;
 
-			CLENCH_NO_COPY_MOVE_METHODS(GHALBackend);
+			CLENCH_NO_COPY_MOVE_METHODS(Backend);
 
-			CLCGHAL_API GHALBackend(const char *backendId, peff::Alloc *selfAllocator);
-			CLCGHAL_API virtual ~GHALBackend();
+			CLCGHAL_API Backend(const char *backendId, peff::Alloc *selfAllocator);
+			CLCGHAL_API virtual ~Backend();
 
 			virtual void dealloc() = 0;
 
@@ -44,17 +44,17 @@ namespace clench {
 			CLCGHAL_API virtual ~GHALError();
 		};
 
-		CLCGHAL_API extern peff::HashMap<std::string_view, peff::RcObjectPtr<GHALBackend>> g_registeredGHALBackends;
+		CLCGHAL_API extern peff::HashMap<std::string_view, peff::RcObjectPtr<Backend>> g_registeredBackends;
 
-		CLCGHAL_API void registerGHALBackend(GHALBackend *backend);
-		CLCGHAL_API void unregisterGHALBackend(const char *id);
-		CLCGHAL_API GHALBackend *getGHALBackend(const char *id);
-		CLCGHAL_API std::optional<std::pair<bool, const char *>> scanAndInitRegisteredGHALBackends();
-		CLCGHAL_API std::optional<std::pair<bool, const char *>> deinitInitedRegisteredGHALBackends();
-		CLCGHAL_API bool initRegisteredGHALBackend(const char *id);
-		CLCGHAL_API bool deinitRegisteredGHALBackend(const char *id);
+		CLCGHAL_API void registerBackend(Backend *backend);
+		CLCGHAL_API void unregisterBackend(const char *id);
+		CLCGHAL_API Backend *getBackend(const char *id);
+		CLCGHAL_API std::optional<std::pair<bool, const char *>> scanAndInitRegisteredBackends();
+		CLCGHAL_API std::optional<std::pair<bool, const char *>> deinitInitedRegisteredBackends();
+		CLCGHAL_API bool initRegisteredBackend(const char *id);
+		CLCGHAL_API bool deinitRegisteredBackend(const char *id);
 
-		CLCGHAL_API void registerBuiltinGHALBackends(peff::Alloc *selfAllocator);
+		CLCGHAL_API void registerBuiltinBackends(peff::Alloc *selfAllocator);
 
 		[[nodiscard]] CLCGHAL_API base::ExceptionPtr createDevice(Device *&ghalDeviceOut, const peff::List<std::string_view> &preferredBackendNames = peff::List<std::string_view>());
 	}

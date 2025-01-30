@@ -36,7 +36,7 @@ namespace clench {
 
 		class GLDevice : public Device {
 		public:
-			GLGHALBackend *backend;
+			GLBackend *backend;
 			/// @brief Default context for some internal operations. DO NOT try to draw with it!
 			/// @note DO NOT forget to create one for the device after the creation!
 			peff::RcObjectPtr<GLDeviceContext> defaultContext;
@@ -47,10 +47,10 @@ namespace clench {
 
 			CLENCH_NO_COPY_MOVE_METHODS(GLDevice);
 
-			CLCGHAL_API GLDevice(peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator, GLGHALBackend *backend);
+			CLCGHAL_API GLDevice(peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator, GLBackend *backend);
 			CLCGHAL_API virtual ~GLDevice();
 
-			CLCGHAL_API virtual GHALBackend *getBackend() override;
+			CLCGHAL_API virtual Backend *getBackend() override;
 
 			CLCGHAL_API virtual base::ExceptionPtr createDeviceContextForWindow(
 				clench::wsal::Window *window, DeviceContext *&deviceContextOut) override;
@@ -79,7 +79,7 @@ namespace clench {
 
 			CLCGHAL_API virtual void dealloc() override;
 
-			CLCGHAL_API static GLDevice *alloc(peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator, GLGHALBackend *backend);
+			CLCGHAL_API static GLDevice *alloc(peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator, GLBackend *backend);
 		};
 
 		class GLDeviceContext : public DeviceContext {

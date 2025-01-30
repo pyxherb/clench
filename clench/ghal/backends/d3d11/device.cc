@@ -9,7 +9,7 @@ using namespace clench;
 using namespace clench::ghal;
 
 CLCGHAL_API D3D11Device::D3D11Device(
-	D3D11GHALBackend *backend,
+	D3D11Backend *backend,
 	ID3D11Device *d3dDevice,
 	ID3D11DeviceContext *d3dImmediateDeviceContext,
 	IDXGIDevice *dxgiDevice,
@@ -25,7 +25,7 @@ CLCGHAL_API D3D11Device::D3D11Device(
 }
 
 CLCGHAL_API D3D11Device::D3D11Device(
-	D3D11GHALBackend *backend,
+	D3D11Backend *backend,
 	ID3D11Device *d3dDevice,
 	ID3D11Device1 *d3dDevice1,
 	ID3D11DeviceContext *d3dImmediateDeviceContext,
@@ -49,7 +49,7 @@ CLCGHAL_API D3D11Device::D3D11Device(
 CLCGHAL_API D3D11Device::~D3D11Device() {
 }
 
-CLCGHAL_API GHALBackend *D3D11Device::getBackend() {
+CLCGHAL_API Backend *D3D11Device::getBackend() {
 	return backend;
 }
 

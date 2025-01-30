@@ -36,8 +36,8 @@ int main(int argc, char **argv) {
 		result.has_value())
 		throw std::runtime_error((std::string) "Error initializing WSAL backend " + result->second);
 
-	ghal::registerBuiltinGHALBackends(peff::getDefaultAlloc());
-	if (auto result = ghal::scanAndInitRegisteredGHALBackends();
+	ghal::registerBuiltinBackends(peff::getDefaultAlloc());
+	if (auto result = ghal::scanAndInitRegisteredBackends();
 		result.has_value())
 		throw std::runtime_error((std::string) "Error initializing GHAL backend " + result->second);
 
@@ -207,10 +207,10 @@ int main(int argc, char **argv) {
 
 	g_mainGhalDevice.reset();
 
-	if (auto result = ghal::deinitInitedRegisteredGHALBackends();
+	if (auto result = ghal::deinitInitedRegisteredBackends();
 		result.has_value())
 		throw std::runtime_error((std::string) "Error deinitializing GHAL backend " + result->second);
-	ghal::g_registeredGHALBackends.clear();
+	ghal::g_registeredBackends.clear();
 
 	if (auto result = wsal::deinitInitedRegisteredWSALBackends();
 		result.has_value())

@@ -16,7 +16,7 @@
 using namespace clench;
 using namespace clench::ghal;
 
-CLCGHAL_API GLDevice::GLDevice(peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator, GLGHALBackend *backend)
+CLCGHAL_API GLDevice::GLDevice(peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator, GLBackend *backend)
 	: Device(selfAllocator, resourceAllocator),
 	  backend(backend) {
 }
@@ -24,7 +24,7 @@ CLCGHAL_API GLDevice::GLDevice(peff::Alloc *selfAllocator, peff::Alloc *resource
 CLCGHAL_API GLDevice::~GLDevice() {
 }
 
-CLCGHAL_API GHALBackend *GLDevice::getBackend() {
+CLCGHAL_API Backend *GLDevice::getBackend() {
 	return backend;
 }
 
@@ -123,7 +123,7 @@ CLCGHAL_API base::ExceptionPtr GLDevice::createDeviceContextForWindow(clench::ws
 	});
 	NativeGLContext::restoreContextCurrent(deviceContext->nativeGLContext);
 
-	if (!g_glBackend) {
+	if (!g_glInitialized) {
 		// The initialization of GLAD is deferred because the `_loadGlProc`
 		// requires EGL and we can only initialize EGL with a specific display.
 		int version = gladLoadGL((GLADloadfunc)_loadGlProc);
@@ -560,7 +560,7 @@ CLCGHAL_API void GLDevice::dealloc() {
 	peff::destroyAndRelease<GLDevice>(selfAllocator.get(), this, sizeof(std::max_align_t));
 }
 
-CLCGHAL_API GLDevice *GLDevice::alloc(peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator, GLGHALBackend *backend) {
+CLCGHAL_API GLDevice *GLDevice::alloc(peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator, GLBackend *backend) {
 	std::unique_ptr<GLDevice, peff::DeallocableDeleter<GLDevice>> ptr(
 		peff::allocAndConstruct<GLDevice>(
 			selfAllocator, sizeof(std::max_align_t),

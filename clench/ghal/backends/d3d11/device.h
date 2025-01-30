@@ -10,7 +10,7 @@ namespace clench {
 	namespace ghal {
 		class D3D11Device : public Device {
 		public:
-			D3D11GHALBackend *backend;
+			D3D11Backend *backend;
 
 			ComPtr<ID3D11Device> d3dDevice;
 			ComPtr<ID3D11DeviceContext> d3dImmediateDeviceContext;
@@ -26,14 +26,14 @@ namespace clench {
 			CLENCH_NO_COPY_MOVE_METHODS(D3D11Device);
 
 			CLCGHAL_API D3D11Device(
-				D3D11GHALBackend *backend,
+				D3D11Backend *backend,
 				ID3D11Device *d3dDevice,
 				ID3D11DeviceContext *d3dImmediateDeviceContext,
 				IDXGIDevice *dxgiDevice,
 				IDXGIAdapter *dxgiAdapter,
 				IDXGIFactory1 *dxgiFactory1);
 			CLCGHAL_API D3D11Device(
-				D3D11GHALBackend *backend,
+				D3D11Backend *backend,
 				ID3D11Device *d3dDevice,
 				ID3D11Device1 *d3dDevice1,
 				ID3D11DeviceContext *d3dImmediateDeviceContext,
@@ -44,7 +44,7 @@ namespace clench {
 				IDXGIFactory2 *dxgiFactory2);
 			CLCGHAL_API virtual ~D3D11Device();
 
-			CLCGHAL_API virtual GHALBackend *getBackend() override;
+			CLCGHAL_API virtual Backend *getBackend() override;
 
 			CLCGHAL_API virtual DeviceContext *createDeviceContextForWindow(
 				clench::wsal::NativeWindow *window) override;

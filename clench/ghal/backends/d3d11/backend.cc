@@ -4,13 +4,13 @@
 using namespace clench;
 using namespace clench::ghal;
 
-CLCGHAL_API D3D11GHALBackend::D3D11GHALBackend() : GHALBackend("d3d11") {
+CLCGHAL_API D3D11Backend::D3D11Backend() : Backend("d3d11") {
 }
 
-CLCGHAL_API D3D11GHALBackend::~D3D11GHALBackend() {
+CLCGHAL_API D3D11Backend::~D3D11Backend() {
 }
 
-CLCGHAL_API Device *D3D11GHALBackend::createDevice() {
+CLCGHAL_API Device *D3D11Backend::createDevice() {
 	HRESULT result;
 
 	UINT createDeviceFlags = 0;

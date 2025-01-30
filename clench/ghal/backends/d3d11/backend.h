@@ -9,12 +9,12 @@ namespace clench {
 	namespace ghal {
 		using namespace Microsoft::WRL;
 
-		class D3D11GHALBackend : public GHALBackend {
+		class D3D11Backend : public Backend {
 		public:
-			CLENCH_NO_COPY_MOVE_METHODS(D3D11GHALBackend);
+			CLENCH_NO_COPY_MOVE_METHODS(D3D11Backend);
 
-			CLCGHAL_API D3D11GHALBackend();
-			CLCGHAL_API virtual ~D3D11GHALBackend();
+			CLCGHAL_API D3D11Backend();
+			CLCGHAL_API virtual ~D3D11Backend();
 
 			CLCGHAL_API virtual Device* createDevice() override;
 		};

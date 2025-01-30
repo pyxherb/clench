@@ -29,7 +29,7 @@ namespace clench {
 
 			virtual void dealloc() = 0;
 
-			virtual GHALBackend *getBackend() = 0;
+			virtual Backend *getBackend() = 0;
 
 			[[nodiscard]] virtual base::ExceptionPtr createDeviceContextForWindow(wsal::Window *window, DeviceContext *&deviceContextOut) = 0;
 

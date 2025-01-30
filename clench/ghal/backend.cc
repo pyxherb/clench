@@ -5,25 +5,25 @@
 using namespace clench;
 using namespace clench::ghal;
 
-CLCGHAL_API peff::HashMap<std::string_view, peff::RcObjectPtr<GHALBackend>> ghal::g_registeredGHALBackends;
+CLCGHAL_API peff::HashMap<std::string_view, peff::RcObjectPtr<Backend>> ghal::g_registeredBackends;
 
-CLCGHAL_API clench::ghal::GHALBackend::GHALBackend(const char *backendId, peff::Alloc *selfAllocator) : backendId(backendId), selfAllocator(selfAllocator), isInited(false) {}
-CLCGHAL_API clench::ghal::GHALBackend::~GHALBackend() {
+CLCGHAL_API clench::ghal::Backend::Backend(const char *backendId, peff::Alloc *selfAllocator) : backendId(backendId), selfAllocator(selfAllocator), isInited(false) {}
+CLCGHAL_API clench::ghal::Backend::~Backend() {
 	assert(("The backend has not been deinitialized yet", !isInited));
 }
 
-CLCGHAL_API void GHALBackend::onRefZero() noexcept {
+CLCGHAL_API void Backend::onRefZero() noexcept {
 	dealloc();
 }
 
-bool GHALBackend::init() {
+bool Backend::init() {
 	if (!doInit())
 		return false;
 	isInited = true;
 	return true;
 }
 
-bool GHALBackend::deinit() {
+bool Backend::deinit() {
 	if (!doDeinit())
 		return false;
 	isInited = false;
@@ -33,32 +33,32 @@ bool GHALBackend::deinit() {
 CLCGHAL_API GHALError::GHALError(const char *msg) : runtime_error(msg) {}
 CLCGHAL_API GHALError::~GHALError() {}
 
-CLCGHAL_API void clench::ghal::registerGHALBackend(GHALBackend *backend) {
+CLCGHAL_API void clench::ghal::registerBackend(Backend *backend) {
 	CLENCH_DEBUG_LOG("GHAL", "Registering GHAL backend: %s", backend->backendId);
-	CLENCH_ASSERT(!g_registeredGHALBackends.contains(backend->backendId), "GHAL backend with the same name already exists");
+	CLENCH_ASSERT(!g_registeredBackends.contains(backend->backendId), "GHAL backend with the same name already exists");
 
-	g_registeredGHALBackends.insert(backend->backendId, backend);
+	g_registeredBackends.insert(backend->backendId, backend);
 }
 
-CLCGHAL_API void clench::ghal::unregisterGHALBackend(const char *id) {
+CLCGHAL_API void clench::ghal::unregisterBackend(const char *id) {
 	CLENCH_DEBUG_LOG("GHAL", "Unregistering GHAL backend: %s", id);
 
-	auto it = g_registeredGHALBackends.find(id);
+	auto it = g_registeredBackends.find(id);
 
-	if (it == g_registeredGHALBackends.end()) {
+	if (it == g_registeredBackends.end()) {
 		assert(("GHAL backend not found", false));
 	}
 	assert(("The GHAL backend has not deinitialized yet", it.value()->isInited));
 
-	g_registeredGHALBackends.remove(id);
+	g_registeredBackends.remove(id);
 }
 
-CLCGHAL_API GHALBackend *clench::ghal::getGHALBackend(const char *id) {
+CLCGHAL_API Backend *clench::ghal::getBackend(const char *id) {
 	CLENCH_DEBUG_LOG("GHAL", "Querying GHAL backend: %s", id);
 
-	auto it = g_registeredGHALBackends.find(id);
+	auto it = g_registeredBackends.find(id);
 
-	if (it == g_registeredGHALBackends.end()) {
+	if (it == g_registeredBackends.end()) {
 		CLENCH_DEBUG_LOG("GHAL", "Querying GHAL backend: %s - not found", id);
 		return nullptr;
 	}
@@ -67,11 +67,11 @@ CLCGHAL_API GHALBackend *clench::ghal::getGHALBackend(const char *id) {
 	return it.value().get();
 }
 
-CLCGHAL_API std::optional<std::pair<bool, const char *>> clench::ghal::scanAndInitRegisteredGHALBackends() {
+CLCGHAL_API std::optional<std::pair<bool, const char *>> clench::ghal::scanAndInitRegisteredBackends() {
 	CLENCH_DEBUG_LOG("GHAL", "Rescanning and initializing new GHAL backends...");
-	for (auto i = g_registeredGHALBackends.begin(); i != g_registeredGHALBackends.end(); ++i) {
+	for (auto i = g_registeredBackends.begin(); i != g_registeredBackends.end(); ++i) {
 		if (!i.value()->isInited) {
-			bool initResult = initRegisteredGHALBackend(i.key().data());
+			bool initResult = initRegisteredBackend(i.key().data());
 			if (!initResult) {
 				return std::pair<bool, const char *>(false, i.key().data());
 			}
@@ -81,11 +81,11 @@ CLCGHAL_API std::optional<std::pair<bool, const char *>> clench::ghal::scanAndIn
 	return {};
 }
 
-CLCGHAL_API std::optional<std::pair<bool, const char *>> clench::ghal::deinitInitedRegisteredGHALBackends() {
+CLCGHAL_API std::optional<std::pair<bool, const char *>> clench::ghal::deinitInitedRegisteredBackends() {
 	CLENCH_DEBUG_LOG("GHAL", "Deinitializing GHAL backends...");
-	for (auto i = g_registeredGHALBackends.begin(); i != g_registeredGHALBackends.end(); ++i) {
+	for (auto i = g_registeredBackends.begin(); i != g_registeredBackends.end(); ++i) {
 		if (i.value()->isInited) {
-			bool initResult = deinitRegisteredGHALBackend(i.key().data());
+			bool initResult = deinitRegisteredBackend(i.key().data());
 			if (!initResult) {
 				return std::pair<bool, const char *>(false, i.key().data());
 			}
@@ -95,9 +95,9 @@ CLCGHAL_API std::optional<std::pair<bool, const char *>> clench::ghal::deinitIni
 	return {};
 }
 
-CLCGHAL_API bool clench::ghal::initRegisteredGHALBackend(const char *id) {
+CLCGHAL_API bool clench::ghal::initRegisteredBackend(const char *id) {
 	CLENCH_DEBUG_LOG("GHAL", "Initializing GHAL backend: %s", id);
-	if (auto it = g_registeredGHALBackends.find(id); it != g_registeredGHALBackends.end()) {
+	if (auto it = g_registeredBackends.find(id); it != g_registeredBackends.end()) {
 		bool result = it.value()->init();
 		if (result) {
 			CLENCH_DEBUG_LOG("GHAL", "Initialized GHAL backend: %s", id);
@@ -110,9 +110,9 @@ CLCGHAL_API bool clench::ghal::initRegisteredGHALBackend(const char *id) {
 	return false;
 }
 
-CLCGHAL_API bool clench::ghal::deinitRegisteredGHALBackend(const char *id) {
+CLCGHAL_API bool clench::ghal::deinitRegisteredBackend(const char *id) {
 	CLENCH_DEBUG_LOG("GHAL", "Deinitializing GHAL backend: %s", id);
-	if (auto it = g_registeredGHALBackends.find(id); it != g_registeredGHALBackends.end()) {
+	if (auto it = g_registeredBackends.find(id); it != g_registeredBackends.end()) {
 		if (!it.value()->isInited)
 			return true;
 		bool result = it.value()->deinit();
@@ -128,31 +128,31 @@ CLCGHAL_API bool clench::ghal::deinitRegisteredGHALBackend(const char *id) {
 }
 
 CLCGHAL_API base::ExceptionPtr clench::ghal::createDevice(Device *&ghalDeviceOut, const peff::List<std::string_view> &preferredBackendNames) {
-	peff::DynArray<GHALBackend *> deviceCreationQueue;
-	if (!deviceCreationQueue.resize(g_registeredGHALBackends.size()))
+	peff::DynArray<Backend *> deviceCreationQueue;
+	if (!deviceCreationQueue.resize(g_registeredBackends.size()))
 		return nullptr;
 	if (preferredBackendNames.size()) {
 		size_t deviceCreationQueueBackIndex = 0;
-		peff::Set<GHALBackend *> pushedBackends;
+		peff::Set<Backend *> pushedBackends;
 
 		for (auto i = preferredBackendNames.beginConst(); i != preferredBackendNames.endConst(); ++i) {
-			if (auto it = clench::ghal::g_registeredGHALBackends.find(*i);
-				it != clench::ghal::g_registeredGHALBackends.end()) {
-				GHALBackend *curBackend = it.value().get();
+			if (auto it = clench::ghal::g_registeredBackends.find(*i);
+				it != clench::ghal::g_registeredBackends.end()) {
+				Backend *curBackend = it.value().get();
 				deviceCreationQueue.at(deviceCreationQueueBackIndex++) = curBackend;
 				if (!pushedBackends.insert(std::move(curBackend)))
 					return nullptr;
 			}
 		}
 
-		for (auto i = g_registeredGHALBackends.begin(); i != g_registeredGHALBackends.end(); ++i) {
+		for (auto i = g_registeredBackends.begin(); i != g_registeredBackends.end(); ++i) {
 			if (!pushedBackends.contains(i.value().get())) {
 				deviceCreationQueue.at(deviceCreationQueueBackIndex++) = i.value().get();
 			}
 		}
 	} else {
 		size_t deviceCreationQueueBackIndex = 0;
-		for (auto i = g_registeredGHALBackends.begin(); i != g_registeredGHALBackends.end(); ++i) {
+		for (auto i = g_registeredBackends.begin(); i != g_registeredBackends.end(); ++i) {
 			deviceCreationQueue.at(deviceCreationQueueBackIndex++) = i.value().get();
 		}
 	}
