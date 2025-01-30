@@ -7,7 +7,7 @@ CLCACRI_API void GLACRIDevice::dealloc() {
 	peff::destroyAndRelease<GLACRIDevice>(selfAllocator.get(), this, sizeof(std::max_align_t));
 }
 
-CLCACRI_API GLACRIDevice *GLACRIDevice::alloc(ghal::GHALDevice *associatedDevice, peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator) {
+CLCACRI_API GLACRIDevice *GLACRIDevice::alloc(ghal::Device *associatedDevice, peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator) {
 	std::unique_ptr<GLACRIDevice, peff::RcObjectUniquePtrDeleter> ptr(
 		peff::allocAndConstruct<GLACRIDevice>(selfAllocator, sizeof(std::max_align_t), associatedDevice, selfAllocator, resourceAllocator));
 	if (!ptr) {

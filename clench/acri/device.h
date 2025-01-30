@@ -15,10 +15,10 @@ namespace clench {
 		class ACRIDevice {
 		public:
 			peff::RcObjectPtr<peff::Alloc> selfAllocator, resourceAllocator;
-			ghal::GHALDevice *associatedDevice;
+			ghal::Device *associatedDevice;
 			peff::Set<ACRIResource *> createdResources;
 
-			CLCACRI_API ACRIDevice(ghal::GHALDevice *associatedDevice, peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator);
+			CLCACRI_API ACRIDevice(ghal::Device *associatedDevice, peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator);
 			CLCACRI_API ~ACRIDevice();
 
 			virtual void dealloc() = 0;
@@ -60,9 +60,9 @@ namespace clench {
 		class ACRIDeviceContext : public ACRIResource {
 		public:
 			peff::RcObjectPtr<ACRIDevice> acriDevice;
-			peff::RcObjectPtr<ghal::GHALDeviceContext> ghalDeviceContext;
+			peff::RcObjectPtr<ghal::DeviceContext> ghalDeviceContext;
 
-			CLCACRI_API ACRIDeviceContext(ACRIDevice *acriDevice, ghal::GHALDeviceContext *ghalDeviceContext);
+			CLCACRI_API ACRIDeviceContext(ACRIDevice *acriDevice, ghal::DeviceContext *ghalDeviceContext);
 			CLCACRI_API ~ACRIDeviceContext();
 
 			CLCACRI_API virtual void beginDraw();

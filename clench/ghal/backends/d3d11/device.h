@@ -8,7 +8,7 @@
 
 namespace clench {
 	namespace ghal {
-		class D3D11GHALDevice : public GHALDevice {
+		class D3D11Device : public Device {
 		public:
 			D3D11GHALBackend *backend;
 
@@ -23,16 +23,16 @@ namespace clench {
 			ComPtr<IDXGIFactory1> dxgiFactory1;
 			ComPtr<IDXGIFactory2> dxgiFactory2;
 
-			CLENCH_NO_COPY_MOVE_METHODS(D3D11GHALDevice);
+			CLENCH_NO_COPY_MOVE_METHODS(D3D11Device);
 
-			CLCGHAL_API D3D11GHALDevice(
+			CLCGHAL_API D3D11Device(
 				D3D11GHALBackend *backend,
 				ID3D11Device *d3dDevice,
 				ID3D11DeviceContext *d3dImmediateDeviceContext,
 				IDXGIDevice *dxgiDevice,
 				IDXGIAdapter *dxgiAdapter,
 				IDXGIFactory1 *dxgiFactory1);
-			CLCGHAL_API D3D11GHALDevice(
+			CLCGHAL_API D3D11Device(
 				D3D11GHALBackend *backend,
 				ID3D11Device *d3dDevice,
 				ID3D11Device1 *d3dDevice1,
@@ -42,11 +42,11 @@ namespace clench {
 				IDXGIAdapter *dxgiAdapter,
 				IDXGIFactory1 *dxgiFactory1,
 				IDXGIFactory2 *dxgiFactory2);
-			CLCGHAL_API virtual ~D3D11GHALDevice();
+			CLCGHAL_API virtual ~D3D11Device();
 
 			CLCGHAL_API virtual GHALBackend *getBackend() override;
 
-			CLCGHAL_API virtual GHALDeviceContext *createDeviceContextForWindow(
+			CLCGHAL_API virtual DeviceContext *createDeviceContextForWindow(
 				clench::wsal::NativeWindow *window) override;
 
 			CLCGHAL_API virtual VertexLayout *createVertexLayout(
@@ -73,9 +73,9 @@ namespace clench {
 			}
 		};
 
-		class D3D11GHALDeviceContext : public GHALDeviceContext {
+		class D3D11DeviceContext : public DeviceContext {
 		public:
-			D3D11GHALDevice *device;
+			D3D11Device *device;
 
 			ComPtr<IDXGISwapChain> dxgiSwapChain;
 			ComPtr<IDXGISwapChain1> dxgiSwapChain1;
@@ -96,19 +96,19 @@ namespace clench {
 				viewportMinDepth = 0.0f, viewportMaxDepth = 0.0f,
 				windowWidth = 0, windowHeight = 0;
 
-			CLENCH_NO_COPY_MOVE_METHODS(D3D11GHALDeviceContext);
+			CLENCH_NO_COPY_MOVE_METHODS(D3D11DeviceContext);
 
-			CLCGHAL_API D3D11GHALDeviceContext(
-				D3D11GHALDevice *device,
+			CLCGHAL_API D3D11DeviceContext(
+				D3D11Device *device,
 				ID3D11DeviceContext *deviceContext,
 				IDXGISwapChain *swapChain);
-			CLCGHAL_API D3D11GHALDeviceContext(
-				D3D11GHALDevice *device,
+			CLCGHAL_API D3D11DeviceContext(
+				D3D11Device *device,
 				ID3D11DeviceContext *deviceContext,
 				ID3D11DeviceContext1 *deviceContext1,
 				IDXGISwapChain *swapChain,
 				IDXGISwapChain1 *swapChain1);
-			CLCGHAL_API virtual ~D3D11GHALDeviceContext();
+			CLCGHAL_API virtual ~D3D11DeviceContext();
 
 			CLCGHAL_API virtual RenderTargetView *getDefaultRenderTargetView() override;
 

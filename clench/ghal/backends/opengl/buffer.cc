@@ -4,7 +4,7 @@ using namespace clench;
 using namespace clench::ghal;
 
 CLCGHAL_API GLBuffer::GLBuffer(
-	GHALDevice *ownerDevice,
+	Device *ownerDevice,
 	const BufferDesc &bufferDesc,
 	GLuint bufferHandle)
 	: Buffer(ownerDevice, bufferDesc),
@@ -20,7 +20,7 @@ CLCGHAL_API void GLBuffer::dealloc() {
 }
 
 CLCGHAL_API GLBuffer *GLBuffer::alloc(
-	GHALDevice *ownerDevice,
+	Device *ownerDevice,
 	const BufferDesc &bufferDesc,
 	GLuint bufferHandle) {
 	return (GLBuffer *)

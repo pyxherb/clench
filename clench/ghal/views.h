@@ -16,14 +16,14 @@ namespace clench {
 			Cube
 		};
 
-		class RenderTargetView : public GHALDeviceResource {
+		class RenderTargetView : public DeviceResource {
 		public:
 			CLENCH_NO_COPY_MOVE_METHODS(RenderTargetView);
 
 			RenderTargetViewType renderTargetViewType;
 
 			CLCGHAL_API RenderTargetView(
-				GHALDevice *ownerDevice,
+				Device *ownerDevice,
 				RenderTargetViewType renderTargetType);
 			CLCGHAL_API virtual ~RenderTargetView();
 		};
@@ -37,14 +37,14 @@ namespace clench {
 			Texture3DArray
 		};
 
-		class DepthStencilView : public GHALDeviceResource {
+		class DepthStencilView : public DeviceResource {
 		public:
 			CLENCH_NO_COPY_MOVE_METHODS(DepthStencilView);
 
 			DepthStencilViewType depthStencilViewType;
 
 			CLCGHAL_API DepthStencilView(
-				GHALDevice *ownerDevice,
+				Device *ownerDevice,
 				DepthStencilViewType depthStencilViewType);
 			CLCGHAL_API virtual ~DepthStencilView();
 		};

@@ -4,7 +4,7 @@ using namespace clench;
 using namespace clench::ghal;
 
 CLCGHAL_API D3D11Buffer::D3D11Buffer(
-	GHALDevice *ownerDevice,
+	Device *ownerDevice,
 	const BufferDesc &bufferDesc,
 	ID3D11Buffer *buffer)
 	: Buffer(ownerDevice, bufferDesc),

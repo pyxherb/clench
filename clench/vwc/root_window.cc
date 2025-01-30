@@ -6,7 +6,7 @@ using namespace clench::vwc;
 CLCVWC_API VWCRootWindow::VWCRootWindow(
 	peff::Alloc *selfAllocator,
 	wsal::Window *parent,
-	ghal::GHALDevice *ghalDevice)
+	ghal::Device *ghalDevice)
 	: VirtualWindow(
 		  selfAllocator,
 		  0,

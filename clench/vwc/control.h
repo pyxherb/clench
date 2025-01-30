@@ -7,8 +7,8 @@ namespace clench {
 	namespace vwc {
 		class Control : public wsal::VirtualWindow {
 		public:
-			ghal::GHALDevice *ghalDevice;
-			ghal::GHALDeviceContext *ghalDeviceContext;
+			ghal::Device *ghalDevice;
+			ghal::DeviceContext *ghalDeviceContext;
 			ghal::TextureFormat renderBufferFormat;
 
 			std::unique_ptr<wsal::LayoutAttributes> layoutAttributes;
@@ -16,8 +16,8 @@ namespace clench {
 			CLCVWC_API Control(
 				peff::Alloc *selfAllocator,
 				wsal::CreateWindowFlags createWindowFlags,
-				ghal::GHALDevice *ghalDevice,
-				ghal::GHALDeviceContext *ghalDeviceContext,
+				ghal::Device *ghalDevice,
+				ghal::DeviceContext *ghalDeviceContext,
 				ghal::TextureFormat renderBufferFormat,
 				Window *parent,
 				int x,

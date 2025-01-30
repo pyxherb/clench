@@ -6,8 +6,8 @@ using namespace clench::vwc;
 CLCVWC_API Control::Control(
 	peff::Alloc *selfAllocator,
 	wsal::CreateWindowFlags createWindowFlags,
-	ghal::GHALDevice *ghalDevice,
-	ghal::GHALDeviceContext *ghalDeviceContext,
+	ghal::Device *ghalDevice,
+	ghal::DeviceContext *ghalDeviceContext,
 	ghal::TextureFormat renderBufferFormat,
 	wsal::Window *parent,
 	int x,

@@ -4,7 +4,7 @@ using namespace clench;
 using namespace clench::ghal;
 
 CLCGHAL_API GLVertexLayout::GLVertexLayout(
-	GHALDevice *ownerDevice,
+	Device *ownerDevice,
 	GLuint vertexArrayHandle)
 	: VertexLayout(ownerDevice),
 	  vertexArrayHandle(vertexArrayHandle) {
@@ -19,7 +19,7 @@ CLCGHAL_API void GLVertexLayout::dealloc() {
 }
 
 CLCGHAL_API GLVertexLayout *GLVertexLayout::alloc(
-	GHALDevice *ownerDevice,
+	Device *ownerDevice,
 	GLuint vertexArrayHandle) {
 	return (GLVertexLayout *)
 		peff::allocAndConstruct<GLVertexLayout>(

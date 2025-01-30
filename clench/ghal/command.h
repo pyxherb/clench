@@ -7,11 +7,11 @@
 
 namespace clench {
 	namespace ghal {
-		class GHALCommandList : public GHALDeviceResource {
+		class GHALCommandList : public DeviceResource {
 		public:
 			CLENCH_NO_COPY_MOVE_METHODS(GHALCommandList);
 
-			CLCGHAL_API GHALCommandList(GHALDevice *ownerDevice);
+			CLCGHAL_API GHALCommandList(Device *ownerDevice);
 			CLCGHAL_API virtual ~GHALCommandList();
 		};
 	}

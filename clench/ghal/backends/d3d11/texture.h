@@ -13,7 +13,7 @@ namespace clench {
 			ComPtr<ID3D11Texture1D> texture1D;
 
 			CLCGHAL_API D3D11Texture1D(
-				GHALDevice *ownerDevice,
+				Device *ownerDevice,
 				const Texture1DDesc &textureDesc,
 				ID3D11Texture1D *texture1D
 				);
@@ -27,7 +27,7 @@ namespace clench {
 			ComPtr<ID3D11Texture2D> texture2D;
 
 			CLCGHAL_API D3D11Texture2D(
-				GHALDevice *ownerDevice,
+				Device *ownerDevice,
 				const Texture2DDesc &textureDesc,
 				ID3D11Texture2D *texture2D);
 			CLCGHAL_API virtual ~D3D11Texture2D();
@@ -40,7 +40,7 @@ namespace clench {
 			ComPtr<ID3D11Texture3D> texture3D;
 
 			CLCGHAL_API D3D11Texture3D(
-				GHALDevice *ownerDevice,
+				Device *ownerDevice,
 				const Texture3DDesc &textureDesc,
 				ID3D11Texture3D *texture3D);
 			CLCGHAL_API virtual ~D3D11Texture3D();

@@ -4,7 +4,7 @@ using namespace clench;
 using namespace clench::ghal;
 
 CLCGHAL_API D3D11RenderTargetView::D3D11RenderTargetView(
-	GHALDevice *ownerDevice,
+	Device *ownerDevice,
 	RenderTargetViewType renderTargetViewType,
 	ID3D11RenderTargetView *renderTargetView)
 	: RenderTargetView(ownerDevice, renderTargetViewType),
@@ -15,7 +15,7 @@ CLCGHAL_API D3D11RenderTargetView::~D3D11RenderTargetView() {
 }
 
 CLCGHAL_API D3D11DepthStencilView::D3D11DepthStencilView(
-	GHALDevice *ownerDevice,
+	Device *ownerDevice,
 	DepthStencilViewType depthStencilViewType,
 	ID3D11DepthStencilView *depthStencilView)
 	: DepthStencilView(ownerDevice, depthStencilViewType),

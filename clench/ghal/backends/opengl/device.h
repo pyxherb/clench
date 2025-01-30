@@ -10,44 +10,50 @@
 #include <optional>
 #include <mutex>
 
-#define CLENCH_GHAL_GL_RETURN_IF_OOM() if(glGetError() == GL_OUT_OF_MEMORY) return clench::base::OutOfMemoryException::alloc()
-
 namespace clench {
 	namespace ghal {
-		class GLGHALDeviceContext;
+		class GLDeviceContext;
 
 		struct NativeGLContext {
 #ifdef _WIN32
-			HGLRC wglContext;
-			HDC hdc;
+			HGLRC wglContext = NULL;
+			HWND hWnd = NULL;
+			HDC hdc = NULL;
 #else
-			EGLDisplay eglDisplay;
-			EGLSurface eglReadSurface;
-			EGLSurface eglDrawSurface;
-			EGLContext eglContext;
+			EGLDisplay eglDisplay = EGL_NO_DISPLAY;
+			EGLSurface eglReadSurface = EGL_NO_SURFACE;
+			EGLSurface eglDrawSurface = EGL_NO_SURFACE;
+			EGLContext eglContext = EGL_NO_CONTEXT;
+			EGLConfig eglConfig = NULL;
+			EGLNativeWindowType eglWindow;
 #endif
+
+			CLCGHAL_API static NativeGLContext saveContextCurrent();
+			CLCGHAL_API static bool restoreContextCurrent(const NativeGLContext &context);
+			CLCGHAL_API void destroySurface();
+			CLCGHAL_API void destroy();
 		};
 
-		class GLGHALDevice : public GHALDevice {
+		class GLDevice : public Device {
 		public:
 			GLGHALBackend *backend;
 			/// @brief Default context for some internal operations. DO NOT try to draw with it!
 			/// @note DO NOT forget to create one for the device after the creation!
-			peff::RcObjectPtr<GLGHALDeviceContext> defaultContext;
+			peff::RcObjectPtr<GLDeviceContext> defaultContext;
 
 			std::mutex texture1dLock;
 			std::mutex texture2dLock;
 			std::mutex texture3dLock;
 
-			CLENCH_NO_COPY_MOVE_METHODS(GLGHALDevice);
+			CLENCH_NO_COPY_MOVE_METHODS(GLDevice);
 
-			CLCGHAL_API GLGHALDevice(peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator, GLGHALBackend *backend);
-			CLCGHAL_API virtual ~GLGHALDevice();
+			CLCGHAL_API GLDevice(peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator, GLGHALBackend *backend);
+			CLCGHAL_API virtual ~GLDevice();
 
 			CLCGHAL_API virtual GHALBackend *getBackend() override;
 
 			CLCGHAL_API virtual base::ExceptionPtr createDeviceContextForWindow(
-				clench::wsal::Window *window, GHALDeviceContext *&deviceContextOut) override;
+				clench::wsal::Window *window, DeviceContext *&deviceContextOut) override;
 
 			CLCGHAL_API virtual base::ExceptionPtr createVertexLayout(
 				VertexLayoutElementDesc *elementDescs,
@@ -73,24 +79,13 @@ namespace clench {
 
 			CLCGHAL_API virtual void dealloc() override;
 
-			CLCGHAL_API static GLGHALDevice *alloc(peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator, GLGHALBackend *backend);
+			CLCGHAL_API static GLDevice *alloc(peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator, GLGHALBackend *backend);
 		};
 
-		class GLGHALDeviceContext : public GHALDeviceContext {
+		class GLDeviceContext : public DeviceContext {
 		public:
 			peff::RcObjectPtr<GLRenderTargetView> defaultRenderTargetView;
-
-#ifdef _WIN32
-			HGLRC wglContext = NULL;
-			HWND hWnd = NULL;
-			HDC hdc = NULL;
-#else
-			EGLDisplay eglDisplay = EGL_NO_DISPLAY;
-			EGLSurface eglSurface = EGL_NO_SURFACE;
-			EGLContext eglContext = EGL_NO_CONTEXT;
-			EGLConfig eglConfig = nullptr;
-			EGLNativeWindowType eglWindow;
-#endif
+			NativeGLContext nativeGLContext;
 
 			std::optional<std::thread::id> boundThreadId;
 
@@ -105,11 +100,11 @@ namespace clench {
 				viewportMinDepth = 0.0f, viewportMaxDepth = 0.0f,
 				windowWidth = 0, windowHeight = 0;
 
-			CLENCH_NO_COPY_MOVE_METHODS(GLGHALDeviceContext);
+			CLENCH_NO_COPY_MOVE_METHODS(GLDeviceContext);
 
-			CLCGHAL_API GLGHALDeviceContext(
-				GLGHALDevice *device);
-			CLCGHAL_API virtual ~GLGHALDeviceContext();
+			CLCGHAL_API GLDeviceContext(
+				GLDevice *device);
+			CLCGHAL_API virtual ~GLDeviceContext();
 
 			CLCGHAL_API virtual RenderTargetView *getDefaultRenderTargetView() override;
 
@@ -163,17 +158,12 @@ namespace clench {
 
 			CLCGHAL_API virtual void present() override;
 
-			CLCGHAL_API static NativeGLContext saveContextCurrent();
-			CLCGHAL_API static bool restoreContextCurrent(const NativeGLContext &context);
-			CLCGHAL_API void saveCurrentGLContext();
-			CLCGHAL_API void restoreCurrentGLContext();
-			CLCGHAL_API bool makeContextCurrent();
-
 			CLCGHAL_API virtual void dealloc() override;
 
-			CLCGHAL_API static GLGHALDeviceContext *alloc(GLGHALDevice *device);
+			CLCGHAL_API static GLDeviceContext *alloc(GLDevice *device);
 		};
 
+		CLCGHAL_API base::ExceptionPtr glErrorToExceptionPtr(GLenum error);
 		CLCGHAL_API GLenum toGLVertexDataType(const VertexDataType &vertexDataType, size_t &sizeOut);
 		CLCGHAL_API GLenum toGLTextureFormat(TextureFormat format, GLenum &typeOut);
 	}

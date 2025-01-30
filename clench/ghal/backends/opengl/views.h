@@ -13,7 +13,7 @@ namespace clench {
 			CLENCH_NO_COPY_MOVE_METHODS(GLRenderTargetView);
 
 			CLCGHAL_API GLRenderTargetView(
-				GHALDevice *ownerDevice,
+				Device *ownerDevice,
 				RenderTargetViewType type,
 				GLuint frameBufferHandle);
 			CLCGHAL_API virtual ~GLRenderTargetView();
@@ -21,7 +21,7 @@ namespace clench {
 			CLCGHAL_API virtual void dealloc() override;
 
 			CLCGHAL_API static GLRenderTargetView *alloc(
-				GHALDevice *ownerDevice,
+				Device *ownerDevice,
 				RenderTargetViewType type,
 				GLuint frameBufferHandle
 			);
@@ -36,7 +36,7 @@ namespace clench {
 			CLENCH_NO_COPY_MOVE_METHODS(GLDepthStencilView);
 
 			CLCGHAL_API GLDepthStencilView(
-				GHALDevice *ownerDevice,
+				Device *ownerDevice,
 				DepthStencilViewType depthStencilViewType,
 				GLuint frameBufferHandle,
 				GLuint depthBufferHandle,
@@ -46,7 +46,7 @@ namespace clench {
 			CLCGHAL_API virtual void dealloc() override;
 
 			CLCGHAL_API static GLDepthStencilView *alloc(
-				GHALDevice *ownerDevice,
+				Device *ownerDevice,
 				DepthStencilViewType depthStencilViewType,
 				GLuint frameBufferHandle,
 				GLuint depthBufferHandle,

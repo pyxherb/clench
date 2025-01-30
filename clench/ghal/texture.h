@@ -56,12 +56,12 @@ namespace clench {
 			TEXTURE_BINDING_RENDER_TARGET = 0x01,
 			TEXTURE_BINDING_SHADER_RESOURCE = 0x02;
 
-		class Texture : public GHALDeviceResource {
+		class Texture : public DeviceResource {
 		public:
 			TextureType textureType;
 
 			CLCGHAL_API Texture(
-				GHALDevice *ownedDevice,
+				Device *ownedDevice,
 				TextureType textureType);
 			CLCGHAL_API virtual ~Texture();
 		};
@@ -78,7 +78,7 @@ namespace clench {
 			Texture1DDesc textureDesc;
 
 			CLCGHAL_API Texture1D(
-				GHALDevice *ownedDevice,
+				Device *ownedDevice,
 				const Texture1DDesc &textureDesc);
 			CLCGHAL_API virtual ~Texture1D();
 		};
@@ -95,7 +95,7 @@ namespace clench {
 			Texture2DDesc textureDesc;
 
 			CLCGHAL_API Texture2D(
-				GHALDevice *ownedDevice,
+				Device *ownedDevice,
 				const Texture2DDesc &textureDesc);
 			CLCGHAL_API virtual ~Texture2D();
 		};
@@ -112,7 +112,7 @@ namespace clench {
 			Texture3DDesc textureDesc;
 
 			CLCGHAL_API Texture3D(
-				GHALDevice *ownedDevice,
+				Device *ownedDevice,
 				const Texture3DDesc &textureDesc);
 			CLCGHAL_API virtual ~Texture3D();
 		};

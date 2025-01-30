@@ -127,7 +127,7 @@ CLCGHAL_API bool clench::ghal::deinitRegisteredGHALBackend(const char *id) {
 	return false;
 }
 
-CLCGHAL_API base::ExceptionPtr clench::ghal::createGHALDevice(GHALDevice *&ghalDeviceOut, const peff::List<std::string_view> &preferredBackendNames) {
+CLCGHAL_API base::ExceptionPtr clench::ghal::createDevice(Device *&ghalDeviceOut, const peff::List<std::string_view> &preferredBackendNames) {
 	peff::DynArray<GHALBackend *> deviceCreationQueue;
 	if (!deviceCreationQueue.resize(g_registeredGHALBackends.size()))
 		return nullptr;
@@ -157,7 +157,7 @@ CLCGHAL_API base::ExceptionPtr clench::ghal::createGHALDevice(GHALDevice *&ghalD
 		}
 	}
 
-	GHALDevice *device;
+	Device *device;
 	for (size_t i = 0; i < deviceCreationQueue.size(); ++i) {
 		auto curBackend = deviceCreationQueue.at(i);
 		if (!curBackend->isInited) {

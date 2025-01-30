@@ -4,7 +4,7 @@ using namespace clench;
 using namespace clench::ghal;
 
 CLCGHAL_API GLRenderTargetView::GLRenderTargetView(
-	GHALDevice *ownerDevice,
+	Device *ownerDevice,
 	RenderTargetViewType type,
 	GLuint frameBufferHandle)
 	: RenderTargetView(ownerDevice, type),
@@ -19,7 +19,7 @@ CLCGHAL_API void GLRenderTargetView::dealloc() {
 }
 
 CLCGHAL_API GLRenderTargetView *GLRenderTargetView::alloc(
-	GHALDevice *ownerDevice,
+	Device *ownerDevice,
 	RenderTargetViewType type,
 	GLuint frameBufferHandle) {
 	return peff::allocAndConstruct<GLRenderTargetView>(
@@ -28,7 +28,7 @@ CLCGHAL_API GLRenderTargetView *GLRenderTargetView::alloc(
 }
 
 CLCGHAL_API GLDepthStencilView::GLDepthStencilView(
-	GHALDevice *ownerDevice,
+	Device *ownerDevice,
 	DepthStencilViewType type,
 	GLuint frameBufferHandle,
 	GLuint depthBufferHandle,
@@ -47,7 +47,7 @@ CLCGHAL_API void GLDepthStencilView::dealloc() {
 }
 
 CLCGHAL_API GLDepthStencilView *GLDepthStencilView::alloc(
-	GHALDevice *ownerDevice,
+	Device *ownerDevice,
 	DepthStencilViewType type,
 	GLuint frameBufferHandle,
 	GLuint depthBufferHandle,

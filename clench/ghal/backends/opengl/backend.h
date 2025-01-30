@@ -28,7 +28,7 @@ namespace clench {
 
 			CLCGHAL_API virtual void dealloc() override;
 
-			CLCGHAL_API virtual base::ExceptionPtr createDevice(GHALDevice *&ghalDeviceOut) override;
+			CLCGHAL_API virtual base::ExceptionPtr createDevice(Device *&ghalDeviceOut) override;
 
 			CLCGHAL_API static GLGHALBackend *alloc(peff::Alloc *selfAllocator);
 		};
@@ -42,7 +42,7 @@ namespace clench {
 
 		CLCGHAL_API void *_loadGlProc(const char *name);
 
-		class GLGHALDevice;
+		class GLDevice;
 	}
 }
 

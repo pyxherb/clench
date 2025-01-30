@@ -7,16 +7,16 @@
 
 namespace clench {
 	namespace ghal {
-		class GHALDevice;
+		class Device;
 
-		class GHALDeviceResource : public peff::RcObject {
+		class DeviceResource : public peff::RcObject {
 		public:
-			GHALDevice *ownerDevice;
+			Device *ownerDevice;
 
-			CLENCH_NO_COPY_MOVE_METHODS(GHALDeviceResource);
+			CLENCH_NO_COPY_MOVE_METHODS(DeviceResource);
 
-			CLCGHAL_API GHALDeviceResource(GHALDevice *ownerDevice);
-			CLCGHAL_API virtual ~GHALDeviceResource();
+			CLCGHAL_API DeviceResource(Device *ownerDevice);
+			CLCGHAL_API virtual ~DeviceResource();
 
 			virtual void dealloc() = 0;
 

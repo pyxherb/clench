@@ -16,26 +16,26 @@
 using namespace clench;
 using namespace clench::ghal;
 
-CLCGHAL_API GLGHALDevice::GLGHALDevice(peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator, GLGHALBackend *backend)
-	: GHALDevice(selfAllocator, resourceAllocator),
+CLCGHAL_API GLDevice::GLDevice(peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator, GLGHALBackend *backend)
+	: Device(selfAllocator, resourceAllocator),
 	  backend(backend) {
 }
 
-CLCGHAL_API GLGHALDevice::~GLGHALDevice() {
+CLCGHAL_API GLDevice::~GLDevice() {
 }
 
-CLCGHAL_API GHALBackend *GLGHALDevice::getBackend() {
+CLCGHAL_API GHALBackend *GLDevice::getBackend() {
 	return backend;
 }
 
-CLCGHAL_API base::ExceptionPtr GLGHALDevice::createDeviceContextForWindow(clench::wsal::Window *window, GHALDeviceContext *&deviceContextOut) {
+CLCGHAL_API base::ExceptionPtr GLDevice::createDeviceContextForWindow(clench::wsal::Window *window, DeviceContext *&deviceContextOut) {
 	int width, height;
 	window->getSize(width, height);
 
 	std::unique_ptr<
-		GLGHALDeviceContext,
+		GLDeviceContext,
 		peff::RcObjectUniquePtrDeleter>
-		deviceContext(GLGHALDeviceContext::alloc(this));
+		deviceContext(GLDeviceContext::alloc(this));
 	if (!deviceContext)
 		return nullptr;
 #ifdef _WIN32
@@ -59,9 +59,9 @@ CLCGHAL_API base::ExceptionPtr GLGHALDevice::createDeviceContextForWindow(clench
 	if (!(deviceContext->wglContext = wglCreateContext(deviceContext->hdc)))
 		throw std::runtime_error("Error creating WGL context");
 
-	NativeGLContext prevContext = GLGHALDeviceContext::saveContextCurrent();
+	NativeGLContext prevContext = GLDeviceContext::saveContextCurrent();
 	peff::ScopeGuard restoreContextGuard([&prevContext]() noexcept {
-		GLGHALDeviceContext::restoreContextCurrent(prevContext);
+		GLDeviceContext::restoreContextCurrent(prevContext);
 	});
 	deviceContext->makeContextCurrent();
 
@@ -84,26 +84,26 @@ CLCGHAL_API base::ExceptionPtr GLGHALDevice::createDeviceContextForWindow(clench
 
 	EGLint eglMinor, eglMajor;
 
-	deviceContext->eglDisplay = eglGetDisplay((EGLNativeDisplayType)((wsal::X11Window *)window)->nativeHandle.display);
-	if (auto it = g_initializedEglDisplays.find(deviceContext->eglDisplay); it != g_initializedEglDisplays.end()) {
+	deviceContext->nativeGLContext.eglDisplay = eglGetDisplay((EGLNativeDisplayType)((wsal::X11Window *)window)->nativeHandle.display);
+	if (auto it = g_initializedEglDisplays.find(deviceContext->nativeGLContext.eglDisplay); it != g_initializedEglDisplays.end()) {
 		++it.value();
 	} else {
-		EGLDisplay eglDisplay = deviceContext->eglDisplay;
+		EGLDisplay eglDisplay = deviceContext->nativeGLContext.eglDisplay;
 		eglInitialize(eglDisplay, &eglMajor, &eglMinor);
 		g_initializedEglDisplays.insert(std::move(eglDisplay), 1);
 	}
 
-	deviceContext->eglWindow = (EGLNativeWindowType)((wsal::X11Window *)window)->nativeHandle.window;
+	deviceContext->nativeGLContext.eglWindow = (EGLNativeWindowType)((wsal::X11Window *)window)->nativeHandle.window;
 
 	EGLint nConfigs;
-	eglChooseConfig(deviceContext->eglDisplay, configAttribs, &deviceContext->eglConfig, 1, &nConfigs);
+	eglChooseConfig(deviceContext->nativeGLContext.eglDisplay, configAttribs, &deviceContext->nativeGLContext.eglConfig, 1, &nConfigs);
 
-	deviceContext->eglSurface = eglCreateWindowSurface(
-		deviceContext->eglDisplay,
-		deviceContext->eglConfig,
-		deviceContext->eglWindow,
-		nullptr);
-	if (deviceContext->eglSurface == EGL_NO_SURFACE)
+	if ((deviceContext->nativeGLContext.eglReadSurface =
+				(deviceContext->nativeGLContext.eglDrawSurface = eglCreateWindowSurface(
+					 deviceContext->nativeGLContext.eglDisplay,
+					 deviceContext->nativeGLContext.eglConfig,
+					 deviceContext->nativeGLContext.eglWindow,
+					 nullptr))) == EGL_NO_SURFACE)
 		return base::wrapIfExceptAllocFailed(
 			ErrorCreatingDeviceContextException::alloc(
 				resourceAllocator.get(),
@@ -115,13 +115,13 @@ CLCGHAL_API base::ExceptionPtr GLGHALDevice::createDeviceContextForWindow(clench
 		EGL_CONTEXT_CLIENT_VERSION, 2,
 		EGL_NONE
 	};
-	deviceContext->eglContext = eglCreateContext(deviceContext->eglDisplay, deviceContext->eglConfig, EGL_NO_CONTEXT, contextAttribs);
+	deviceContext->nativeGLContext.eglContext = eglCreateContext(deviceContext->nativeGLContext.eglDisplay, deviceContext->nativeGLContext.eglConfig, EGL_NO_CONTEXT, contextAttribs);
 
-	NativeGLContext prevContext = GLGHALDeviceContext::saveContextCurrent();
+	NativeGLContext prevContext = NativeGLContext::saveContextCurrent();
 	peff::ScopeGuard restoreContextGuard([&prevContext]() noexcept {
-		GLGHALDeviceContext::restoreContextCurrent(prevContext);
+		NativeGLContext::restoreContextCurrent(prevContext);
 	});
-	deviceContext->makeContextCurrent();
+	NativeGLContext::restoreContextCurrent(deviceContext->nativeGLContext);
 
 	if (!g_glInitialized) {
 		int version = gladLoadGL((GLADloadfunc)_loadGlProc);
@@ -145,7 +145,7 @@ CLCGHAL_API base::ExceptionPtr GLGHALDevice::createDeviceContextForWindow(clench
 	return {};
 }
 
-CLCGHAL_API base::ExceptionPtr GLGHALDevice::createVertexLayout(
+CLCGHAL_API base::ExceptionPtr GLDevice::createVertexLayout(
 	VertexLayoutElementDesc *elementDescs,
 	size_t nElementDescs,
 	VertexShader *vertexShader,
@@ -153,7 +153,7 @@ CLCGHAL_API base::ExceptionPtr GLGHALDevice::createVertexLayout(
 	GLuint vao;
 	glGenVertexArrays(1, &vao);
 
-	CLENCH_GHAL_GL_RETURN_IF_OOM();
+	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
 
 	peff::ScopeGuard deleteVaoGuard([&vao]() noexcept {
 		glDeleteVertexArrays(1, &vao);
@@ -191,24 +191,24 @@ CLCGHAL_API base::ExceptionPtr GLGHALDevice::createVertexLayout(
 	return {};
 }
 
-CLCGHAL_API bool GLGHALDevice::isVertexDataTypeSupported(const VertexDataType &vertexDataType) {
+CLCGHAL_API bool GLDevice::isVertexDataTypeSupported(const VertexDataType &vertexDataType) {
 	return true;
 }
 
-CLCGHAL_API base::ExceptionPtr GLGHALDevice::createVertexShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo, VertexShader *&vertexShaderOut) {
+CLCGHAL_API base::ExceptionPtr GLDevice::createVertexShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo, VertexShader *&vertexShaderOut) {
 	GLuint shader = glCreateShader(GL_VERTEX_SHADER);
 	peff::ScopeGuard deleteShaderGuard([shader]() noexcept {
 		glDeleteShader(shader);
 	});
 
-	CLENCH_GHAL_GL_RETURN_IF_OOM();
+	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
 
 	glShaderSource(shader, 1, &source, (GLint *)&size);
-	CLENCH_GHAL_GL_RETURN_IF_OOM();
+	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
 
 	glCompileShader(shader);
 
-	CLENCH_GHAL_GL_RETURN_IF_OOM();
+	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
 
 	GLint success;
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
@@ -240,20 +240,20 @@ CLCGHAL_API base::ExceptionPtr GLGHALDevice::createVertexShader(const char *sour
 	return {};
 }
 
-CLCGHAL_API base::ExceptionPtr GLGHALDevice::createFragmentShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo, FragmentShader *&fragmentShaderOut) {
+CLCGHAL_API base::ExceptionPtr GLDevice::createFragmentShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo, FragmentShader *&fragmentShaderOut) {
 	GLuint shader = glCreateShader(GL_FRAGMENT_SHADER);
 	peff::ScopeGuard deleteShaderGuard([shader]() noexcept {
 		glDeleteShader(shader);
 	});
 
-	CLENCH_GHAL_GL_RETURN_IF_OOM();
+	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
 
 	glShaderSource(shader, 1, &source, (GLint *)&size);
-	CLENCH_GHAL_GL_RETURN_IF_OOM();
+	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
 
 	glCompileShader(shader);
 
-	CLENCH_GHAL_GL_RETURN_IF_OOM();
+	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
 
 	GLint success;
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
@@ -285,11 +285,11 @@ CLCGHAL_API base::ExceptionPtr GLGHALDevice::createFragmentShader(const char *so
 	return {};
 }
 
-CLCGHAL_API base::ExceptionPtr GLGHALDevice::createGeometryShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo, GeometryShader *&geometryShaderOut) {
+CLCGHAL_API base::ExceptionPtr GLDevice::createGeometryShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo, GeometryShader *&geometryShaderOut) {
 	return {};
 }
 
-CLCGHAL_API base::ExceptionPtr GLGHALDevice::linkShaderProgram(Shader **shaders, size_t nShaders, ShaderProgram *&shaderProgramOut) {
+CLCGHAL_API base::ExceptionPtr GLDevice::linkShaderProgram(Shader **shaders, size_t nShaders, ShaderProgram *&shaderProgramOut) {
 	GLVertexShader *vertexShader = nullptr;
 	GLFragmentShader *fragmentShader = nullptr;
 
@@ -331,17 +331,17 @@ CLCGHAL_API base::ExceptionPtr GLGHALDevice::linkShaderProgram(Shader **shaders,
 		glDeleteProgram(program);
 	});
 
-	CLENCH_GHAL_GL_RETURN_IF_OOM();
+	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
 
 	glAttachShader(program, vertexShader->shaderHandle);
 	glAttachShader(program, fragmentShader->shaderHandle);
 
-	CLENCH_GHAL_GL_RETURN_IF_OOM();
+	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
 
 	GLint success;
 	glLinkProgram(program);
 
-	CLENCH_GHAL_GL_RETURN_IF_OOM();
+	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
 
 	glGetProgramiv(program, GL_LINK_STATUS, &success);
 	if (!success) {
@@ -372,10 +372,10 @@ CLCGHAL_API base::ExceptionPtr GLGHALDevice::linkShaderProgram(Shader **shaders,
 	return {};
 }
 
-CLCGHAL_API base::ExceptionPtr GLGHALDevice::createBuffer(const BufferDesc &bufferDesc, const void *initialData, Buffer *&bufferOut) {
+CLCGHAL_API base::ExceptionPtr GLDevice::createBuffer(const BufferDesc &bufferDesc, const void *initialData, Buffer *&bufferOut) {
 	GLuint buffer;
 	glGenBuffers(1, &buffer);
-	CLENCH_GHAL_GL_RETURN_IF_OOM();
+	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
 
 	peff::ScopeGuard deleteBufferGuard([buffer]() noexcept {
 		glDeleteBuffers(1, &buffer);
@@ -389,11 +389,12 @@ CLCGHAL_API base::ExceptionPtr GLGHALDevice::createBuffer(const BufferDesc &buff
 
 	defaultContext->setData(glBuffer.get(), initialData);
 
+	glBuffer->incRef();
 	bufferOut = glBuffer.release();
 	return {};
 }
 
-CLCGHAL_API base::ExceptionPtr GLGHALDevice::createTexture1D(const char *data, size_t size, const Texture1DDesc &desc, Texture1D *&textureOut) {
+CLCGHAL_API base::ExceptionPtr GLDevice::createTexture1D(const char *data, size_t size, const Texture1DDesc &desc, Texture1D *&textureOut) {
 	GLenum glType;
 	GLenum glTextureFormat = toGLTextureFormat(desc.format, glType);
 	if (glTextureFormat == GL_INVALID_ENUM)
@@ -401,7 +402,7 @@ CLCGHAL_API base::ExceptionPtr GLGHALDevice::createTexture1D(const char *data, s
 
 	GLuint texture;
 	glGenTextures(1, &texture);
-	CLENCH_GHAL_GL_RETURN_IF_OOM();
+	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
 
 	peff::ScopeGuard deleteTextureGuard([texture]() noexcept {
 		glDeleteTextures(1, &texture);
@@ -431,7 +432,7 @@ CLCGHAL_API base::ExceptionPtr GLGHALDevice::createTexture1D(const char *data, s
 		glTextureFormat,
 		glType,
 		data);
-	CLENCH_GHAL_GL_RETURN_IF_OOM();
+	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
 
 	std::unique_ptr<GLTexture1D, peff::RcObjectUniquePtrDeleter> texture1d(GLTexture1D::alloc(this, desc, texture));
 	if (!texture1d)
@@ -444,7 +445,7 @@ CLCGHAL_API base::ExceptionPtr GLGHALDevice::createTexture1D(const char *data, s
 	return {};
 }
 
-CLCGHAL_API base::ExceptionPtr GLGHALDevice::createTexture2D(const char *data, size_t size, const Texture2DDesc &desc, Texture2D *&textureOut) {
+CLCGHAL_API base::ExceptionPtr GLDevice::createTexture2D(const char *data, size_t size, const Texture2DDesc &desc, Texture2D *&textureOut) {
 	GLenum glType;
 	GLenum glTextureFormat = toGLTextureFormat(desc.format, glType);
 	if (glTextureFormat == GL_INVALID_ENUM)
@@ -452,7 +453,7 @@ CLCGHAL_API base::ExceptionPtr GLGHALDevice::createTexture2D(const char *data, s
 
 	GLuint texture;
 	glGenTextures(1, &texture);
-	CLENCH_GHAL_GL_RETURN_IF_OOM();
+	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
 
 	peff::ScopeGuard deleteTextureGuard([texture]() noexcept {
 		glDeleteTextures(1, &texture);
@@ -483,7 +484,7 @@ CLCGHAL_API base::ExceptionPtr GLGHALDevice::createTexture2D(const char *data, s
 		glTextureFormat,
 		glType,
 		data);
-	CLENCH_GHAL_GL_RETURN_IF_OOM();
+	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
 
 	std::unique_ptr<GLTexture2D, peff::RcObjectUniquePtrDeleter> texture2d(GLTexture2D::alloc(this, desc, texture));
 	if (!texture2d)
@@ -496,7 +497,7 @@ CLCGHAL_API base::ExceptionPtr GLGHALDevice::createTexture2D(const char *data, s
 	return {};
 }
 
-CLCGHAL_API base::ExceptionPtr GLGHALDevice::createTexture3D(const char *data, size_t size, const Texture3DDesc &desc, Texture3D *&textureOut) {
+CLCGHAL_API base::ExceptionPtr GLDevice::createTexture3D(const char *data, size_t size, const Texture3DDesc &desc, Texture3D *&textureOut) {
 	GLenum glType;
 	GLenum glTextureFormat = toGLTextureFormat(desc.format, glType);
 	if (glTextureFormat == GL_INVALID_ENUM)
@@ -504,7 +505,7 @@ CLCGHAL_API base::ExceptionPtr GLGHALDevice::createTexture3D(const char *data, s
 
 	GLuint texture;
 	glGenTextures(1, &texture);
-	CLENCH_GHAL_GL_RETURN_IF_OOM();
+	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
 
 	peff::ScopeGuard deleteTextureGuard([texture]() noexcept {
 		glDeleteTextures(1, &texture);
@@ -536,7 +537,7 @@ CLCGHAL_API base::ExceptionPtr GLGHALDevice::createTexture3D(const char *data, s
 		glTextureFormat,
 		glType,
 		data);
-	CLENCH_GHAL_GL_RETURN_IF_OOM();
+	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
 
 	std::unique_ptr<GLTexture3D, peff::RcObjectUniquePtrDeleter> texture3d(GLTexture3D::alloc(this, desc, texture));
 	if (!texture3d)
@@ -549,91 +550,74 @@ CLCGHAL_API base::ExceptionPtr GLGHALDevice::createTexture3D(const char *data, s
 	return {};
 }
 
-CLCGHAL_API RenderTargetView *GLGHALDevice::createRenderTargetViewForTexture2D(Texture2D *texture) {
+CLCGHAL_API RenderTargetView *GLDevice::createRenderTargetViewForTexture2D(Texture2D *texture) {
 	return GLRenderTargetView::alloc(this, RenderTargetViewType::Texture2D, ((GLTexture2D *)texture)->textureHandle);
 }
 
-CLCGHAL_API void GLGHALDevice::dealloc() {
-	peff::destroyAndRelease<GLGHALDevice>(selfAllocator.get(), this, sizeof(std::max_align_t));
+CLCGHAL_API void GLDevice::dealloc() {
+	peff::destroyAndRelease<GLDevice>(selfAllocator.get(), this, sizeof(std::max_align_t));
 }
 
-CLCGHAL_API GLGHALDevice *GLGHALDevice::alloc(peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator, GLGHALBackend *backend) {
-	std::unique_ptr<GLGHALDevice, peff::DeallocableDeleter<GLGHALDevice>> ptr(
-		peff::allocAndConstruct<GLGHALDevice>(
+CLCGHAL_API GLDevice *GLDevice::alloc(peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator, GLGHALBackend *backend) {
+	std::unique_ptr<GLDevice, peff::DeallocableDeleter<GLDevice>> ptr(
+		peff::allocAndConstruct<GLDevice>(
 			selfAllocator, sizeof(std::max_align_t),
 			selfAllocator, resourceAllocator, backend));
 	if (!ptr)
 		return nullptr;
 
-	if (!(ptr->defaultContext = GLGHALDeviceContext::alloc(ptr.get())))
+	if (!(ptr->defaultContext = GLDeviceContext::alloc(ptr.get())))
 		return nullptr;
 
-	return (GLGHALDevice *)ptr.release();
+	return (GLDevice *)ptr.release();
 }
 
-CLCGHAL_API GLGHALDeviceContext::GLGHALDeviceContext(
-	GLGHALDevice *device)
-	: GHALDeviceContext(device) {
+CLCGHAL_API GLDeviceContext::GLDeviceContext(
+	GLDevice *device)
+	: DeviceContext(device) {
 }
 
-CLCGHAL_API GLGHALDeviceContext::~GLGHALDeviceContext() {
-#if _WIN32
-	if (wglContext)
-		wglDeleteContext(wglContext);
-	if (hdc)
-		ReleaseDC(hWnd, hdc);
-#else
-	if (eglContext != EGL_NO_CONTEXT) {
-		eglDestroyContext(eglDisplay, eglContext);
-	}
-
-	if (eglSurface != EGL_NO_SURFACE) {
-		eglDestroySurface(eglDisplay, eglSurface);
-	}
-
-	if (eglDisplay != EGL_NO_DISPLAY) {
-		if (auto it = g_initializedEglDisplays.find(eglDisplay); it != g_initializedEglDisplays.end()) {
-			if (!--it.value()) {
-				eglTerminate(eglDisplay);
-				g_initializedEglDisplays.remove(it);
-			}
-		} else {
-			eglTerminate(eglDisplay);
-		}
-	}
-#endif
+CLCGHAL_API GLDeviceContext::~GLDeviceContext() {
+	nativeGLContext.destroy();
 }
 
-CLCGHAL_API RenderTargetView *GLGHALDeviceContext::getDefaultRenderTargetView() {
+CLCGHAL_API RenderTargetView *GLDeviceContext::getDefaultRenderTargetView() {
 	return defaultRenderTargetView.get();
 }
 
-CLCGHAL_API void GLGHALDeviceContext::onResize(int width, int height) {
+CLCGHAL_API void GLDeviceContext::onResize(int width, int height) {
+	NativeGLContext prevContext = NativeGLContext::saveContextCurrent();
+	peff::ScopeGuard restoreContextGuard([&prevContext]() noexcept {
+		NativeGLContext::restoreContextCurrent(prevContext);
+	});
+
 #ifdef _WIN32
 #else
-	saveCurrentGLContext();
-
 	windowWidth = width;
 	windowHeight = height;
 
-	if (eglSurface != EGL_NO_SURFACE)
-		eglDestroySurface(eglDisplay, eglSurface);
+	nativeGLContext.destroySurface();
 
-	eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, eglWindow, nullptr);
-	if (eglSurface == EGL_NO_SURFACE)
+	if ((nativeGLContext.eglReadSurface =
+				(nativeGLContext.eglDrawSurface =
+						eglCreateWindowSurface(nativeGLContext.eglDisplay,
+							nativeGLContext.eglConfig,
+							nativeGLContext.eglWindow,
+							nullptr))) == EGL_NO_SURFACE)
 		throw std::runtime_error("Error creating EGL surface");
-
-	restoreCurrentGLContext();
 #endif
 }
 
-CLCGHAL_API void GLGHALDeviceContext::clearRenderTargetView(
+CLCGHAL_API void GLDeviceContext::clearRenderTargetView(
 	RenderTargetView *renderTargetView,
 	float r,
 	float g,
 	float b,
 	float a) {
-	saveCurrentGLContext();
+	NativeGLContext prevContext = NativeGLContext::saveContextCurrent();
+	peff::ScopeGuard restoreContextGuard([&prevContext]() noexcept {
+		NativeGLContext::restoreContextCurrent(prevContext);
+	});
 
 	GLuint prevRenderTarget;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *)&prevRenderTarget);
@@ -648,14 +632,15 @@ CLCGHAL_API void GLGHALDeviceContext::clearRenderTargetView(
 	glBindFramebuffer(GL_FRAMEBUFFER, ((GLRenderTargetView *)renderTargetView)->frameBufferHandle);
 	glClearColor(r, g, b, a);
 	glClear(GL_COLOR_BUFFER_BIT);
-
-	restoreCurrentGLContext();
 }
 
-CLCGHAL_API void GLGHALDeviceContext::clearDepth(
+CLCGHAL_API void GLDeviceContext::clearDepth(
 	DepthStencilView *depthStencilView,
 	float depth) {
-	saveCurrentGLContext();
+	NativeGLContext prevContext = NativeGLContext::saveContextCurrent();
+	peff::ScopeGuard restoreContextGuard([&prevContext]() noexcept {
+		NativeGLContext::restoreContextCurrent(prevContext);
+	});
 
 	GLuint prevRenderTarget;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *)&prevRenderTarget);
@@ -668,14 +653,15 @@ CLCGHAL_API void GLGHALDeviceContext::clearDepth(
 	glDepthMask(GL_TRUE);
 	glClearDepth(depth);
 	glClear(GL_DEPTH_BUFFER_BIT);
-
-	restoreCurrentGLContext();
 }
 
-CLCGHAL_API void GLGHALDeviceContext::clearStencil(
+CLCGHAL_API void GLDeviceContext::clearStencil(
 	DepthStencilView *depthStencilView,
 	uint8_t stencil) {
-	saveCurrentGLContext();
+	NativeGLContext prevContext = NativeGLContext::saveContextCurrent();
+	peff::ScopeGuard restoreContextGuard([&prevContext]() noexcept {
+		NativeGLContext::restoreContextCurrent(prevContext);
+	});
 
 	GLuint prevRenderTarget;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *)&prevRenderTarget);
@@ -688,35 +674,36 @@ CLCGHAL_API void GLGHALDeviceContext::clearStencil(
 	glStencilMask(0xff);
 	glClearStencil(stencil);
 	glClear(GL_STENCIL_BUFFER_BIT);
-
-	restoreCurrentGLContext();
 }
 
-CLCGHAL_API void GLGHALDeviceContext::bindVertexBuffer(Buffer *buffer, size_t stride) {
-	saveCurrentGLContext();
+CLCGHAL_API void GLDeviceContext::bindVertexBuffer(Buffer *buffer, size_t stride) {
+	NativeGLContext prevContext = NativeGLContext::saveContextCurrent();
+	peff::ScopeGuard restoreContextGuard([&prevContext]() noexcept {
+		NativeGLContext::restoreContextCurrent(prevContext);
+	});
 
 	glBindBuffer(GL_ARRAY_BUFFER, ((GLBuffer *)buffer)->bufferHandle);
-
-	restoreCurrentGLContext();
 }
 
-CLCGHAL_API void GLGHALDeviceContext::bindIndexBuffer(Buffer *buffer) {
-	saveCurrentGLContext();
+CLCGHAL_API void GLDeviceContext::bindIndexBuffer(Buffer *buffer) {
+	NativeGLContext prevContext = NativeGLContext::saveContextCurrent();
+	peff::ScopeGuard restoreContextGuard([&prevContext]() noexcept {
+		NativeGLContext::restoreContextCurrent(prevContext);
+	});
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ((GLBuffer *)buffer)->bufferHandle);
-
-	restoreCurrentGLContext();
 }
 
-CLCGHAL_API void GLGHALDeviceContext::bindVertexLayout(VertexLayout *vertexArray) {
-	saveCurrentGLContext();
+CLCGHAL_API void GLDeviceContext::bindVertexLayout(VertexLayout *vertexArray) {
+	NativeGLContext prevContext = NativeGLContext::saveContextCurrent();
+	peff::ScopeGuard restoreContextGuard([&prevContext]() noexcept {
+		NativeGLContext::restoreContextCurrent(prevContext);
+	});
 
 	glBindVertexArray(((GLVertexLayout *)vertexArray)->vertexArrayHandle);
-
-	restoreCurrentGLContext();
 }
 
-CLCGHAL_API void GLGHALDeviceContext::setData(Buffer *buffer, const void *data) {
+CLCGHAL_API void GLDeviceContext::setData(Buffer *buffer, const void *data) {
 	copyWriteBufferLock.lock();
 	GLuint prevBuffer;
 	glGetIntegerv(GL_COPY_WRITE_BUFFER, (GLint *)&prevBuffer);
@@ -765,11 +752,11 @@ CLCGHAL_API void GLGHALDeviceContext::setData(Buffer *buffer, const void *data) 
 	glBufferData(GL_COPY_WRITE_BUFFER, buffer->bufferDesc.size, data, usage);
 }
 
-CLCGHAL_API void GLGHALDeviceContext::setShaderProgram(ShaderProgram *shaderProgram) {
+CLCGHAL_API void GLDeviceContext::setShaderProgram(ShaderProgram *shaderProgram) {
 	glUseProgram(((GLShaderProgram *)shaderProgram)->programHandle);
 }
 
-CLCGHAL_API void GLGHALDeviceContext::setRenderTarget(
+CLCGHAL_API void GLDeviceContext::setRenderTarget(
 	RenderTargetView *renderTargetView,
 	DepthStencilView *depthStencilView) {
 	glBindFramebuffer(GL_FRAMEBUFFER, ((GLRenderTargetView *)renderTargetView)->frameBufferHandle);
@@ -786,7 +773,7 @@ CLCGHAL_API void GLGHALDeviceContext::setRenderTarget(
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, ((GLDepthStencilView *)depthStencilView)->frameBufferHandle);
 }
 
-CLCGHAL_API void GLGHALDeviceContext::setViewport(
+CLCGHAL_API void GLDeviceContext::setViewport(
 	int x,
 	int y,
 	int width,
@@ -805,7 +792,7 @@ CLCGHAL_API void GLGHALDeviceContext::setViewport(
 	glDepthRange(minDepth, maxDepth);
 }
 
-CLCGHAL_API void GLGHALDeviceContext::getViewport(
+CLCGHAL_API void GLDeviceContext::getViewport(
 	int &xOut,
 	int &yOut,
 	int &widthOut,
@@ -820,30 +807,30 @@ CLCGHAL_API void GLGHALDeviceContext::getViewport(
 	maxDepthOut = viewportMaxDepth;
 }
 
-CLCGHAL_API void GLGHALDeviceContext::drawTriangle(unsigned int nTriangles) {
+CLCGHAL_API void GLDeviceContext::drawTriangle(unsigned int nTriangles) {
 	glDrawArrays(GL_TRIANGLES, 0, nTriangles);
 }
 
-CLCGHAL_API void GLGHALDeviceContext::drawIndexed(unsigned int nIndices) {
+CLCGHAL_API void GLDeviceContext::drawIndexed(unsigned int nIndices) {
 	glDrawElements(GL_TRIANGLES, nIndices, GL_UNSIGNED_INT, nullptr);
 }
 
-CLCGHAL_API void GLGHALDeviceContext::begin() {
-	makeContextCurrent();
+CLCGHAL_API void GLDeviceContext::begin() {
+	NativeGLContext::restoreContextCurrent(nativeGLContext);
 }
 
-CLCGHAL_API void GLGHALDeviceContext::end() {
+CLCGHAL_API void GLDeviceContext::end() {
 }
 
-CLCGHAL_API void GLGHALDeviceContext::present() {
+CLCGHAL_API void GLDeviceContext::present() {
 #ifdef _WIN32
 	SwapBuffers(hdc);
 #else
-	eglSwapBuffers(eglDisplay, eglSurface);
+	eglSwapBuffers(nativeGLContext.eglDisplay, nativeGLContext.eglDrawSurface);
 #endif
 }
 
-CLCGHAL_API NativeGLContext GLGHALDeviceContext::saveContextCurrent() {
+CLCGHAL_API NativeGLContext NativeGLContext::saveContextCurrent() {
 #if _WIN32
 	return {
 		wglGetCurrentContext(),
@@ -857,7 +844,7 @@ CLCGHAL_API NativeGLContext GLGHALDeviceContext::saveContextCurrent() {
 #endif
 }
 
-CLCGHAL_API bool GLGHALDeviceContext::restoreContextCurrent(const NativeGLContext &context) {
+CLCGHAL_API bool NativeGLContext::restoreContextCurrent(const NativeGLContext &context) {
 #if _WIN32
 	return wglMakeCurrent(context.hdc, context.wglContext);
 #else
@@ -865,34 +852,67 @@ CLCGHAL_API bool GLGHALDeviceContext::restoreContextCurrent(const NativeGLContex
 #endif
 }
 
-CLCGHAL_API void GLGHALDeviceContext::saveCurrentGLContext() {
-	prevContextSavingMutex.lock();
-	prevContext = saveContextCurrent();
-	makeContextCurrent();
+CLCGHAL_API void NativeGLContext::destroySurface() {
+	if (eglDrawSurface != eglReadSurface) {
+		if (eglDrawSurface != EGL_NO_SURFACE) {
+			eglDestroySurface(eglDisplay, eglDrawSurface);
+		}
+
+		if (eglReadSurface != EGL_NO_SURFACE) {
+			eglDestroySurface(eglDisplay, eglReadSurface);
+		}
+	} else {
+		if (eglDrawSurface != EGL_NO_SURFACE) {
+			eglDestroySurface(eglDisplay, eglDrawSurface);
+		}
+	}
 }
 
-CLCGHAL_API void GLGHALDeviceContext::restoreCurrentGLContext() {
-	restoreContextCurrent(prevContext.value());
-	prevContext.reset();
-	prevContextSavingMutex.unlock();
-}
-
-CLCGHAL_API bool GLGHALDeviceContext::makeContextCurrent() {
+CLCGHAL_API void NativeGLContext::destroy() {
 #if _WIN32
-	return wglMakeCurrent(hdc, wglContext);
+	if (wglContext)
+		wglDeleteContext(wglContext);
+	if (hdc)
+		ReleaseDC(hWnd, hdc);
 #else
-	return eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext);
+	if (eglContext != EGL_NO_CONTEXT) {
+		eglDestroyContext(eglDisplay, eglContext);
+	}
+
+	destroySurface();
+
+	if (eglDisplay != EGL_NO_DISPLAY) {
+		if (auto it = g_initializedEglDisplays.find(eglDisplay); it != g_initializedEglDisplays.end()) {
+			if (!--it.value()) {
+				eglTerminate(eglDisplay);
+				g_initializedEglDisplays.remove(it);
+			}
+		} else {
+			eglTerminate(eglDisplay);
+		}
+	}
 #endif
 }
 
-CLCGHAL_API GLGHALDeviceContext *GLGHALDeviceContext::alloc(GLGHALDevice *device) {
-	return peff::allocAndConstruct<GLGHALDeviceContext>(
+CLCGHAL_API GLDeviceContext *GLDeviceContext::alloc(GLDevice *device) {
+	return peff::allocAndConstruct<GLDeviceContext>(
 		device->resourceAllocator.get(), sizeof(std::max_align_t),
 		device);
 }
 
-CLCGHAL_API void GLGHALDeviceContext::dealloc() {
-	peff::destroyAndRelease<GLGHALDeviceContext>(ownerDevice->resourceAllocator.get(), this, sizeof(std::max_align_t));
+CLCGHAL_API void GLDeviceContext::dealloc() {
+	peff::destroyAndRelease<GLDeviceContext>(ownerDevice->resourceAllocator.get(), this, sizeof(std::max_align_t));
+}
+
+CLCGHAL_API base::ExceptionPtr clench::ghal::glErrorToExceptionPtr(GLenum error) {
+	switch (error) {
+		case GL_NO_ERROR:
+			break;
+		case GL_OUT_OF_MEMORY:
+			return clench::base::OutOfMemoryException::alloc();
+	}
+
+	return {};
 }
 
 CLCGHAL_API GLenum clench::ghal::toGLVertexDataType(const VertexDataType &vertexDataType, size_t &sizeOut) {

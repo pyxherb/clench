@@ -4,7 +4,7 @@ using namespace clench;
 using namespace clench::ghal;
 
 CLCGHAL_API GLVertexShader::GLVertexShader(
-	GHALDevice *ownedDevice,
+	Device *ownedDevice,
 	GLuint shaderHandle)
 	: VertexShader(ownedDevice),
 	  shaderHandle(shaderHandle) {
@@ -19,14 +19,14 @@ CLCGHAL_API void GLVertexShader::dealloc() {
 }
 
 CLCGHAL_API GLVertexShader *GLVertexShader::alloc(
-	GHALDevice *ownedDevice,
+	Device *ownedDevice,
 	GLuint shaderHandle) {
 	return peff::allocAndConstruct<GLVertexShader>(
 			ownedDevice->resourceAllocator.get(), sizeof(std::max_align_t),
 			ownedDevice, shaderHandle);
 }
 
-CLCGHAL_API GLFragmentShader::GLFragmentShader(GHALDevice *ownedDevice, GLuint shaderHandle) : FragmentShader(ownedDevice), shaderHandle(shaderHandle) {
+CLCGHAL_API GLFragmentShader::GLFragmentShader(Device *ownedDevice, GLuint shaderHandle) : FragmentShader(ownedDevice), shaderHandle(shaderHandle) {
 }
 
 CLCGHAL_API GLFragmentShader::~GLFragmentShader() {
@@ -38,14 +38,14 @@ CLCGHAL_API void GLFragmentShader::dealloc() {
 }
 
 CLCGHAL_API GLFragmentShader *GLFragmentShader::alloc(
-	GHALDevice *ownedDevice,
+	Device *ownedDevice,
 	GLuint shaderHandle) {
 	return peff::allocAndConstruct<GLFragmentShader>(
 			ownedDevice->resourceAllocator.get(), sizeof(std::max_align_t),
 			ownedDevice, shaderHandle);
 }
 
-CLCGHAL_API GLGeometryShader::GLGeometryShader(GHALDevice *ownedDevice, GLuint shaderHandle) : GeometryShader(ownedDevice), shaderHandle(shaderHandle) {
+CLCGHAL_API GLGeometryShader::GLGeometryShader(Device *ownedDevice, GLuint shaderHandle) : GeometryShader(ownedDevice), shaderHandle(shaderHandle) {
 }
 
 CLCGHAL_API GLGeometryShader::~GLGeometryShader() {
@@ -57,7 +57,7 @@ CLCGHAL_API void GLGeometryShader::dealloc() {
 }
 
 CLCGHAL_API GLGeometryShader *GLGeometryShader::alloc(
-	GHALDevice *ownedDevice,
+	Device *ownedDevice,
 	GLuint shaderHandle) {
 	return (GLGeometryShader *)
 		peff::allocAndConstruct<GLGeometryShader>(
@@ -65,7 +65,7 @@ CLCGHAL_API GLGeometryShader *GLGeometryShader::alloc(
 			ownedDevice, shaderHandle);
 }
 
-CLCGHAL_API GLShaderProgram::GLShaderProgram(GHALDevice *ownerDevice, GLuint programHandle) : ShaderProgram(ownerDevice), programHandle(programHandle) {}
+CLCGHAL_API GLShaderProgram::GLShaderProgram(Device *ownerDevice, GLuint programHandle) : ShaderProgram(ownerDevice), programHandle(programHandle) {}
 
 CLCGHAL_API GLShaderProgram::~GLShaderProgram() {
 	glDeleteProgram(programHandle);
@@ -76,7 +76,7 @@ CLCGHAL_API void GLShaderProgram::dealloc() {
 }
 
 CLCGHAL_API GLShaderProgram *GLShaderProgram::alloc(
-	GHALDevice *ownedDevice,
+	Device *ownedDevice,
 	GLuint programHandle) {
 	return (GLShaderProgram *)
 		peff::allocAndConstruct<GLShaderProgram>(

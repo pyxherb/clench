@@ -3,8 +3,8 @@
 using namespace clench;
 using namespace clench::ghal;
 
-CLCGHAL_API Buffer::Buffer(GHALDevice *ownerDevice, const BufferDesc &bufferDesc)
-	: GHALDeviceResource(ownerDevice),
+CLCGHAL_API Buffer::Buffer(Device *ownerDevice, const BufferDesc &bufferDesc)
+	: DeviceResource(ownerDevice),
 	  bufferDesc(bufferDesc) {
 }
 

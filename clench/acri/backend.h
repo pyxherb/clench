@@ -22,7 +22,7 @@ namespace clench {
 
 			CLCACRI_API virtual void onRefZero() noexcept override;
 
-			virtual ACRIDevice *createDevice(ghal::GHALDevice *ghalDevice, peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator) = 0;
+			virtual ACRIDevice *createDevice(ghal::Device *ghalDevice, peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator) = 0;
 		};
 
 		CLCACRI_API extern peff::HashMap<std::string_view, peff::RcObjectPtr<ACRIBackend>> g_registeredBackends;

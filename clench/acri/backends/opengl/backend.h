@@ -12,7 +12,7 @@ namespace clench {
 			CLCACRI_API GLACRIBackend(peff::Alloc *selfAllocator);
 			CLCACRI_API virtual ~GLACRIBackend();
 
-			CLCACRI_API virtual ACRIDevice *createDevice(ghal::GHALDevice *ghalDevice, peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator) override;
+			CLCACRI_API virtual ACRIDevice *createDevice(ghal::Device *ghalDevice, peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator) override;
 
 			CLCACRI_API virtual void dealloc() override;
 

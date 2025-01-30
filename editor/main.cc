@@ -45,10 +45,10 @@ int main(int argc, char **argv) {
 	if (!preferredBackendList.build({ "opengl" }))
 		throw std::bad_alloc();
 	{
-		ghal::GHALDevice *mainGhalDevice;
-		if (auto e = ghal::createGHALDevice(mainGhalDevice, preferredBackendList))
+		ghal::Device *mainGhalDevice;
+		if (auto e = ghal::createDevice(mainGhalDevice, preferredBackendList))
 			throw std::runtime_error(e->what());
-		g_mainGhalDevice = std::unique_ptr<ghal::GHALDevice, peff::DeallocableDeleter<ghal::GHALDevice>>(mainGhalDevice);
+		g_mainGhalDevice = std::unique_ptr<ghal::Device, peff::DeallocableDeleter<ghal::Device>>(mainGhalDevice);
 	}
 
 	if (!g_mainGhalDevice)
@@ -133,14 +133,16 @@ int main(int argc, char **argv) {
 		vertexBufferDesc.proposedTarget = clench::ghal::BufferTarget::Vertex;
 		vertexBufferDesc.cpuReadable = false;
 		vertexBufferDesc.cpuWritable = true;
-		vertexBuffer = g_mainGhalDevice->createBuffer(vertexBufferDesc, vertices);
+		if (auto e = g_mainGhalDevice->createBuffer(vertexBufferDesc, vertices, vertexBuffer.getRef()); e)
+			throw std::runtime_error(e->what());
 
 		indexBufferDesc.size = sizeof(indices);
 		indexBufferDesc.usage = clench::ghal::BufferUsage::Static;
 		indexBufferDesc.proposedTarget = clench::ghal::BufferTarget::Index;
 		indexBufferDesc.cpuReadable = false;
 		indexBufferDesc.cpuWritable = true;
-		indexBuffer = g_mainGhalDevice->createBuffer(indexBufferDesc, indices);
+		if (auto e = g_mainGhalDevice->createBuffer(indexBufferDesc, indices, indexBuffer.getRef()); e)
+			throw std::runtime_error(e->what());
 	}
 
 	peff::RcObjectPtr<clench::vwc::DefaultButton> button =

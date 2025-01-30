@@ -25,13 +25,13 @@ namespace clench {
 			bool cpuWritable;
 		};
 
-		class Buffer : public GHALDeviceResource {
+		class Buffer : public DeviceResource {
 		public:
 			CLENCH_NO_COPY_MOVE_METHODS(Buffer);
 
 			BufferDesc bufferDesc;
 
-			CLCGHAL_API Buffer(GHALDevice *ownerDevice, const BufferDesc &bufferDesc);
+			CLCGHAL_API Buffer(Device *ownerDevice, const BufferDesc &bufferDesc);
 			CLCGHAL_API virtual ~Buffer();
 		};
 	}

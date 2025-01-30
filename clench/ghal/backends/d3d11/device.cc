@@ -8,14 +8,14 @@
 using namespace clench;
 using namespace clench::ghal;
 
-CLCGHAL_API D3D11GHALDevice::D3D11GHALDevice(
+CLCGHAL_API D3D11Device::D3D11Device(
 	D3D11GHALBackend *backend,
 	ID3D11Device *d3dDevice,
 	ID3D11DeviceContext *d3dImmediateDeviceContext,
 	IDXGIDevice *dxgiDevice,
 	IDXGIAdapter *dxgiAdapter,
 	IDXGIFactory1 *dxgiFactory1)
-	: GHALDevice(),
+	: Device(),
 	  backend(backend),
 	  d3dDevice(d3dDevice),
 	  d3dImmediateDeviceContext(d3dImmediateDeviceContext),
@@ -24,7 +24,7 @@ CLCGHAL_API D3D11GHALDevice::D3D11GHALDevice(
 	  dxgiFactory1(dxgiFactory1) {
 }
 
-CLCGHAL_API D3D11GHALDevice::D3D11GHALDevice(
+CLCGHAL_API D3D11Device::D3D11Device(
 	D3D11GHALBackend *backend,
 	ID3D11Device *d3dDevice,
 	ID3D11Device1 *d3dDevice1,
@@ -34,7 +34,7 @@ CLCGHAL_API D3D11GHALDevice::D3D11GHALDevice(
 	IDXGIAdapter *dxgiAdapter,
 	IDXGIFactory1 *dxgiFactory1,
 	IDXGIFactory2 *dxgiFactory2)
-	: GHALDevice(),
+	: Device(),
 	  backend(backend),
 	  d3dDevice(d3dDevice),
 	  d3dDevice1(d3dDevice1),
@@ -46,16 +46,16 @@ CLCGHAL_API D3D11GHALDevice::D3D11GHALDevice(
 	  dxgiFactory2(dxgiFactory2) {
 }
 
-CLCGHAL_API D3D11GHALDevice::~D3D11GHALDevice() {
+CLCGHAL_API D3D11Device::~D3D11Device() {
 }
 
-CLCGHAL_API GHALBackend *D3D11GHALDevice::getBackend() {
+CLCGHAL_API GHALBackend *D3D11Device::getBackend() {
 	return backend;
 }
 
-CLCGHAL_API GHALDeviceContext *D3D11GHALDevice::createDeviceContextForWindow(clench::wsal::NativeWindow *window) {
+CLCGHAL_API DeviceContext *D3D11Device::createDeviceContextForWindow(clench::wsal::NativeWindow *window) {
 	HRESULT result;
-	D3D11GHALDeviceContext *ghalDeviceContext;
+	D3D11DeviceContext *ghalDeviceContext;
 	int width, height;
 	window->getSize(width, height);
 
@@ -96,7 +96,7 @@ CLCGHAL_API GHALDeviceContext *D3D11GHALDevice::createDeviceContextForWindow(cle
 		if (FAILED(swapChain1.As(&swapChain)))
 			throw std::runtime_error("Error converting IDXGISwapChain1 to IDXGISwapChain");
 
-		ghalDeviceContext = new D3D11GHALDeviceContext(
+		ghalDeviceContext = new D3D11DeviceContext(
 			this,
 			d3dImmediateDeviceContext.Get(),
 			swapChain1.Get());
@@ -127,7 +127,7 @@ CLCGHAL_API GHALDeviceContext *D3D11GHALDevice::createDeviceContextForWindow(cle
 					   &swapChain)))
 			throw std::runtime_error("Error creating swap chain");
 
-		ghalDeviceContext = new D3D11GHALDeviceContext(
+		ghalDeviceContext = new D3D11DeviceContext(
 			this,
 			d3dImmediateDeviceContext.Get(),
 			d3dImmediateDeviceContext1.Get(),
@@ -142,7 +142,7 @@ CLCGHAL_API GHALDeviceContext *D3D11GHALDevice::createDeviceContextForWindow(cle
 	return ghalDeviceContext;
 }
 
-CLCGHAL_API VertexLayout *D3D11GHALDevice::createVertexLayout(
+CLCGHAL_API VertexLayout *D3D11Device::createVertexLayout(
 	VertexLayoutElementDesc *elementDescs,
 	size_t nElementDescs,
 	VertexShader *vertexShader) {
@@ -267,7 +267,7 @@ CLCGHAL_API VertexLayout *D3D11GHALDevice::createVertexLayout(
 	return new D3D11VertexLayout(this, inputLayout.Get());
 }
 
-CLCGHAL_API VertexShader *D3D11GHALDevice::createVertexShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo) {
+CLCGHAL_API VertexShader *D3D11Device::createVertexShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo) {
 	ComPtr<ID3D11VertexShader> shader;
 
 	if (FAILED(d3dDevice->CreateVertexShader(source, size, nullptr, &shader)))
@@ -276,7 +276,7 @@ CLCGHAL_API VertexShader *D3D11GHALDevice::createVertexShader(const char *source
 	return new D3D11VertexShader(this, shader.Get(), source, size);
 }
 
-CLCGHAL_API FragmentShader *D3D11GHALDevice::createFragmentShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo) {
+CLCGHAL_API FragmentShader *D3D11Device::createFragmentShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo) {
 	ComPtr<ID3D11PixelShader> shader;
 
 	if (FAILED(d3dDevice->CreatePixelShader(source, size, nullptr, &shader)))
@@ -285,7 +285,7 @@ CLCGHAL_API FragmentShader *D3D11GHALDevice::createFragmentShader(const char *so
 	return new D3D11FragmentShader(this, shader.Get());
 }
 
-CLCGHAL_API GeometryShader *D3D11GHALDevice::createGeometryShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo) {
+CLCGHAL_API GeometryShader *D3D11Device::createGeometryShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo) {
 	ComPtr<ID3D11GeometryShader> shader;
 
 	if (FAILED(d3dDevice->CreateGeometryShader(source, size, nullptr, &shader)))
@@ -294,7 +294,7 @@ CLCGHAL_API GeometryShader *D3D11GHALDevice::createGeometryShader(const char *so
 	return new D3D11GeometryShader(this, shader.Get());
 }
 
-CLCGHAL_API ShaderProgram *D3D11GHALDevice::linkShaderProgram(Shader **shaders, size_t nShaders) {
+CLCGHAL_API ShaderProgram *D3D11Device::linkShaderProgram(Shader **shaders, size_t nShaders) {
 	std::unique_ptr<
 		D3D11ShaderProgram,
 		peff::RcObjectUniquePtrDeleter<D3D11ShaderProgram>> program(new D3D11ShaderProgram(this));
@@ -321,7 +321,7 @@ CLCGHAL_API ShaderProgram *D3D11GHALDevice::linkShaderProgram(Shader **shaders, 
 	return program.release();
 }
 
-CLCGHAL_API Buffer *D3D11GHALDevice::createBuffer(const BufferDesc &bufferDesc, const void *initialData) {
+CLCGHAL_API Buffer *D3D11Device::createBuffer(const BufferDesc &bufferDesc, const void *initialData) {
 	D3D11_BUFFER_DESC desc;
 	ComPtr<ID3D11Buffer> buffer;
 
@@ -377,7 +377,7 @@ CLCGHAL_API Buffer *D3D11GHALDevice::createBuffer(const BufferDesc &bufferDesc, 
 	return new D3D11Buffer(this, bufferDesc, buffer.Get());
 }
 
-CLCGHAL_API Texture1D *D3D11GHALDevice::createTexture1D(const char *data, size_t size, const Texture1DDesc &desc) {
+CLCGHAL_API Texture1D *D3D11Device::createTexture1D(const char *data, size_t size, const Texture1DDesc &desc) {
 	D3D11_TEXTURE1D_DESC d3dTextureDesc;
 	ComPtr<ID3D11Texture1D> texture1d;
 
@@ -406,7 +406,7 @@ CLCGHAL_API Texture1D *D3D11GHALDevice::createTexture1D(const char *data, size_t
 		texture1d.Get());
 }
 
-CLCGHAL_API Texture2D *D3D11GHALDevice::createTexture2D(const char *data, size_t size, const Texture2DDesc &desc) {
+CLCGHAL_API Texture2D *D3D11Device::createTexture2D(const char *data, size_t size, const Texture2DDesc &desc) {
 	D3D11_TEXTURE2D_DESC d3dTextureDesc;
 	ComPtr<ID3D11Texture2D> texture2d;
 
@@ -449,7 +449,7 @@ CLCGHAL_API Texture2D *D3D11GHALDevice::createTexture2D(const char *data, size_t
 		texture2d.Get());
 }
 
-CLCGHAL_API Texture3D *D3D11GHALDevice::createTexture3D(const char *data, size_t size, const Texture3DDesc &desc) {
+CLCGHAL_API Texture3D *D3D11Device::createTexture3D(const char *data, size_t size, const Texture3DDesc &desc) {
 	D3D11_TEXTURE3D_DESC d3dTextureDesc;
 	ComPtr<ID3D11Texture3D> texture3d;
 
@@ -482,7 +482,7 @@ CLCGHAL_API Texture3D *D3D11GHALDevice::createTexture3D(const char *data, size_t
 		texture3d.Get());
 }
 
-CLCGHAL_API RenderTargetView *D3D11GHALDevice::createRenderTargetViewForTexture2D(Texture2D *texture) {
+CLCGHAL_API RenderTargetView *D3D11Device::createRenderTargetViewForTexture2D(Texture2D *texture) {
 	ComPtr<ID3D11RenderTargetView> renderTargetView;
 
 	D3D11_RENDER_TARGET_VIEW_DESC desc;
@@ -499,23 +499,23 @@ CLCGHAL_API RenderTargetView *D3D11GHALDevice::createRenderTargetViewForTexture2
 	return new D3D11RenderTargetView(this, RenderTargetViewType::Texture2D, renderTargetView.Get());
 }
 
-CLCGHAL_API D3D11GHALDeviceContext::D3D11GHALDeviceContext(
-	D3D11GHALDevice *device,
+CLCGHAL_API D3D11DeviceContext::D3D11DeviceContext(
+	D3D11Device *device,
 	ID3D11DeviceContext *deviceContext,
 	IDXGISwapChain *swapChain)
-	: GHALDeviceContext(),
+	: DeviceContext(),
 	  device(device),
 	  d3dDeviceContext(deviceContext),
 	  dxgiSwapChain(swapChain) {
 }
 
-CLCGHAL_API D3D11GHALDeviceContext::D3D11GHALDeviceContext(
-	D3D11GHALDevice *device,
+CLCGHAL_API D3D11DeviceContext::D3D11DeviceContext(
+	D3D11Device *device,
 	ID3D11DeviceContext *deviceContext,
 	ID3D11DeviceContext1 *deviceContext1,
 	IDXGISwapChain *swapChain,
 	IDXGISwapChain1 *swapChain1)
-	: GHALDeviceContext(),
+	: DeviceContext(),
 	  device(device),
 	  d3dDeviceContext(deviceContext),
 	  d3dDeviceContext1(deviceContext1),
@@ -523,14 +523,14 @@ CLCGHAL_API D3D11GHALDeviceContext::D3D11GHALDeviceContext(
 	  dxgiSwapChain1(swapChain1) {
 }
 
-CLCGHAL_API D3D11GHALDeviceContext::~D3D11GHALDeviceContext() {
+CLCGHAL_API D3D11DeviceContext::~D3D11DeviceContext() {
 }
 
-CLCGHAL_API RenderTargetView *D3D11GHALDeviceContext::getDefaultRenderTargetView() {
+CLCGHAL_API RenderTargetView *D3D11DeviceContext::getDefaultRenderTargetView() {
 	return renderTargetView.get();
 }
 
-CLCGHAL_API void D3D11GHALDeviceContext::onResize(int width, int height) {
+CLCGHAL_API void D3D11DeviceContext::onResize(int width, int height) {
 	renderTargetView.reset();
 
 	d3dRenderTargetView.Reset();
@@ -593,7 +593,7 @@ CLCGHAL_API void D3D11GHALDeviceContext::onResize(int width, int height) {
 	setViewport(0, 0, width, height, 0.0f, 1.0f);
 }
 
-CLCGHAL_API void D3D11GHALDeviceContext::clearRenderTargetView(
+CLCGHAL_API void D3D11DeviceContext::clearRenderTargetView(
 	RenderTargetView *renderTargetView,
 	float r,
 	float g,
@@ -608,7 +608,7 @@ CLCGHAL_API void D3D11GHALDeviceContext::clearRenderTargetView(
 		color);
 }
 
-CLCGHAL_API void D3D11GHALDeviceContext::clearDepth(
+CLCGHAL_API void D3D11DeviceContext::clearDepth(
 	DepthStencilView *depthStencilView,
 	float depth) {
 	d3dDeviceContext->ClearDepthStencilView(
@@ -618,7 +618,7 @@ CLCGHAL_API void D3D11GHALDeviceContext::clearDepth(
 		D3D11_CLEAR_DEPTH, depth, 0);
 }
 
-CLCGHAL_API void D3D11GHALDeviceContext::clearStencil(
+CLCGHAL_API void D3D11DeviceContext::clearStencil(
 	DepthStencilView *depthStencilView,
 	uint8_t stencil) {
 	d3dDeviceContext->ClearDepthStencilView(
@@ -628,7 +628,7 @@ CLCGHAL_API void D3D11GHALDeviceContext::clearStencil(
 		D3D11_CLEAR_STENCIL, 0.0f, stencil);
 }
 
-CLCGHAL_API void D3D11GHALDeviceContext::bindVertexBuffer(Buffer *buffer, size_t stride) {
+CLCGHAL_API void D3D11DeviceContext::bindVertexBuffer(Buffer *buffer, size_t stride) {
 	UINT strideParam = stride;
 	UINT offsetParam = 0;
 	d3dDeviceContext->IASetVertexBuffers(
@@ -639,18 +639,18 @@ CLCGHAL_API void D3D11GHALDeviceContext::bindVertexBuffer(Buffer *buffer, size_t
 		&offsetParam);
 }
 
-CLCGHAL_API void D3D11GHALDeviceContext::bindIndexBuffer(Buffer *buffer) {
+CLCGHAL_API void D3D11DeviceContext::bindIndexBuffer(Buffer *buffer) {
 	d3dDeviceContext->IASetIndexBuffer(
 		((D3D11Buffer *)buffer)->buffer.Get(),
 		DXGI_FORMAT_R32_UINT,
 		0);
 }
 
-CLCGHAL_API void D3D11GHALDeviceContext::bindVertexLayout(VertexLayout *vertexArray) {
+CLCGHAL_API void D3D11DeviceContext::bindVertexLayout(VertexLayout *vertexArray) {
 	d3dDeviceContext->IASetInputLayout(((D3D11VertexLayout *)vertexArray)->inputLayout.Get());
 }
 
-CLCGHAL_API void D3D11GHALDeviceContext::setData(Buffer *buffer, const void *data) {
+CLCGHAL_API void D3D11DeviceContext::setData(Buffer *buffer, const void *data) {
 	ID3D11Buffer *d3dBuffer = ((D3D11Buffer *)buffer)->buffer.Get();
 	D3D11_MAPPED_SUBRESOURCE mappedSubresource;
 
@@ -667,12 +667,12 @@ CLCGHAL_API void D3D11GHALDeviceContext::setData(Buffer *buffer, const void *dat
 	d3dDeviceContext->Unmap(d3dBuffer, 0);
 }
 
-CLCGHAL_API void D3D11GHALDeviceContext::setShaderProgram(ShaderProgram *shaderProgram) {
+CLCGHAL_API void D3D11DeviceContext::setShaderProgram(ShaderProgram *shaderProgram) {
 	d3dDeviceContext->VSSetShader(((D3D11ShaderProgram *)shaderProgram)->vertexShader->shader.Get(), nullptr, 0);
 	d3dDeviceContext->PSSetShader(((D3D11ShaderProgram *)shaderProgram)->fragmentShader->shader.Get(), nullptr, 0);
 }
 
-CLCGHAL_API void D3D11GHALDeviceContext::setRenderTarget(
+CLCGHAL_API void D3D11DeviceContext::setRenderTarget(
 	RenderTargetView *renderTargetView,
 	DepthStencilView *depthStencilView) {
 	d3dDeviceContext->OMSetRenderTargets(
@@ -681,7 +681,7 @@ CLCGHAL_API void D3D11GHALDeviceContext::setRenderTarget(
 		((D3D11DepthStencilView *)depthStencilView)->depthStencilView.Get());
 }
 
-CLCGHAL_API void D3D11GHALDeviceContext::setViewport(
+CLCGHAL_API void D3D11DeviceContext::setViewport(
 	int x,
 	int y,
 	int width,
@@ -706,7 +706,7 @@ CLCGHAL_API void D3D11GHALDeviceContext::setViewport(
 	d3dDeviceContext->RSSetViewports(1, &viewport);
 }
 
-CLCGHAL_API void D3D11GHALDeviceContext::getViewport(
+CLCGHAL_API void D3D11DeviceContext::getViewport(
 	int &xOut,
 	int &yOut,
 	int &widthOut,
@@ -721,18 +721,18 @@ CLCGHAL_API void D3D11GHALDeviceContext::getViewport(
 	maxDepthOut = maxDepthOut;
 }
 
-CLCGHAL_API void D3D11GHALDeviceContext::drawIndexed(unsigned int nIndices) {
+CLCGHAL_API void D3D11DeviceContext::drawIndexed(unsigned int nIndices) {
 	d3dDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	d3dDeviceContext->DrawIndexed(nIndices, 0, 0);
 }
 
-CLCGHAL_API void D3D11GHALDeviceContext::begin() {
+CLCGHAL_API void D3D11DeviceContext::begin() {
 }
 
-CLCGHAL_API void D3D11GHALDeviceContext::end() {
+CLCGHAL_API void D3D11DeviceContext::end() {
 }
 
-CLCGHAL_API void D3D11GHALDeviceContext::present() {
+CLCGHAL_API void D3D11DeviceContext::present() {
 	dxgiSwapChain->Present(0, 0);
 }
 

@@ -13,7 +13,7 @@ namespace clench {
 			CLENCH_NO_COPY_MOVE_METHODS(D3D11VertexLayout);
 
 			CLCGHAL_API D3D11VertexLayout(
-				GHALDevice *ownerDevice,
+				Device *ownerDevice,
 				ID3D11InputLayout *inputLayout);
 			CLCGHAL_API virtual ~D3D11VertexLayout();
 		};

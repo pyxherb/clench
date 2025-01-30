@@ -4,17 +4,17 @@ using namespace clench;
 using namespace clench::ghal;
 
 CLCGHAL_API RenderTargetView::RenderTargetView(
-	GHALDevice *ownerDevice,
+	Device *ownerDevice,
 	RenderTargetViewType renderTargetViewType)
-	: GHALDeviceResource(ownerDevice), renderTargetViewType(renderTargetViewType) {
+	: DeviceResource(ownerDevice), renderTargetViewType(renderTargetViewType) {
 }
 
 CLCGHAL_API RenderTargetView::~RenderTargetView() {}
 
 CLCGHAL_API DepthStencilView::DepthStencilView(
-	GHALDevice* ownerDevice,
+	Device* ownerDevice,
 	DepthStencilViewType depthStencilViewType
-) : GHALDeviceResource(ownerDevice), depthStencilViewType(depthStencilViewType) {
+) : DeviceResource(ownerDevice), depthStencilViewType(depthStencilViewType) {
 
 }
 

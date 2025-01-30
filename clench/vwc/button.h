@@ -9,8 +9,8 @@ namespace clench {
 		public:
 			CLCVWC_API Button(
 				peff::Alloc *selfAllocator,
-				ghal::GHALDevice *ghalDevice,
-				ghal::GHALDeviceContext *ghalDeviceContext,
+				ghal::Device *ghalDevice,
+				ghal::DeviceContext *ghalDeviceContext,
 				ghal::TextureFormat renderBufferFormat,
 				Window *parent,
 				int x,
@@ -47,8 +47,8 @@ namespace clench {
 
 			CLCVWC_API DefaultButton(
 				peff::Alloc *selfAllocator,
-				ghal::GHALDevice *ghalDevice,
-				ghal::GHALDeviceContext *ghalDeviceContext,
+				ghal::Device *ghalDevice,
+				ghal::DeviceContext *ghalDeviceContext,
 				ghal::TextureFormat renderBufferFormat,
 				Window *parent,
 				int x,

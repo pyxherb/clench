@@ -9,7 +9,7 @@ CLCACRI_API GLACRIBackend::GLACRIBackend(peff::Alloc *selfAllocator) : ACRIBacke
 CLCACRI_API GLACRIBackend::~GLACRIBackend() {
 }
 
-CLCACRI_API ACRIDevice *createDevice(ghal::GHALDevice *ghalDevice, peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator) {
+CLCACRI_API ACRIDevice *createDevice(ghal::Device *ghalDevice, peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator) {
 
 }
 

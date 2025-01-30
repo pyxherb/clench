@@ -4,7 +4,7 @@ using namespace clench;
 using namespace clench::ghal;
 
 CLCGHAL_API GLTexture1D::GLTexture1D(
-	GHALDevice *ownerDevice,
+	Device *ownerDevice,
 	const Texture1DDesc &textureDesc,
 	GLuint textureHandle)
 	: Texture1D(ownerDevice, textureDesc),
@@ -20,7 +20,7 @@ CLCGHAL_API void GLTexture1D::dealloc() {
 }
 
 CLCGHAL_API GLTexture1D *GLTexture1D::alloc(
-	GHALDevice *ownedDevice,
+	Device *ownedDevice,
 	const Texture1DDesc &textureDesc,
 	GLuint textureHandle) {
 	return peff::allocAndConstruct<GLTexture1D>(
@@ -31,7 +31,7 @@ CLCGHAL_API GLTexture1D *GLTexture1D::alloc(
 }
 
 CLCGHAL_API GLTexture2D::GLTexture2D(
-	GHALDevice *ownerDevice,
+	Device *ownerDevice,
 	const Texture2DDesc &textureDesc,
 	GLuint textureHandle)
 	: Texture2D(ownerDevice, textureDesc),
@@ -47,7 +47,7 @@ CLCGHAL_API void GLTexture2D::dealloc() {
 }
 
 CLCGHAL_API GLTexture2D *GLTexture2D::alloc(
-	GHALDevice *ownedDevice,
+	Device *ownedDevice,
 	const Texture2DDesc &textureDesc,
 	GLuint textureHandle) {
 	return peff::allocAndConstruct<GLTexture2D>(
@@ -58,7 +58,7 @@ CLCGHAL_API GLTexture2D *GLTexture2D::alloc(
 }
 
 CLCGHAL_API GLTexture3D::GLTexture3D(
-	GHALDevice *ownerDevice,
+	Device *ownerDevice,
 	const Texture3DDesc &textureDesc,
 	GLuint textureHandle)
 	: Texture3D(ownerDevice, textureDesc),
@@ -74,7 +74,7 @@ CLCGHAL_API void GLTexture3D::dealloc() {
 }
 
 CLCGHAL_API GLTexture3D *GLTexture3D::alloc(
-	GHALDevice *ownedDevice,
+	Device *ownedDevice,
 	const Texture3DDesc &textureDesc,
 	GLuint textureHandle) {
 	return peff::allocAndConstruct<GLTexture3D>(

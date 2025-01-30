@@ -11,7 +11,7 @@
 
 namespace clench {
 	namespace ghal {
-		class GHALDevice;
+		class Device;
 
 		class GHALBackend : public peff::RcObject {
 		protected:
@@ -35,7 +35,7 @@ namespace clench {
 			bool init();
 			bool deinit();
 
-			[[nodiscard]] virtual base::ExceptionPtr createDevice(GHALDevice *&ghalDeviceOut) = 0;
+			[[nodiscard]] virtual base::ExceptionPtr createDevice(Device *&ghalDeviceOut) = 0;
 		};
 
 		class GHALError : public std::runtime_error {
@@ -56,7 +56,7 @@ namespace clench {
 
 		CLCGHAL_API void registerBuiltinGHALBackends(peff::Alloc *selfAllocator);
 
-		[[nodiscard]] CLCGHAL_API base::ExceptionPtr createGHALDevice(GHALDevice *&ghalDeviceOut, const peff::List<std::string_view> &preferredBackendNames = peff::List<std::string_view>());
+		[[nodiscard]] CLCGHAL_API base::ExceptionPtr createDevice(Device *&ghalDeviceOut, const peff::List<std::string_view> &preferredBackendNames = peff::List<std::string_view>());
 	}
 }
 

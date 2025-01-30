@@ -5,8 +5,8 @@ using namespace clench::vwc;
 
 CLCVWC_API Button::Button(
 	peff::Alloc *selfAllocator,
-	ghal::GHALDevice *ghalDevice,
-	ghal::GHALDeviceContext *ghalDeviceContext,
+	ghal::Device *ghalDevice,
+	ghal::DeviceContext *ghalDeviceContext,
 	ghal::TextureFormat renderBufferFormat,
 	Window *parent,
 	int x,
@@ -54,8 +54,8 @@ CLCVWC_API void Button::onMouseLeave() {
 
 CLCVWC_API DefaultButton::DefaultButton(
 	peff::Alloc *selfAllocator,
-	ghal::GHALDevice *ghalDevice,
-	ghal::GHALDeviceContext *ghalDeviceContext,
+	ghal::Device *ghalDevice,
+	ghal::DeviceContext *ghalDeviceContext,
 	ghal::TextureFormat renderBufferFormat,
 	Window *parent,
 	int x,

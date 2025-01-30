@@ -16,7 +16,7 @@ namespace clench {
 			CLCGHAL_API D3D11GHALBackend();
 			CLCGHAL_API virtual ~D3D11GHALBackend();
 
-			CLCGHAL_API virtual GHALDevice* createDevice() override;
+			CLCGHAL_API virtual Device* createDevice() override;
 		};
 	}
 }

@@ -5,9 +5,9 @@ using namespace clench;
 using namespace clench::ghal;
 
 CLCGHAL_API Texture::Texture(
-	GHALDevice *ownedDevice,
+	Device *ownedDevice,
 	TextureType textureType)
-	: GHALDeviceResource(ownedDevice),
+	: DeviceResource(ownedDevice),
 	  textureType(textureType) {
 }
 
@@ -15,7 +15,7 @@ CLCGHAL_API Texture::~Texture() {
 }
 
 CLCGHAL_API Texture1D::Texture1D(
-	GHALDevice *ownedDevice,
+	Device *ownedDevice,
 	const Texture1DDesc &textureDesc)
 	: Texture(ownedDevice, TextureType::Texture1D),
 	  textureDesc(textureDesc) {
@@ -25,7 +25,7 @@ CLCGHAL_API Texture1D::~Texture1D() {
 }
 
 CLCGHAL_API Texture2D::Texture2D(
-	GHALDevice *ownedDevice,
+	Device *ownedDevice,
 	const Texture2DDesc &textureDesc)
 	: Texture(ownedDevice, TextureType::Texture2D),
 	  textureDesc(textureDesc) {
@@ -35,7 +35,7 @@ CLCGHAL_API Texture2D::~Texture2D() {
 }
 
 CLCGHAL_API Texture3D::Texture3D(
-	GHALDevice *ownedDevice,
+	Device *ownedDevice,
 	const Texture3DDesc &textureDesc)
 	: Texture(ownedDevice, TextureType::Texture2D),
 	  textureDesc(textureDesc) {

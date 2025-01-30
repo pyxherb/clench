@@ -19,17 +19,17 @@ namespace clench {
 				} forTriangle;
 			} deviceResources;
 
-			CLCACRI_API GLACRIDevice(ghal::GHALDevice *associatedDevice, peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator);
+			CLCACRI_API GLACRIDevice(ghal::Device *associatedDevice, peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator);
 			CLCACRI_API ~GLACRIDevice();
 
 			CLCACRI_API virtual void dealloc() override;
 
-			CLCACRI_API static GLACRIDevice *alloc(ghal::GHALDevice *associatedDevice, peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator);
+			CLCACRI_API static GLACRIDevice *alloc(ghal::Device *associatedDevice, peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator);
 		};
 
 		class GLACRIDeviceContext : public ACRIDeviceContext {
 		public:
-			peff::RcObjectPtr<ghal::GHALDeviceContext> deviceContext;
+			peff::RcObjectPtr<ghal::DeviceContext> deviceContext;
 
 			struct LocalDeviceResources {
 				struct {
@@ -38,7 +38,7 @@ namespace clench {
 				} forTriangle;
 			} localDeviceResources;
 
-			CLCACRI_API GLACRIDeviceContext(ACRIDevice *device, ghal::GHALDeviceContext *deviceContext);
+			CLCACRI_API GLACRIDeviceContext(ACRIDevice *device, ghal::DeviceContext *deviceContext);
 			CLCACRI_API ~GLACRIDeviceContext();
 
 			CLCACRI_API virtual void dealloc() override;

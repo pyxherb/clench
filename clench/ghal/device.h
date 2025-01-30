@@ -15,23 +15,23 @@
 
 namespace clench {
 	namespace ghal {
-		class GHALDeviceContext;
+		class DeviceContext;
 
-		class GHALDevice {
+		class Device {
 		public:
 			peff::RcObjectPtr<peff::Alloc> selfAllocator, resourceAllocator;
-			std::set<GHALDeviceResource *> createdResources;
+			std::set<DeviceResource *> createdResources;
 
-			CLENCH_NO_COPY_MOVE_METHODS(GHALDevice);
+			CLENCH_NO_COPY_MOVE_METHODS(Device);
 
-			CLCGHAL_API GHALDevice(peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator);
-			CLCGHAL_API virtual ~GHALDevice();
+			CLCGHAL_API Device(peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator);
+			CLCGHAL_API virtual ~Device();
 
 			virtual void dealloc() = 0;
 
 			virtual GHALBackend *getBackend() = 0;
 
-			[[nodiscard]] virtual base::ExceptionPtr createDeviceContextForWindow(wsal::Window *window, GHALDeviceContext *&deviceContextOut) = 0;
+			[[nodiscard]] virtual base::ExceptionPtr createDeviceContextForWindow(wsal::Window *window, DeviceContext *&deviceContextOut) = 0;
 
 			virtual base::ExceptionPtr createVertexLayout(
 				VertexLayoutElementDesc *elementDescs,
@@ -56,12 +56,12 @@ namespace clench {
 			virtual RenderTargetView *createRenderTargetViewForTexture2D(Texture2D *texture) = 0;
 		};
 
-		class GHALDeviceContext : public GHALDeviceResource {
+		class DeviceContext : public DeviceResource {
 		public:
-			CLENCH_NO_COPY_MOVE_METHODS(GHALDeviceContext);
+			CLENCH_NO_COPY_MOVE_METHODS(DeviceContext);
 
-			CLCGHAL_API GHALDeviceContext(GHALDevice *ownerDevice);
-			CLCGHAL_API virtual ~GHALDeviceContext();
+			CLCGHAL_API DeviceContext(Device *ownerDevice);
+			CLCGHAL_API virtual ~DeviceContext();
 
 			virtual RenderTargetView *getDefaultRenderTargetView() = 0;
 

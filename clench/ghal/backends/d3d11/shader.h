@@ -13,7 +13,7 @@ namespace clench {
 			size_t szSource;
 
 			CLCGHAL_API D3D11VertexShader(
-				GHALDevice *ownedDevice,
+				Device *ownedDevice,
 				ID3D11VertexShader *shader,
 				const char *source,
 				size_t szSource);
@@ -24,7 +24,7 @@ namespace clench {
 		public:
 			ComPtr<ID3D11PixelShader> shader;
 
-			CLCGHAL_API D3D11FragmentShader(GHALDevice *ownedDevice, ID3D11PixelShader *shader);
+			CLCGHAL_API D3D11FragmentShader(Device *ownedDevice, ID3D11PixelShader *shader);
 			CLCGHAL_API virtual ~D3D11FragmentShader();
 		};
 
@@ -32,7 +32,7 @@ namespace clench {
 		public:
 			ComPtr<ID3D11GeometryShader> shader;
 
-			CLCGHAL_API D3D11GeometryShader(GHALDevice *ownedDevice, ID3D11GeometryShader *shader);
+			CLCGHAL_API D3D11GeometryShader(Device *ownedDevice, ID3D11GeometryShader *shader);
 			CLCGHAL_API virtual ~D3D11GeometryShader();
 		};
 
@@ -42,7 +42,7 @@ namespace clench {
 			peff::RcObjectPtr<D3D11FragmentShader> fragmentShader;
 
 			CLCGHAL_API D3D11ShaderProgram(
-				GHALDevice *ownerDevice);
+				Device *ownerDevice);
 			CLCGHAL_API virtual ~D3D11ShaderProgram();
 		};
 	}

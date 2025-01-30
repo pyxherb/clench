@@ -13,7 +13,7 @@ namespace clench {
 			CLENCH_NO_COPY_MOVE_METHODS(GLBuffer);
 
 			CLCGHAL_API GLBuffer(
-				GHALDevice *ownerDevice,
+				Device *ownerDevice,
 				const BufferDesc &bufferDesc,
 				GLuint bufferHandle);
 			CLCGHAL_API virtual ~GLBuffer();
@@ -21,7 +21,7 @@ namespace clench {
 			CLCGHAL_API virtual void dealloc() override;
 
 			CLCGHAL_API static GLBuffer *alloc(
-				GHALDevice *ownerDevice,
+				Device *ownerDevice,
 				const BufferDesc &bufferDesc,
 				GLuint bufferHandle);
 		};

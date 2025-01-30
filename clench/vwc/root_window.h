@@ -7,15 +7,15 @@ namespace clench {
 	namespace vwc {
 		class VWCRootWindow : public wsal::VirtualWindow {
 		public:
-			ghal::GHALDevice *ghalDevice;
-			peff::RcObjectPtr<ghal::GHALDeviceContext> ghalDeviceContext;
+			ghal::Device *ghalDevice;
+			peff::RcObjectPtr<ghal::DeviceContext> ghalDeviceContext;
 			ghal::TextureFormat renderBufferFormat;
 			wsal::LayoutAttributes layoutAttribs;
 
 			CLCVWC_API VWCRootWindow(
 				peff::Alloc *selfAllocator,
 				wsal::Window *parent,
-				ghal::GHALDevice *ghalDevice);
+				ghal::Device *ghalDevice);
 			CLCVWC_API virtual ~VWCRootWindow();
 
 			CLCVWC_API virtual void dealloc() override;

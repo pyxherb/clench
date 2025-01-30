@@ -53,38 +53,38 @@ namespace clench {
 			std::string sourcePath;
 		};
 
-		class Shader : public GHALDeviceResource {
+		class Shader : public DeviceResource {
 		public:
 			const ShaderType shaderType;
 
 			CLCGHAL_API Shader(
-				GHALDevice *ownedDevice,
+				Device *ownedDevice,
 				ShaderType shaderType);
 			CLCGHAL_API virtual ~Shader();
 		};
 
 		class VertexShader : public Shader {
 		public:
-			CLCGHAL_API VertexShader(GHALDevice* ownedDevice);
+			CLCGHAL_API VertexShader(Device* ownedDevice);
 			CLCGHAL_API virtual ~VertexShader();
 		};
 
 		class FragmentShader : public Shader {
 		public:
-			CLCGHAL_API FragmentShader(GHALDevice* ownedDevice);
+			CLCGHAL_API FragmentShader(Device* ownedDevice);
 			CLCGHAL_API virtual ~FragmentShader();
 		};
 
 		class GeometryShader : public Shader {
 		public:
-			CLCGHAL_API GeometryShader(GHALDevice* ownedDevice);
+			CLCGHAL_API GeometryShader(Device* ownedDevice);
 			CLCGHAL_API virtual ~GeometryShader();
 		};
 
-		class ShaderProgram : public GHALDeviceResource {
+		class ShaderProgram : public DeviceResource {
 		public:
 			CLCGHAL_API ShaderProgram(
-				GHALDevice *ownerDevice
+				Device *ownerDevice
 			);
 			CLCGHAL_API virtual ~ShaderProgram();
 		};

@@ -4,7 +4,7 @@ using namespace clench;
 using namespace clench::ghal;
 
 CLCGHAL_API D3D11VertexShader::D3D11VertexShader(
-	GHALDevice *ownedDevice,
+	Device *ownedDevice,
 	ID3D11VertexShader *shader,
 	const char *source,
 	size_t szSource)
@@ -18,18 +18,18 @@ CLCGHAL_API D3D11VertexShader::D3D11VertexShader(
 CLCGHAL_API D3D11VertexShader::~D3D11VertexShader() {
 }
 
-CLCGHAL_API D3D11FragmentShader::D3D11FragmentShader(GHALDevice *ownedDevice, ID3D11PixelShader *shader) : FragmentShader(ownedDevice), shader(shader) {
+CLCGHAL_API D3D11FragmentShader::D3D11FragmentShader(Device *ownedDevice, ID3D11PixelShader *shader) : FragmentShader(ownedDevice), shader(shader) {
 }
 
 CLCGHAL_API D3D11FragmentShader::~D3D11FragmentShader() {
 }
 
-CLCGHAL_API D3D11GeometryShader::D3D11GeometryShader(GHALDevice *ownedDevice, ID3D11GeometryShader *shader) : GeometryShader(ownedDevice), shader(shader) {
+CLCGHAL_API D3D11GeometryShader::D3D11GeometryShader(Device *ownedDevice, ID3D11GeometryShader *shader) : GeometryShader(ownedDevice), shader(shader) {
 }
 
 CLCGHAL_API D3D11GeometryShader::~D3D11GeometryShader() {
 }
 
 CLCGHAL_API D3D11ShaderProgram::D3D11ShaderProgram(
-	GHALDevice *ownerDevice) : ShaderProgram(ownerDevice) {}
+	Device *ownerDevice) : ShaderProgram(ownerDevice) {}
 CLCGHAL_API D3D11ShaderProgram::~D3D11ShaderProgram() {}

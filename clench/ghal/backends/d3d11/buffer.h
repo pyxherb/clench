@@ -13,7 +13,7 @@ namespace clench {
 			CLENCH_NO_COPY_MOVE_METHODS(D3D11Buffer);
 
 			CLCGHAL_API D3D11Buffer(
-				GHALDevice *ownerDevice,
+				Device *ownerDevice,
 				const BufferDesc &bufferDesc,
 				ID3D11Buffer *buffer);
 			CLCGHAL_API virtual ~D3D11Buffer();

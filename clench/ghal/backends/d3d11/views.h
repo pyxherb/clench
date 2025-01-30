@@ -13,7 +13,7 @@ namespace clench {
 			ComPtr<ID3D11RenderTargetView> renderTargetView;
 
 			CLCGHAL_API D3D11RenderTargetView(
-				GHALDevice *ownerDevice,
+				Device *ownerDevice,
 				RenderTargetViewType renderTargetViewType,
 				ID3D11RenderTargetView *renderTargetView);
 			CLCGHAL_API virtual ~D3D11RenderTargetView();
@@ -26,7 +26,7 @@ namespace clench {
 			ComPtr<ID3D11DepthStencilView> depthStencilView;
 
 			CLCGHAL_API D3D11DepthStencilView(
-				GHALDevice *ownerDevice,
+				Device *ownerDevice,
 				DepthStencilViewType depthStencilViewType,
 				ID3D11DepthStencilView *depthStencilView);
 			CLCGHAL_API virtual ~D3D11DepthStencilView();

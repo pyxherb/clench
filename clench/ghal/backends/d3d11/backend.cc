@@ -10,7 +10,7 @@ CLCGHAL_API D3D11GHALBackend::D3D11GHALBackend() : GHALBackend("d3d11") {
 CLCGHAL_API D3D11GHALBackend::~D3D11GHALBackend() {
 }
 
-CLCGHAL_API GHALDevice *D3D11GHALBackend::createDevice() {
+CLCGHAL_API Device *D3D11GHALBackend::createDevice() {
 	HRESULT result;
 
 	UINT createDeviceFlags = 0;
@@ -91,7 +91,7 @@ CLCGHAL_API GHALDevice *D3D11GHALBackend::createDevice() {
 	ComPtr<ID3D11VertexShader> clearVertexShader;
 	ComPtr<ID3D11PixelShader> clearPixelShader;
 
-	D3D11GHALDevice *ghalDevice;
+	D3D11Device *ghalDevice;
 
 	if (dxgiFactory2) {
 		if (FAILED(result = d3dDevice.As(&d3dDevice1)))
@@ -100,7 +100,7 @@ CLCGHAL_API GHALDevice *D3D11GHALBackend::createDevice() {
 		if (FAILED(result = d3dDeviceContext.As(&d3dDeviceContext1)))
 			throw std::runtime_error("Error converting ID3D11DeviceContext to ID3D11DeviceContext1");
 
-		ghalDevice = new D3D11GHALDevice(
+		ghalDevice = new D3D11Device(
 			this,
 			d3dDevice.Get(),
 			d3dDevice1.Get(),
@@ -111,7 +111,7 @@ CLCGHAL_API GHALDevice *D3D11GHALBackend::createDevice() {
 			dxgiFactory1.Get(),
 			dxgiFactory2.Get());
 	} else {
-		ghalDevice = new D3D11GHALDevice(
+		ghalDevice = new D3D11Device(
 			this,
 			d3dDevice.Get(),
 			d3dDeviceContext.Get(),

@@ -13,14 +13,14 @@ namespace clench {
 			CLENCH_NO_COPY_MOVE_METHODS(GLVertexLayout);
 
 			CLCGHAL_API GLVertexLayout(
-				GHALDevice *ownerDevice,
+				Device *ownerDevice,
 				GLuint vertexArrayHandle);
 			CLCGHAL_API virtual ~GLVertexLayout();
 
 			CLCGHAL_API virtual void dealloc() override;
 
 			CLCGHAL_API static GLVertexLayout *alloc(
-				GHALDevice *ownerDevice,
+				Device *ownerDevice,
 				GLuint vertexArrayHandle);
 		};
 	}
