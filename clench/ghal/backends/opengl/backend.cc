@@ -7,8 +7,8 @@ using namespace clench::ghal;
 #if _WIN32
 CLCGHAL_API HMODULE clench::ghal::g_hOpenGL32Dll = NULL;
 #elif __unix__
-CLCGHAL_API peff::Map<EGLDisplay, size_t> clench::ghal::g_initializedEglDisplays;
 #endif
+CLCGHAL_API GLGHALBackend *clench::ghal::g_glBackend = nullptr;
 CLCGHAL_API bool clench::ghal::g_glInitialized = false;
 
 CLCGHAL_API void *clench::ghal::_loadGlProc(const char *name) {
@@ -24,7 +24,8 @@ CLCGHAL_API void *clench::ghal::_loadGlProc(const char *name) {
 #endif
 }
 
-CLCGHAL_API GLGHALBackend::GLGHALBackend(peff::Alloc *selfAllocator) : GHALBackend("opengl", selfAllocator) {
+CLCGHAL_API GLGHALBackend::GLGHALBackend(peff::Alloc *selfAllocator) : GHALBackend("opengl", selfAllocator), initializedEglDisplays(selfAllocator) {
+	g_glBackend = this;
 }
 
 CLCGHAL_API GLGHALBackend::~GLGHALBackend() {
@@ -39,6 +40,10 @@ bool GLGHALBackend::doInit() {
 	if (!(g_hOpenGL32Dll = LoadLibraryA("opengl32.dll")))
 		return false;
 #endif
+	int version = gladLoadGL((GLADloadfunc)_loadGlProc);
+	if (!version)
+		return false;
+
 	return true;
 }
 

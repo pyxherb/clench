@@ -21,6 +21,13 @@ namespace clench {
 			virtual bool doDeinit() override;
 
 		public:
+#ifndef __ANDROID__
+			// Explicit reference counter for initialized EGL displays.
+			// Android does not require it because Android has its own reference counter,
+			// see https://stackoverflow.com/questions/6365366/how-to-properly-initialize-and-terminate-egl-on-android
+			CLCGHAL_API peff::Map<EGLDisplay, size_t> initializedEglDisplays;
+#endif
+
 			CLENCH_NO_COPY_MOVE_METHODS(GLGHALBackend);
 
 			CLCGHAL_API GLGHALBackend(peff::Alloc *selfAllocator);
@@ -36,9 +43,9 @@ namespace clench {
 #if _WIN32
 		CLCGHAL_API extern HMODULE g_hOpenGL32Dll;
 #elif __unix__
-		CLCGHAL_API extern peff::Map<EGLDisplay, size_t> g_initializedEglDisplays;
 #endif
 		CLCGHAL_API extern bool g_glInitialized;
+		CLCGHAL_API extern GLGHALBackend *g_glBackend;
 
 		CLCGHAL_API void *_loadGlProc(const char *name);
 

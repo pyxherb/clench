@@ -85,12 +85,12 @@ CLCGHAL_API base::ExceptionPtr GLDevice::createDeviceContextForWindow(clench::ws
 	EGLint eglMinor, eglMajor;
 
 	deviceContext->nativeGLContext.eglDisplay = eglGetDisplay((EGLNativeDisplayType)((wsal::X11Window *)window)->nativeHandle.display);
-	if (auto it = g_initializedEglDisplays.find(deviceContext->nativeGLContext.eglDisplay); it != g_initializedEglDisplays.end()) {
+	if (auto it = backend->initializedEglDisplays.find(deviceContext->nativeGLContext.eglDisplay); it != backend->initializedEglDisplays.end()) {
 		++it.value();
 	} else {
-		EGLDisplay eglDisplay = deviceContext->nativeGLContext.eglDisplay;
-		eglInitialize(eglDisplay, &eglMajor, &eglMinor);
-		g_initializedEglDisplays.insert(std::move(eglDisplay), 1);
+		if(!backend->initializedEglDisplays.insert(+deviceContext->nativeGLContext.eglDisplay, 1))
+			return base::OutOfMemoryException::alloc();
+		eglInitialize(deviceContext->nativeGLContext.eglDisplay, &eglMajor, &eglMinor);
 	}
 
 	deviceContext->nativeGLContext.eglWindow = (EGLNativeWindowType)((wsal::X11Window *)window)->nativeHandle.window;
@@ -123,7 +123,9 @@ CLCGHAL_API base::ExceptionPtr GLDevice::createDeviceContextForWindow(clench::ws
 	});
 	NativeGLContext::restoreContextCurrent(deviceContext->nativeGLContext);
 
-	if (!g_glInitialized) {
+	if (!g_glBackend) {
+		// The initialization of GLAD is deferred because the `_loadGlProc`
+		// requires EGL and we can only initialize EGL with a specific display.
 		int version = gladLoadGL((GLADloadfunc)_loadGlProc);
 		if (!version)
 			return base::wrapIfExceptAllocFailed(
@@ -882,10 +884,10 @@ CLCGHAL_API void NativeGLContext::destroy() {
 	destroySurface();
 
 	if (eglDisplay != EGL_NO_DISPLAY) {
-		if (auto it = g_initializedEglDisplays.find(eglDisplay); it != g_initializedEglDisplays.end()) {
+		if (auto it = g_glBackend->initializedEglDisplays.find(eglDisplay); it != g_glBackend->initializedEglDisplays.end()) {
 			if (!--it.value()) {
 				eglTerminate(eglDisplay);
-				g_initializedEglDisplays.remove(it);
+				g_glBackend->initializedEglDisplays.remove(it);
 			}
 		} else {
 			eglTerminate(eglDisplay);
