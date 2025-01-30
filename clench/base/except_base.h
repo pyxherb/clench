@@ -106,6 +106,6 @@ namespace clench {
 }
 
 #define CLENCH_RETURN_IF_EXCEPT(e) \
-	if (clench::base::ExceptionPtr ptr = (e); ptr) return ptr.release();
+	if (clench::base::ExceptionPtr _ = (e); _) return _.release();
 
 #endif

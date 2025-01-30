@@ -12,14 +12,14 @@
 
 namespace clench {
 	namespace acri {
-		class ACRIDevice {
+		class Device {
 		public:
 			peff::RcObjectPtr<peff::Alloc> selfAllocator, resourceAllocator;
 			ghal::Device *associatedDevice;
 			peff::Set<ACRIResource *> createdResources;
 
-			CLCACRI_API ACRIDevice(ghal::Device *associatedDevice, peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator);
-			CLCACRI_API ~ACRIDevice();
+			CLCACRI_API Device(ghal::Device *associatedDevice, peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator);
+			CLCACRI_API ~Device();
 
 			virtual void dealloc() = 0;
 		};
@@ -57,24 +57,26 @@ namespace clench {
 				sizeof(TriangleVertex().position) + sizeof(TriangleVertex().color) }
 		};
 
-		class ACRIDeviceContext : public ACRIResource {
+		class DeviceContext : public ACRIResource {
 		public:
-			peff::RcObjectPtr<ACRIDevice> acriDevice;
+			Device *acriDevice;
 			peff::RcObjectPtr<ghal::DeviceContext> ghalDeviceContext;
 
-			CLCACRI_API ACRIDeviceContext(ACRIDevice *acriDevice, ghal::DeviceContext *ghalDeviceContext);
-			CLCACRI_API ~ACRIDeviceContext();
+			CLCACRI_API DeviceContext(Device *acriDevice, ghal::DeviceContext *ghalDeviceContext);
+			CLCACRI_API ~DeviceContext();
 
 			CLCACRI_API virtual void beginDraw();
 			CLCACRI_API virtual void endDraw();
 
-			virtual void drawTriangle(TriangleGeometry *geometry, Brush *brush, float width) = 0;
-			virtual void fillTriangle(TriangleGeometry *geometry, Brush *brush) = 0;
-			virtual void drawEllipse(EllipseGeometry *geometry, Brush *brush, float width) = 0;
-			virtual void fillEllipse(EllipseGeometry *geometry, Brush *brush) = 0;
-			virtual void drawPath(PathGeometry *geometry, Brush *brush, float width) = 0;
-			virtual void fillPath(PathGeometry *geometry, Brush *brush) = 0;
+			virtual void drawTriangle(const TriangleParams &params, Brush *brush, float width) = 0;
+			virtual void fillTriangle(const TriangleParams &params, Brush *brush) = 0;
+			virtual void drawEllipse(const EllipseParams &params, Brush *brush, float width) = 0;
+			virtual void fillEllipse(const EllipseParams &params, Brush *brush) = 0;
+			virtual void drawPath(const PathParams &params, Brush *brush, float width) = 0;
+			virtual void fillPath(const PathParams &params, Brush *brush) = 0;
 		};
+
+		CLCACRI_API base::ExceptionPtr createDevice(ghal::Device *ghalDevice, peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator, Device *&deviceOut);
 	}
 }
 

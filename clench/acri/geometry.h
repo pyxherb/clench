@@ -8,45 +8,13 @@
 
 namespace clench {
 	namespace acri {
-		enum class GeometryKind {
-			Triangle = 0,
-			Ellipse,
-			Path
+		struct TriangleParams {
+			math::Vec2f vertices[3];
 		};
 
-		class Geometry : public ACRIResource {
-		public:
-			GeometryKind geometryKind;
-
-			CLENCH_NO_COPY_MOVE_METHODS(Geometry);
-
-			CLCACRI_API Geometry(ACRIDevice *device, GeometryKind geometryKind);
-			CLCACRI_API virtual ~Geometry();
-		};
-
-		class TriangleGeometry : public Geometry {
-		public:
-			math::Vec3f vertices[3];
-
-			CLENCH_NO_COPY_MOVE_METHODS(TriangleGeometry);
-
-			CLCACRI_API TriangleGeometry(ACRIDevice *device);
-			CLCACRI_API virtual ~TriangleGeometry();
-
-			CLCACRI_API virtual void dealloc() override;
-		};
-
-		class EllipseGeometry : public Geometry {
-		public:
+		struct EllipseParams {
 			float direction;
 			math::Vec2f scale;
-
-			CLENCH_NO_COPY_MOVE_METHODS(EllipseGeometry);
-
-			CLCACRI_API EllipseGeometry(ACRIDevice *device);
-			CLCACRI_API virtual ~EllipseGeometry();
-
-			CLCACRI_API virtual void dealloc() override;
 		};
 
 		enum class PathInstructionOpcode {
@@ -77,17 +45,10 @@ namespace clench {
 			PathInstructionOpcode opcode;
 		};
 
-		class PathGeometry : public Geometry {
-		public:
+		struct PathParams {
 			float initX, initY;
-			peff::DynArray<PathInstruction> instructions;
-
-			CLENCH_NO_COPY_MOVE_METHODS(PathGeometry);
-
-			CLCACRI_API PathGeometry(ACRIDevice *device);
-			CLCACRI_API virtual ~PathGeometry();
-
-			CLCACRI_API virtual void dealloc() override;
+			PathInstruction *instructions;
+			size_t nInstructions;
 		};
 	}
 }

@@ -9,12 +9,14 @@ using namespace clench::acri;
 
 CLCACRI_API bool clench::acri::registerBuiltinBackends(peff::Alloc *selfAllocator) {
 #if CLCGHAL_HAS_OPENGL_BACKEND
-	peff::RcObjectPtr<GLACRIBackend> glBackend = GLACRIBackend::alloc(selfAllocator);
-	if(!glBackend) {
+	peff::RcObjectPtr<GLBackend> glBackend = GLBackend::alloc(selfAllocator);
+	if (!glBackend) {
 		return false;
 	}
-	if(!registerBackend(glBackend.get())) {
+	if (!registerBackend(glBackend.get())) {
 		return false;
 	}
 #endif
+
+	return true;
 }

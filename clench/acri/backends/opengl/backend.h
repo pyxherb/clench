@@ -7,16 +7,20 @@
 
 namespace clench {
 	namespace acri {
-		class GLACRIBackend : public ACRIBackend {
+		class GLBackend : public Backend {
 		public:
-			CLCACRI_API GLACRIBackend(peff::Alloc *selfAllocator);
-			CLCACRI_API virtual ~GLACRIBackend();
+			CLCACRI_API GLBackend(peff::Alloc *selfAllocator);
+			CLCACRI_API virtual ~GLBackend();
 
-			CLCACRI_API virtual ACRIDevice *createDevice(ghal::Device *ghalDevice, peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator) override;
+			CLCACRI_API virtual base::ExceptionPtr createDevice(
+				ghal::Device *ghalDevice,
+				peff::Alloc *selfAllocator,
+				peff::Alloc *resourceAllocator,
+				Device *&deviceOut) override;
 
 			CLCACRI_API virtual void dealloc() override;
 
-			CLCACRI_API static GLACRIBackend *alloc(peff::Alloc *selfAllocator);
+			CLCACRI_API static GLBackend *alloc(peff::Alloc *selfAllocator);
 		};
 	}
 }

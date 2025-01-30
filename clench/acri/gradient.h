@@ -16,7 +16,7 @@ namespace clench {
 		public:
 			GradientType gradientType;
 
-			CLCACRI_API Gradient(ACRIDevice *device, GradientType gradientType);
+			CLCACRI_API Gradient(Device *device, GradientType gradientType);
 			CLCACRI_API virtual ~Gradient();
 		};
 
@@ -27,7 +27,7 @@ namespace clench {
 
 			CLCACRI_API virtual void dealloc() override;
 
-			CLCACRI_API LinearGradient(ACRIDevice *device);
+			CLCACRI_API LinearGradient(Device *device);
 			CLCACRI_API virtual ~LinearGradient();
 		};
 	}

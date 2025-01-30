@@ -17,7 +17,8 @@ namespace clench {
 			virtual bool doDeinit() = 0;
 
 		public:
-			peff::RcObjectPtr<peff::Alloc> selfAllocator, resourceAllocator;
+			peff::RcObjectPtr<peff::Alloc> selfAllocator;
+			peff::RcObjectPtr<peff::Alloc> resourceAllocator;
 			const char *backendId;
 			bool isInited = false;
 

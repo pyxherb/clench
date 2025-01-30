@@ -5,6 +5,7 @@
 #include <thread>
 #include <chrono>
 #include <fstream>
+#include <clench/acri/backend.h>
 #include <clench/vwc/button.h>
 
 using namespace clench;
@@ -40,6 +41,9 @@ int main(int argc, char **argv) {
 	if (auto result = ghal::scanAndInitRegisteredBackends();
 		result.has_value())
 		throw std::runtime_error((std::string) "Error initializing GHAL backend " + result->second);
+
+	if(!acri::registerBuiltinBackends(peff::getDefaultAlloc()))
+		throw std::bad_alloc();
 
 	peff::List<std::string_view> preferredBackendList;
 	if (!preferredBackendList.build({ "opengl" }))
@@ -204,6 +208,8 @@ int main(int argc, char **argv) {
 
 	g_mainWindow.reset();
 	g_mainNativeWindow.reset();
+
+	acri::g_registeredBackends.clear();
 
 	g_mainGhalDevice.reset();
 

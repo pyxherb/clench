@@ -7,15 +7,15 @@
 
 namespace clench {
 	namespace acri {
-		class ACRIDevice;
+		class Device;
 
 		class ACRIResource : public peff::RcObject {
 		public:
-			ACRIDevice *device;
+			Device *device;
 
 			CLENCH_NO_COPY_MOVE_METHODS(ACRIResource);
 
-			CLCACRI_API ACRIResource(ACRIDevice *device);
+			CLCACRI_API ACRIResource(Device *device);
 			CLCACRI_API virtual ~ACRIResource();
 
 			virtual void dealloc() = 0;

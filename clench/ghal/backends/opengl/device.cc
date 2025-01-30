@@ -552,8 +552,12 @@ CLCGHAL_API base::ExceptionPtr GLDevice::createTexture3D(const char *data, size_
 	return {};
 }
 
-CLCGHAL_API RenderTargetView *GLDevice::createRenderTargetViewForTexture2D(Texture2D *texture) {
-	return GLRenderTargetView::alloc(this, RenderTargetViewType::Texture2D, ((GLTexture2D *)texture)->textureHandle);
+CLCGHAL_API base::ExceptionPtr GLDevice::createRenderTargetViewForTexture2D(Texture2D *texture, RenderTargetView *&renderTargetViewOut) {
+	std::unique_ptr<GLRenderTargetView, peff::RcObjectUniquePtrDeleter> ptr(
+		GLRenderTargetView::alloc(this, RenderTargetViewType::Texture2D, ((GLTexture2D *)texture)->textureHandle));
+	if(!ptr)
+		return base::OutOfMemoryException::alloc();
+	return {};
 }
 
 CLCGHAL_API void GLDevice::dealloc() {

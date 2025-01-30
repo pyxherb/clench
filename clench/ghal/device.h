@@ -53,7 +53,7 @@ namespace clench {
 			virtual base::ExceptionPtr createTexture2D(const char *data, size_t size, const Texture2DDesc &desc, Texture2D *&textureOut) = 0;
 			virtual base::ExceptionPtr createTexture3D(const char *data, size_t size, const Texture3DDesc &desc, Texture3D *&textureOut) = 0;
 
-			virtual RenderTargetView *createRenderTargetViewForTexture2D(Texture2D *texture) = 0;
+			virtual base::ExceptionPtr createRenderTargetViewForTexture2D(Texture2D *texture, RenderTargetView *&renderTargetViewOut) = 0;
 		};
 
 		class DeviceContext : public DeviceResource {

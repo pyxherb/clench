@@ -75,7 +75,7 @@ namespace clench {
 			CLCGHAL_API virtual base::ExceptionPtr createTexture2D(const char *data, size_t size, const Texture2DDesc &desc, Texture2D *&textureOut) override;
 			CLCGHAL_API virtual base::ExceptionPtr createTexture3D(const char *data, size_t size, const Texture3DDesc &desc, Texture3D *&textureOut) override;
 
-			CLCGHAL_API virtual RenderTargetView *createRenderTargetViewForTexture2D(Texture2D *texture) override;
+			CLCGHAL_API virtual base::ExceptionPtr createRenderTargetViewForTexture2D(Texture2D *texture, RenderTargetView *&renderTargetViewOut) override;
 
 			CLCGHAL_API virtual void dealloc() override;
 
