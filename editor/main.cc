@@ -55,9 +55,6 @@ int main(int argc, char **argv) {
 		g_mainGhalDevice = std::unique_ptr<ghal::Device, peff::DeallocableDeleter<ghal::Device>>(mainGhalDevice);
 	}
 
-	if (!g_mainGhalDevice)
-		throw std::runtime_error("Error creating main GHAL device");
-
 	if (auto e = wsal::createWindow(
 			wsal::CREATEWINDOW_MIN |
 				wsal::CREATEWINDOW_MAX |
@@ -79,83 +76,23 @@ int main(int argc, char **argv) {
 
 	g_mainNativeWindow->show();
 
-	peff::RcObjectPtr<clench::ghal::VertexShader> vertexShader;
-	peff::RcObjectPtr<clench::ghal::FragmentShader> fragmentShader;
 	{
-		std::ifstream is("test_vertex.glsl");
-
-		is.seekg(0, std::ios::end);
-		size_t size = is.tellg();
-		is.seekg(0, std::ios::beg);
-
-		std::unique_ptr<char[]> vsSrc(std::make_unique<char[]>(size));
-		is.read(vsSrc.get(), size);
-
-		if (auto e = g_mainGhalDevice->createVertexShader(vsSrc.get(), size, nullptr, vertexShader.getRef()); e)
+		acri::Device *mainAcriDevice;
+		if(auto e = acri::createDevice(g_mainGhalDevice.get(), peff::getDefaultAlloc(), peff::getDefaultAlloc(), mainAcriDevice))
 			throw std::runtime_error(e->what());
-	}
-	{
-		std::ifstream is("test_frag.glsl");
-
-		is.seekg(0, std::ios::end);
-		size_t size = is.tellg();
-		is.seekg(0, std::ios::beg);
-
-		std::unique_ptr<char[]> fsSrc(std::make_unique<char[]>(size));
-		is.read(fsSrc.get(), size);
-
-		if (auto e = g_mainGhalDevice->createFragmentShader(fsSrc.get(), size, nullptr, fragmentShader.getRef()); e)
-			throw std::runtime_error(e->what());
+		g_mainAcriDevice = std::unique_ptr<acri::Device, peff::DeallocableDeleter<acri::Device>>(mainAcriDevice);
 	}
 
-	peff::RcObjectPtr<clench::ghal::VertexLayout> vertexArray;
-	{
-		clench::ghal::VertexLayoutElementDesc descs[] = {
-			{ clench::ghal::InputVertexShaderSemanticType::Position,
-				0,
-				{ clench::ghal::VertexElementType::Float, 3 },
-				sizeof(float) * 4 + sizeof(float) * 3,
-				0 },
-			{ clench::ghal::InputVertexShaderSemanticType::Color,
-				0,
-				{ clench::ghal::VertexElementType::Float, 4 },
-				sizeof(float) * 4 + sizeof(float) * 3,
-				sizeof(float) * 3 }
-		};
-
-		if (auto e = g_mainGhalDevice->createVertexLayout(descs, std::size(descs), vertexShader.get(), vertexArray.getRef()); e) {
-			throw std::runtime_error(e->what());
-		}
-	}
-
-	peff::RcObjectPtr<clench::ghal::Buffer> vertexBuffer, indexBuffer;
-	{
-		clench::ghal::BufferDesc vertexBufferDesc, indexBufferDesc;
-
-		vertexBufferDesc.size = sizeof(vertices);
-		vertexBufferDesc.usage = clench::ghal::BufferUsage::Static;
-		vertexBufferDesc.proposedTarget = clench::ghal::BufferTarget::Vertex;
-		vertexBufferDesc.cpuReadable = false;
-		vertexBufferDesc.cpuWritable = true;
-		if (auto e = g_mainGhalDevice->createBuffer(vertexBufferDesc, vertices, vertexBuffer.getRef()); e)
-			throw std::runtime_error(e->what());
-
-		indexBufferDesc.size = sizeof(indices);
-		indexBufferDesc.usage = clench::ghal::BufferUsage::Static;
-		indexBufferDesc.proposedTarget = clench::ghal::BufferTarget::Index;
-		indexBufferDesc.cpuReadable = false;
-		indexBufferDesc.cpuWritable = true;
-		if (auto e = g_mainGhalDevice->createBuffer(indexBufferDesc, indices, indexBuffer.getRef()); e)
-			throw std::runtime_error(e->what());
-	}
+	peff::RcObjectPtr<acri::DeviceContext> acriDeviceContext;
+	acri::createDeviceContext(g_mainWindow->ghalDeviceContext.get(), g_mainAcriDevice.get(), acriDeviceContext.getRef());
 
 	peff::RcObjectPtr<clench::vwc::DefaultButton> button =
 		peff::allocAndConstruct<clench::vwc::DefaultButton>(
 			peff::getDefaultAlloc(),
 			sizeof(std::max_align_t),
 			peff::getDefaultAlloc(),
-			g_mainGhalDevice.get(),
-			g_mainWindow->ghalDeviceContext.get(),
+			g_mainAcriDevice.get(),
+			acriDeviceContext.get(),
 			clench::ghal::TextureFormat::RGBA8,
 			g_mainWindow.get(),
 			10,
@@ -198,11 +135,6 @@ int main(int argc, char **argv) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 60));
 	}
 	button.reset();
-	indexBuffer.reset();
-	vertexBuffer.reset();
-	vertexArray.reset();
-	fragmentShader.reset();
-	vertexShader.reset();
 
 	// g_mainGhalDeviceContAext.reset();
 
@@ -211,6 +143,8 @@ int main(int argc, char **argv) {
 
 	acri::g_registeredBackends.clear();
 
+	acriDeviceContext.reset();
+	g_mainAcriDevice.reset();
 	g_mainGhalDevice.reset();
 
 	if (auto result = ghal::deinitInitedRegisteredBackends();

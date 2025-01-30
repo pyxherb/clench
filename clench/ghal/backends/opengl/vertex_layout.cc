@@ -4,14 +4,12 @@ using namespace clench;
 using namespace clench::ghal;
 
 CLCGHAL_API GLVertexLayout::GLVertexLayout(
-	Device *ownerDevice,
-	GLuint vertexArrayHandle)
+	Device *ownerDevice)
 	: VertexLayout(ownerDevice),
-	  vertexArrayHandle(vertexArrayHandle) {
+	dataInputs(ownerDevice->resourceAllocator.get()) {
 }
 
 CLCGHAL_API GLVertexLayout::~GLVertexLayout() {
-	glDeleteVertexArrays(1, &vertexArrayHandle);
 }
 
 CLCGHAL_API void GLVertexLayout::dealloc() {
@@ -19,10 +17,9 @@ CLCGHAL_API void GLVertexLayout::dealloc() {
 }
 
 CLCGHAL_API GLVertexLayout *GLVertexLayout::alloc(
-	Device *ownerDevice,
-	GLuint vertexArrayHandle) {
+	Device *ownerDevice) {
 	return (GLVertexLayout *)
 		peff::allocAndConstruct<GLVertexLayout>(
 			ownerDevice->resourceAllocator.get(), sizeof(std::max_align_t),
-			ownerDevice, vertexArrayHandle);
+			ownerDevice);
 }

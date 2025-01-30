@@ -37,16 +37,20 @@ CLCACRI_API void GLDeviceContext::fillTriangle(const TriangleParams &params, Bru
 			float vertices[] = {
 				b->color.r, b->color.g, b->color.b, b->color.a,
 				params.vertices[0].x, params.vertices[0].y,
+				b->color.r, b->color.g, b->color.b, b->color.a,
 				params.vertices[1].x, params.vertices[1].y,
+				b->color.r, b->color.g, b->color.b, b->color.a,
 				params.vertices[2].x, params.vertices[2].y
 			};
 
 			std::lock_guard<std::mutex> triangleSolidColorMutex(localDeviceResources.forTriangle.solidColorLock);
 
-			ghalDeviceContext->bindVertexLayout(((GLDevice *)device)->deviceResources.forTriangle.solidColorVertexLayout.get());
-			ghalDeviceContext->bindVertexBuffer(localDeviceResources.forTriangle.solidColorVertexBuffer.get(), sizeof(vertices));
-			ghalDeviceContext->setData(localDeviceResources.forTriangle.solidColorVertexBuffer.get(), vertices);
 			ghalDeviceContext->setShaderProgram(((GLDevice *)device)->deviceResources.forTriangle.solidColorShaderProgram.get());
+			ghalDeviceContext->bindVertexBuffer(localDeviceResources.forTriangle.solidColorVertexBuffer.get(), sizeof(vertices));
+			ghalDeviceContext->bindVertexLayout(((GLDevice *)device)->deviceResources.forTriangle.solidColorVertexLayout.get());
+			ghalDeviceContext->setData(localDeviceResources.forTriangle.solidColorVertexBuffer.get(), vertices);
+
+			ghalDeviceContext->drawTriangle(1);
 
 			break;
 		}

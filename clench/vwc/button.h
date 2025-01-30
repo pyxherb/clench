@@ -9,8 +9,8 @@ namespace clench {
 		public:
 			CLCVWC_API Button(
 				peff::Alloc *selfAllocator,
-				ghal::Device *ghalDevice,
-				ghal::DeviceContext *ghalDeviceContext,
+				acri::Device *acriDevice,
+				acri::DeviceContext *acriDeviceContext,
 				ghal::TextureFormat renderBufferFormat,
 				Window *parent,
 				int x,
@@ -40,15 +40,18 @@ namespace clench {
 
 		public:
 			peff::RcObjectPtr<Control> content;
+			peff::RcObjectPtr<acri::Brush> backgroundBrush;
+			peff::RcObjectPtr<acri::Brush> pressedBackgroundBrush;
+			peff::RcObjectPtr<acri::Brush> hoverBackgroundBrush;
 
-			float backgroundColor[3] = { 0.7f, 0.7f, 0.7f };
-			float pressedBackgroundColor[3] = { 0.6f, 0.6f, 0.6f };
-			float hoverBackgroundColor[3] = { 0.8f, 0.8f, 0.8f };
+			ghal::Color backgroundColor = { 0.7f, 0.7f, 0.7f, 1.0f };
+			ghal::Color pressedBackgroundColor = { 0.6f, 0.6f, 0.6f, 1.0f };
+			ghal::Color hoverBackgroundColor = { 0.8f, 0.8f, 0.8f, 1.0f };
 
 			CLCVWC_API DefaultButton(
 				peff::Alloc *selfAllocator,
-				ghal::Device *ghalDevice,
-				ghal::DeviceContext *ghalDeviceContext,
+				acri::Device *acriDevice,
+				acri::DeviceContext *acriDeviceContext,
 				ghal::TextureFormat renderBufferFormat,
 				Window *parent,
 				int x,

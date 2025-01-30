@@ -46,12 +46,12 @@ CLCACRI_API base::ExceptionPtr GLBackend::createDevice(ghal::Device *ghalDevice,
 			{ clench::ghal::InputVertexShaderSemanticType::Color,
 				0,
 				{ clench::ghal::VertexElementType::Float, 4 },
-				0,
+				sizeof(float) * 2 + sizeof(float) * 4,
 				0 },
 			{ clench::ghal::InputVertexShaderSemanticType::Position,
 				0,
 				{ clench::ghal::VertexElementType::Float, 2 },
-				sizeof(float) * 2,
+				sizeof(float) * 2 + sizeof(float) * 4,
 				sizeof(float) * 4 }
 		};
 
@@ -79,7 +79,7 @@ base::ExceptionPtr GLBackend::createDeviceContext(
 	{
 		ghal::BufferDesc bufDesc;
 
-		bufDesc.size = sizeof(float) * 6;
+		bufDesc.size = (sizeof(float) * 4 + sizeof(float) * 2) * 3;
 		bufDesc.usage = ghal::BufferUsage::Dynamic;
 		bufDesc.proposedTarget = ghal::BufferTarget::Vertex;
 		bufDesc.cpuWritable = true;

@@ -36,8 +36,8 @@ namespace clench {
 			InputVertexShaderSemanticType semanticType;
 			uint32_t semanticIndex;
 			VertexDataType dataType;
-			uint32_t stride;
-			uint32_t off;
+			size_t stride;
+			size_t off;
 		};
 
 		class VertexLayout : public DeviceResource {

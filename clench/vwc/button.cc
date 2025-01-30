@@ -5,8 +5,8 @@ using namespace clench::vwc;
 
 CLCVWC_API Button::Button(
 	peff::Alloc *selfAllocator,
-	ghal::Device *ghalDevice,
-	ghal::DeviceContext *ghalDeviceContext,
+	acri::Device *acriDevice,
+	acri::DeviceContext *acriDeviceContext,
 	ghal::TextureFormat renderBufferFormat,
 	Window *parent,
 	int x,
@@ -16,8 +16,8 @@ CLCVWC_API Button::Button(
 	: Control(
 		  selfAllocator,
 		  wsal::CREATEWINDOW_NOFRAME,
-		  ghalDevice,
-		  ghalDeviceContext,
+		  acriDevice,
+		  acriDeviceContext,
 		  renderBufferFormat,
 		  parent,
 		  x,
@@ -54,8 +54,8 @@ CLCVWC_API void Button::onMouseLeave() {
 
 CLCVWC_API DefaultButton::DefaultButton(
 	peff::Alloc *selfAllocator,
-	ghal::Device *ghalDevice,
-	ghal::DeviceContext *ghalDeviceContext,
+	acri::Device *acriDevice,
+	acri::DeviceContext *acriDeviceContext,
 	ghal::TextureFormat renderBufferFormat,
 	Window *parent,
 	int x,
@@ -64,14 +64,17 @@ CLCVWC_API DefaultButton::DefaultButton(
 	int height)
 	: Button(
 		  selfAllocator,
-		  ghalDevice,
-		  ghalDeviceContext,
+		  acriDevice,
+		  acriDeviceContext,
 		  renderBufferFormat,
 		  parent,
 		  x,
 		  y,
 		  width,
 		  height) {
+	backgroundBrush = acriDevice->createSolidColorBrush(backgroundColor);
+	hoverBackgroundBrush = acriDevice->createSolidColorBrush(hoverBackgroundColor);
+	pressedBackgroundBrush = acriDevice->createSolidColorBrush(pressedBackgroundColor);
 }
 
 CLCVWC_API DefaultButton::~DefaultButton() {
@@ -82,29 +85,24 @@ CLCVWC_API void DefaultButton::dealloc() {
 }
 
 CLCVWC_API void DefaultButton::onDraw() {
-	ghalDeviceContext->setViewport(_x, _y, _width, _height, 0.0f, 1.0f);
+	acri::TriangleParams triangleParams;
+
+	triangleParams.vertices[0].x = -1.0f;
+	triangleParams.vertices[0].y = -1.0f;
+
+	triangleParams.vertices[1].x = 1.0f;
+	triangleParams.vertices[1].y = -1.0f;
+
+	triangleParams.vertices[2].x = -1.0f;
+	triangleParams.vertices[2].y = 1.0f;
+
 	if (_isPressed) {
-		ghalDeviceContext->clearRenderTargetView(
-			nullptr,
-			pressedBackgroundColor[0],
-			pressedBackgroundColor[1],
-			pressedBackgroundColor[2],
-			1.0f);
+		acriDeviceContext->fillTriangle(triangleParams, pressedBackgroundBrush.get());
 	} else {
 		if (_isHovered) {
-			ghalDeviceContext->clearRenderTargetView(
-				nullptr,
-				hoverBackgroundColor[0],
-				hoverBackgroundColor[1],
-				hoverBackgroundColor[2],
-				1.0f);
+			acriDeviceContext->fillTriangle(triangleParams, hoverBackgroundBrush.get());
 		} else {
-			ghalDeviceContext->clearRenderTargetView(
-				nullptr,
-				backgroundColor[0],
-				backgroundColor[1],
-				backgroundColor[2],
-				1.0f);
+			acriDeviceContext->fillTriangle(triangleParams, backgroundBrush.get());
 		}
 	}
 }

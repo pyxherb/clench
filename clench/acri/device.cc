@@ -15,7 +15,11 @@ CLCACRI_API Device::Device(
 }
 
 CLCACRI_API Device::~Device() {
-	assert(("Not all ACRI resources are released", false));
+	assert(("Not all ACRI resources are released", !createdResources.size()));
+}
+
+CLCACRI_API SolidColorBrush *Device::createSolidColorBrush(const ghal::Color &color) {
+	return SolidColorBrush::alloc(this, color);
 }
 
 CLCACRI_API DeviceContext::DeviceContext(Device *acriDevice, ghal::DeviceContext *ghalDeviceContext) : ACRIResource(acriDevice), ghalDeviceContext(ghalDeviceContext) {

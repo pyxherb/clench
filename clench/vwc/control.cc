@@ -6,8 +6,8 @@ using namespace clench::vwc;
 CLCVWC_API Control::Control(
 	peff::Alloc *selfAllocator,
 	wsal::CreateWindowFlags createWindowFlags,
-	ghal::Device *ghalDevice,
-	ghal::DeviceContext *ghalDeviceContext,
+	acri::Device *acriDevice,
+	acri::DeviceContext *acriDeviceContext,
 	ghal::TextureFormat renderBufferFormat,
 	wsal::Window *parent,
 	int x,
@@ -15,8 +15,8 @@ CLCVWC_API Control::Control(
 	int width,
 	int height)
 	: VirtualWindow(selfAllocator, createWindowFlags, parent, x, y, width, height),
-	  ghalDevice(ghalDevice),
-	  ghalDeviceContext(ghalDeviceContext),
+	  acriDevice(acriDevice),
+	  acriDeviceContext(acriDeviceContext),
 	  renderBufferFormat(renderBufferFormat) {
 }
 
@@ -27,18 +27,18 @@ CLCVWC_API void Control::onResize(int width, int height) {
 	/* renderTargetView.reset();
 	renderBuffer.reset();
 
-	ghal::Texture2DDesc textureDesc = {};
+	acri::Texture2DDesc textureDesc = {};
 
 	textureDesc.format = renderBufferFormat;
 	textureDesc.width = width;
 	textureDesc.height = height;
 	textureDesc.mipmapLevel = 0;
 	textureDesc.bindingFlags =
-		ghal::TEXTURE_BINDING_RENDER_TARGET |
-		ghal::TEXTURE_BINDING_SHADER_RESOURCE;
+		acri::TEXTURE_BINDING_RENDER_TARGET |
+		acri::TEXTURE_BINDING_SHADER_RESOURCE;
 
-	renderBuffer = ghalDevice->createTexture2D(nullptr, 0, textureDesc);
-	renderTargetView = ghalDevice->createRenderTargetViewForTexture2D(renderBuffer.get());*/
+	renderBuffer = acriDevice->createTexture2D(nullptr, 0, textureDesc);
+	renderTargetView = acriDevice->createRenderTargetViewForTexture2D(renderBuffer.get());*/
 }
 
 CLCVWC_API void Control::onExpose() {
@@ -60,7 +60,7 @@ CLCVWC_API void Control::redrawChildWindows() {
 		i->getPos(subwindowX, subwindowY);
 		i->getSize(subwindowWidth, subwindowHeight);
 
-		ghalDeviceContext->getViewport(
+		acriDeviceContext->ghalDeviceContext->getViewport(
 			viewportX,
 			viewportY,
 			viewportWidth,
@@ -68,7 +68,7 @@ CLCVWC_API void Control::redrawChildWindows() {
 			viewportMinDepth,
 			viewportMaxDepth);
 
-		ghalDeviceContext->setViewport(
+		acriDeviceContext->ghalDeviceContext->setViewport(
 			viewportX + subwindowX,
 			viewportY + subwindowY,
 			subwindowWidth,

@@ -6,22 +6,27 @@
 
 namespace clench {
 	namespace ghal {
+		struct GLVertexDataInput {
+			GLenum dataType;
+			size_t num;
+			size_t stride;
+			size_t off;
+		};
+
 		class GLVertexLayout : public VertexLayout {
 		public:
-			GLuint vertexArrayHandle;
+			peff::DynArray<GLVertexDataInput> dataInputs;
 
 			CLENCH_NO_COPY_MOVE_METHODS(GLVertexLayout);
 
 			CLCGHAL_API GLVertexLayout(
-				Device *ownerDevice,
-				GLuint vertexArrayHandle);
+				Device *ownerDevice);
 			CLCGHAL_API virtual ~GLVertexLayout();
 
 			CLCGHAL_API virtual void dealloc() override;
 
 			CLCGHAL_API static GLVertexLayout *alloc(
-				Device *ownerDevice,
-				GLuint vertexArrayHandle);
+				Device *ownerDevice);
 		};
 	}
 }

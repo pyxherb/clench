@@ -69,6 +69,8 @@ CLCVWC_API void VWCRootWindow::onMouseMove(int x, int y) {
 CLCVWC_API void VWCRootWindow::onDraw() {
 	ghalDeviceContext->begin();
 
+	ghalDeviceContext->clearRenderTargetView(nullptr, 0.0f, 0.0f, 0.0f, 1.0f);
+
 	int width, height;
 	getSize(width, height);
 

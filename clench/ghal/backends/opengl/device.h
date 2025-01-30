@@ -9,6 +9,7 @@
 #include <thread>
 #include <optional>
 #include <mutex>
+#include <clench/utils/logger.h>
 
 namespace clench {
 	namespace ghal {
@@ -40,6 +41,7 @@ namespace clench {
 			/// @brief Default context for some internal operations. DO NOT try to draw with it!
 			/// @note DO NOT forget to create one for the device after the creation!
 			peff::RcObjectPtr<GLDeviceContext> defaultContext;
+			peff::RcObjectPtr<Buffer> pseudoBuffer;
 
 			std::mutex texture1dLock;
 			std::mutex texture2dLock;
@@ -94,6 +96,8 @@ namespace clench {
 
 			std::mutex copyWriteBufferLock;
 			std::mutex renderBufferLock;
+
+			GLuint contextLocalVertexArray = GL_NONE;
 
 			int viewportX = 0, viewportY = 0,
 				viewportWidth = 0, viewportHeight = 0,

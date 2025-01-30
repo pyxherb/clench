@@ -23,6 +23,8 @@ namespace clench {
 			CLCACRI_API Device(ghal::Device *associatedDevice, peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator);
 			CLCACRI_API ~Device();
 
+			CLCACRI_API virtual SolidColorBrush *createSolidColorBrush(const ghal::Color &color);
+
 			virtual void dealloc() = 0;
 		};
 
@@ -61,7 +63,6 @@ namespace clench {
 
 		class DeviceContext : public ACRIResource {
 		public:
-			Device *acriDevice;
 			peff::RcObjectPtr<ghal::DeviceContext> ghalDeviceContext;
 
 			CLCACRI_API DeviceContext(Device *acriDevice, ghal::DeviceContext *ghalDeviceContext);

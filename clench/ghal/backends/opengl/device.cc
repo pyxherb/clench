@@ -28,6 +28,24 @@ CLCGHAL_API Backend *GLDevice::getBackend() {
 	return backend;
 }
 
+void _glMessageCallback(
+	GLenum source,
+	GLenum type,
+	GLuint id,
+	GLenum severity,
+	GLsizei length,
+	const GLchar *message,
+	const void *userParam) {
+	switch (type) {
+		case GL_DEBUG_TYPE_ERROR:
+			CLENCH_ERROR_LOG("OpenGL", "%s", message);
+			break;
+		default:
+			CLENCH_INFO_LOG("OpenGL", "%s", message);
+			break;
+	}
+}
+
 CLCGHAL_API base::ExceptionPtr GLDevice::createDeviceContextForWindow(clench::wsal::Window *window, DeviceContext *&deviceContextOut) {
 	int width, height;
 	window->getSize(width, height);
@@ -132,12 +150,17 @@ CLCGHAL_API base::ExceptionPtr GLDevice::createDeviceContextForWindow(clench::ws
 				ErrorCreatingDeviceContextException::alloc(
 					resourceAllocator.get(),
 					base::wrapIfExceptAllocFailed(ErrorInitializingGLLoaderException::alloc(resourceAllocator.get()))));
+		glEnable(GL_DEBUG_OUTPUT);
+		glDebugMessageCallback(_glMessageCallback, 0);
 		g_glInitialized = true;
 	}
 #endif
 	GLint defaultFramebuffer;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *)&defaultFramebuffer);
 	deviceContext->defaultRenderTargetView = GLRenderTargetView::alloc(this, RenderTargetViewType::Buffer, defaultFramebuffer);
+
+	glGenVertexArrays(1, &deviceContext->contextLocalVertexArray);
+	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
 
 	deviceContext->onResize(width, height);
 
@@ -152,29 +175,16 @@ CLCGHAL_API base::ExceptionPtr GLDevice::createVertexLayout(
 	size_t nElementDescs,
 	VertexShader *vertexShader,
 	VertexLayout *&vertexLayoutOut) {
-	GLuint vao;
-	glGenVertexArrays(1, &vao);
-
-	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
-
-	peff::ScopeGuard deleteVaoGuard([&vao]() noexcept {
-		glDeleteVertexArrays(1, &vao);
-	});
-
-	GLint prevVao;
-	glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &prevVao);
-	peff::ScopeGuard restoreTextureGuard([prevVao]() noexcept {
-		glBindVertexArray(prevVao);
-	});
-
-	std::unique_ptr<GLVertexLayout, peff::RcObjectUniquePtrDeleter> vertexArray(GLVertexLayout::alloc(this, vao));
+	std::unique_ptr<GLVertexLayout, peff::RcObjectUniquePtrDeleter> vertexArray(GLVertexLayout::alloc(this));
 	if (!vertexArray)
 		return base::OutOfMemoryException::alloc();
 
-	for (size_t i = 0; i < nElementDescs; ++i) {
-		VertexLayoutElementDesc &curDesc = elementDescs[i];
+	if (!vertexArray->dataInputs.resize(nElementDescs))
+		return base::OutOfMemoryException::alloc();
 
-		glEnableVertexArrayAttrib(vao, i);
+	for (size_t i = 0; i < nElementDescs; ++i) {
+		const VertexLayoutElementDesc &curDesc = elementDescs[i];
+		GLVertexDataInput &curDataInput = vertexArray->dataInputs.at(i);
 
 		size_t sizeOut;
 		GLenum glType;
@@ -182,10 +192,11 @@ CLCGHAL_API base::ExceptionPtr GLDevice::createVertexLayout(
 			return base::wrapIfExceptAllocFailed(InvalidVertexDataTypeException::alloc(resourceAllocator.get(), i));
 		}
 
-		glVertexAttribPointer(i, sizeOut * curDesc.dataType.nElements, glType, false, curDesc.stride, (void *)curDesc.off);
+		curDataInput.dataType = glType;
+		curDataInput.num = curDesc.dataType.nElements;
+		curDataInput.off = curDesc.off;
+		curDataInput.stride = curDesc.stride;
 	}
-
-	deleteVaoGuard.release();
 
 	vertexArray->incRef();
 	vertexLayoutOut = vertexArray.release();
@@ -205,7 +216,8 @@ CLCGHAL_API base::ExceptionPtr GLDevice::createVertexShader(const char *source, 
 
 	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
 
-	glShaderSource(shader, 1, &source, (GLint *)&size);
+	GLint sz = size;
+	glShaderSource(shader, 1, &source, &sz);
 	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
 
 	glCompileShader(shader);
@@ -250,7 +262,8 @@ CLCGHAL_API base::ExceptionPtr GLDevice::createFragmentShader(const char *source
 
 	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
 
-	glShaderSource(shader, 1, &source, (GLint *)&size);
+	GLint sz = size;
+	glShaderSource(shader, 1, &source, &sz);
 	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
 
 	glCompileShader(shader);
@@ -586,6 +599,8 @@ CLCGHAL_API GLDeviceContext::GLDeviceContext(
 }
 
 CLCGHAL_API GLDeviceContext::~GLDeviceContext() {
+	if(contextLocalVertexArray)
+		glDeleteVertexArrays(1, &contextLocalVertexArray);
 	nativeGLContext.destroy();
 }
 
@@ -708,7 +723,15 @@ CLCGHAL_API void GLDeviceContext::bindVertexLayout(VertexLayout *vertexArray) {
 		NativeGLContext::restoreContextCurrent(prevContext);
 	});
 
-	glBindVertexArray(((GLVertexLayout *)vertexArray)->vertexArrayHandle);
+	glBindVertexArray(contextLocalVertexArray);
+
+	GLVertexLayout *layout = (GLVertexLayout *)vertexArray;
+
+	for (size_t i = 0; i < layout->dataInputs.size(); ++i) {
+		const GLVertexDataInput &curDataInput = layout->dataInputs.at(i);
+		glVertexAttribPointer(i, curDataInput.num, curDataInput.dataType, false, curDataInput.stride, (void *)curDataInput.off);
+		glEnableVertexArrayAttrib(contextLocalVertexArray, i);
+	}
 }
 
 CLCGHAL_API void GLDeviceContext::setData(Buffer *buffer, const void *data) {
@@ -816,7 +839,7 @@ CLCGHAL_API void GLDeviceContext::getViewport(
 }
 
 CLCGHAL_API void GLDeviceContext::drawTriangle(unsigned int nTriangles) {
-	glDrawArrays(GL_TRIANGLES, 0, nTriangles);
+	glDrawArrays(GL_TRIANGLES, 0, nTriangles * 3);
 }
 
 CLCGHAL_API void GLDeviceContext::drawIndexed(unsigned int nIndices) {
