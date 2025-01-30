@@ -21,8 +21,7 @@ CLCGHAL_API void GLVertexShader::dealloc() {
 CLCGHAL_API GLVertexShader *GLVertexShader::alloc(
 	GHALDevice *ownedDevice,
 	GLuint shaderHandle) {
-	return (GLVertexShader *)
-		peff::allocAndConstruct<GLVertexShader>(
+	return peff::allocAndConstruct<GLVertexShader>(
 			ownedDevice->resourceAllocator.get(), sizeof(std::max_align_t),
 			ownedDevice, shaderHandle);
 }
@@ -41,8 +40,7 @@ CLCGHAL_API void GLFragmentShader::dealloc() {
 CLCGHAL_API GLFragmentShader *GLFragmentShader::alloc(
 	GHALDevice *ownedDevice,
 	GLuint shaderHandle) {
-	return (GLFragmentShader *)
-		peff::allocAndConstruct<GLFragmentShader>(
+	return peff::allocAndConstruct<GLFragmentShader>(
 			ownedDevice->resourceAllocator.get(), sizeof(std::max_align_t),
 			ownedDevice, shaderHandle);
 }

@@ -24,7 +24,7 @@ CLCGHAL_API void *clench::ghal::_loadGlProc(const char *name) {
 #endif
 }
 
-CLCGHAL_API GLGHALBackend::GLGHALBackend(peff::Alloc *selfAllocator) : GHALBackend("opengl", selfAllocator) {
+CLCGHAL_API GLGHALBackend::GLGHALBackend(peff::Alloc *selfAllocator) : GHALBackend("opengl", selfAllocator), threadLocalExceptionStorages(selfAllocator) {
 }
 
 CLCGHAL_API GLGHALBackend::~GLGHALBackend() {
@@ -52,7 +52,7 @@ bool GLGHALBackend::doDeinit() {
 
 CLCGHAL_API base::ExceptionPtr GLGHALBackend::createDevice(GHALDevice *&ghalDeviceOut) {
 	GHALDevice *ptr = GLGHALDevice::alloc(peff::getDefaultAlloc(), peff::getDefaultAlloc(), this);
-	if(!ptr)
+	if (!ptr)
 		return base::OutOfMemoryException::alloc();
 	ghalDeviceOut = ptr;
 	return {};

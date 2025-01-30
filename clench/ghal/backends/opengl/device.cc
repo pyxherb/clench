@@ -153,6 +153,8 @@ CLCGHAL_API base::ExceptionPtr GLGHALDevice::createVertexLayout(
 	GLuint vao;
 	glGenVertexArrays(1, &vao);
 
+	CLENCH_GHAL_GL_RETURN_IF_OOM();
+
 	peff::ScopeGuard deleteVaoGuard([&vao]() noexcept {
 		glDeleteVertexArrays(1, &vao);
 	});
@@ -199,8 +201,14 @@ CLCGHAL_API base::ExceptionPtr GLGHALDevice::createVertexShader(const char *sour
 		glDeleteShader(shader);
 	});
 
+	CLENCH_GHAL_GL_RETURN_IF_OOM();
+
 	glShaderSource(shader, 1, &source, (GLint *)&size);
+	CLENCH_GHAL_GL_RETURN_IF_OOM();
+
 	glCompileShader(shader);
+
+	CLENCH_GHAL_GL_RETURN_IF_OOM();
 
 	GLint success;
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
@@ -238,8 +246,14 @@ CLCGHAL_API base::ExceptionPtr GLGHALDevice::createFragmentShader(const char *so
 		glDeleteShader(shader);
 	});
 
+	CLENCH_GHAL_GL_RETURN_IF_OOM();
+
 	glShaderSource(shader, 1, &source, (GLint *)&size);
+	CLENCH_GHAL_GL_RETURN_IF_OOM();
+
 	glCompileShader(shader);
+
+	CLENCH_GHAL_GL_RETURN_IF_OOM();
 
 	GLint success;
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
@@ -317,11 +331,18 @@ CLCGHAL_API base::ExceptionPtr GLGHALDevice::linkShaderProgram(Shader **shaders,
 		glDeleteProgram(program);
 	});
 
+	CLENCH_GHAL_GL_RETURN_IF_OOM();
+
 	glAttachShader(program, vertexShader->shaderHandle);
 	glAttachShader(program, fragmentShader->shaderHandle);
 
+	CLENCH_GHAL_GL_RETURN_IF_OOM();
+
 	GLint success;
 	glLinkProgram(program);
+
+	CLENCH_GHAL_GL_RETURN_IF_OOM();
+
 	glGetProgramiv(program, GL_LINK_STATUS, &success);
 	if (!success) {
 		GLsizei size;
@@ -351,23 +372,28 @@ CLCGHAL_API base::ExceptionPtr GLGHALDevice::linkShaderProgram(Shader **shaders,
 	return {};
 }
 
-CLCGHAL_API Buffer *GLGHALDevice::createBuffer(const BufferDesc &bufferDesc, const void *initialData) {
+CLCGHAL_API base::ExceptionPtr GLGHALDevice::createBuffer(const BufferDesc &bufferDesc, const void *initialData, Buffer *&bufferOut) {
 	GLuint buffer;
 	glGenBuffers(1, &buffer);
+	CLENCH_GHAL_GL_RETURN_IF_OOM();
+
 	peff::ScopeGuard deleteBufferGuard([buffer]() noexcept {
 		glDeleteBuffers(1, &buffer);
 	});
 
 	std::unique_ptr<GLBuffer, peff::RcObjectUniquePtrDeleter> glBuffer(GLBuffer::alloc(this, bufferDesc, buffer));
+	if (!glBuffer)
+		return base::OutOfMemoryException::alloc();
 
 	deleteBufferGuard.release();
 
 	defaultContext->setData(glBuffer.get(), initialData);
 
-	return glBuffer.release();
+	bufferOut = glBuffer.release();
+	return {};
 }
 
-CLCGHAL_API Texture1D *GLGHALDevice::createTexture1D(const char *data, size_t size, const Texture1DDesc &desc) {
+CLCGHAL_API base::ExceptionPtr GLGHALDevice::createTexture1D(const char *data, size_t size, const Texture1DDesc &desc, Texture1D *&textureOut) {
 	GLenum glType;
 	GLenum glTextureFormat = toGLTextureFormat(desc.format, glType);
 	if (glTextureFormat == GL_INVALID_ENUM)
@@ -375,6 +401,8 @@ CLCGHAL_API Texture1D *GLGHALDevice::createTexture1D(const char *data, size_t si
 
 	GLuint texture;
 	glGenTextures(1, &texture);
+	CLENCH_GHAL_GL_RETURN_IF_OOM();
+
 	peff::ScopeGuard deleteTextureGuard([texture]() noexcept {
 		glDeleteTextures(1, &texture);
 	});
@@ -403,15 +431,20 @@ CLCGHAL_API Texture1D *GLGHALDevice::createTexture1D(const char *data, size_t si
 		glTextureFormat,
 		glType,
 		data);
+	CLENCH_GHAL_GL_RETURN_IF_OOM();
 
-	GLTexture1D *texture1d = new GLTexture1D(this, desc, texture);
+	std::unique_ptr<GLTexture1D, peff::RcObjectUniquePtrDeleter> texture1d(GLTexture1D::alloc(this, desc, texture));
+	if (!texture1d)
+		return base::OutOfMemoryException::alloc();
 
 	deleteTextureGuard.release();
 
-	return texture1d;
+	texture1d->incRef();
+	textureOut = texture1d.release();
+	return {};
 }
 
-CLCGHAL_API Texture2D *GLGHALDevice::createTexture2D(const char *data, size_t size, const Texture2DDesc &desc) {
+CLCGHAL_API base::ExceptionPtr GLGHALDevice::createTexture2D(const char *data, size_t size, const Texture2DDesc &desc, Texture2D *&textureOut) {
 	GLenum glType;
 	GLenum glTextureFormat = toGLTextureFormat(desc.format, glType);
 	if (glTextureFormat == GL_INVALID_ENUM)
@@ -419,6 +452,8 @@ CLCGHAL_API Texture2D *GLGHALDevice::createTexture2D(const char *data, size_t si
 
 	GLuint texture;
 	glGenTextures(1, &texture);
+	CLENCH_GHAL_GL_RETURN_IF_OOM();
+
 	peff::ScopeGuard deleteTextureGuard([texture]() noexcept {
 		glDeleteTextures(1, &texture);
 	});
@@ -448,15 +483,20 @@ CLCGHAL_API Texture2D *GLGHALDevice::createTexture2D(const char *data, size_t si
 		glTextureFormat,
 		glType,
 		data);
+	CLENCH_GHAL_GL_RETURN_IF_OOM();
 
-	GLTexture2D *texture2d = new GLTexture2D(this, desc, texture);
+	std::unique_ptr<GLTexture2D, peff::RcObjectUniquePtrDeleter> texture2d(GLTexture2D::alloc(this, desc, texture));
+	if (!texture2d)
+		return base::OutOfMemoryException::alloc();
 
 	deleteTextureGuard.release();
 
-	return texture2d;
+	texture2d->incRef();
+	textureOut = texture2d.release();
+	return {};
 }
 
-CLCGHAL_API Texture3D *GLGHALDevice::createTexture3D(const char *data, size_t size, const Texture3DDesc &desc) {
+CLCGHAL_API base::ExceptionPtr GLGHALDevice::createTexture3D(const char *data, size_t size, const Texture3DDesc &desc, Texture3D *&textureOut) {
 	GLenum glType;
 	GLenum glTextureFormat = toGLTextureFormat(desc.format, glType);
 	if (glTextureFormat == GL_INVALID_ENUM)
@@ -464,6 +504,8 @@ CLCGHAL_API Texture3D *GLGHALDevice::createTexture3D(const char *data, size_t si
 
 	GLuint texture;
 	glGenTextures(1, &texture);
+	CLENCH_GHAL_GL_RETURN_IF_OOM();
+
 	peff::ScopeGuard deleteTextureGuard([texture]() noexcept {
 		glDeleteTextures(1, &texture);
 	});
@@ -494,12 +536,17 @@ CLCGHAL_API Texture3D *GLGHALDevice::createTexture3D(const char *data, size_t si
 		glTextureFormat,
 		glType,
 		data);
+	CLENCH_GHAL_GL_RETURN_IF_OOM();
 
-	GLTexture3D *texture3d = new GLTexture3D(this, desc, texture);
+	std::unique_ptr<GLTexture3D, peff::RcObjectUniquePtrDeleter> texture3d(GLTexture3D::alloc(this, desc, texture));
+	if (!texture3d)
+		return base::OutOfMemoryException::alloc();
 
 	deleteTextureGuard.release();
 
-	return texture3d;
+	texture3d->incRef();
+	textureOut = texture3d.release();
+	return {};
 }
 
 CLCGHAL_API RenderTargetView *GLGHALDevice::createRenderTargetViewForTexture2D(Texture2D *texture) {

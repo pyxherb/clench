@@ -15,8 +15,8 @@ namespace clench {
 			ULong,
 			Float,
 			Double,
-			Boolean,
-			Half
+			Half,
+			Boolean
 		};
 
 		struct VertexDataType {

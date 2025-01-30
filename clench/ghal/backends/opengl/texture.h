@@ -19,6 +19,11 @@ namespace clench {
 			CLCGHAL_API virtual ~GLTexture1D();
 
 			CLCGHAL_API virtual void dealloc() override;
+
+			CLCGHAL_API static GLTexture1D *alloc(
+				GHALDevice *ownedDevice,
+				const Texture1DDesc &textureDesc,
+				GLuint textureHandle);
 		};
 
 		class GLTexture2D : public Texture2D {
@@ -34,6 +39,11 @@ namespace clench {
 			CLCGHAL_API virtual ~GLTexture2D();
 
 			CLCGHAL_API virtual void dealloc() override;
+
+			CLCGHAL_API static GLTexture2D *alloc(
+				GHALDevice *ownerDevice,
+				const Texture2DDesc &textureDesc,
+				GLuint textureHandle);
 		};
 
 		class GLTexture3D : public Texture3D {
@@ -49,6 +59,11 @@ namespace clench {
 			CLCGHAL_API virtual ~GLTexture3D();
 
 			CLCGHAL_API virtual void dealloc() override;
+
+			CLCGHAL_API static GLTexture3D *alloc(
+				GHALDevice *ownerDevice,
+				const Texture3DDesc &textureDesc,
+				GLuint textureHandle);
 		};
 	}
 }

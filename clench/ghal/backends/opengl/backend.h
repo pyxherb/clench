@@ -11,6 +11,7 @@
 #include <glad/gl.h>
 #include <climits>
 #include <map>
+#include <thread>
 
 namespace clench {
 	namespace ghal {

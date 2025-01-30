@@ -10,6 +10,8 @@
 #include <optional>
 #include <mutex>
 
+#define CLENCH_GHAL_GL_RETURN_IF_OOM() if(glGetError() == GL_OUT_OF_MEMORY) return clench::base::OutOfMemoryException::alloc()
+
 namespace clench {
 	namespace ghal {
 		class GLGHALDeviceContext;
@@ -61,11 +63,11 @@ namespace clench {
 
 			CLCGHAL_API virtual base::ExceptionPtr linkShaderProgram(Shader **shaders, size_t nShaders, ShaderProgram *&shaderProgramOut) override;
 
-			CLCGHAL_API virtual Buffer *createBuffer(const BufferDesc &bufferDesc, const void *initialData) override;
+			CLCGHAL_API virtual base::ExceptionPtr createBuffer(const BufferDesc &bufferDesc, const void *initialData, Buffer *&bufferOut) override;
 
-			CLCGHAL_API virtual Texture1D *createTexture1D(const char *data, size_t size, const Texture1DDesc &desc) override;
-			CLCGHAL_API virtual Texture2D *createTexture2D(const char *data, size_t size, const Texture2DDesc &desc) override;
-			CLCGHAL_API virtual Texture3D *createTexture3D(const char *data, size_t size, const Texture3DDesc &desc) override;
+			CLCGHAL_API virtual base::ExceptionPtr createTexture1D(const char *data, size_t size, const Texture1DDesc &desc, Texture1D *&textureOut) override;
+			CLCGHAL_API virtual base::ExceptionPtr createTexture2D(const char *data, size_t size, const Texture2DDesc &desc, Texture2D *&textureOut) override;
+			CLCGHAL_API virtual base::ExceptionPtr createTexture3D(const char *data, size_t size, const Texture3DDesc &desc, Texture3D *&textureOut) override;
 
 			CLCGHAL_API virtual RenderTargetView *createRenderTargetViewForTexture2D(Texture2D *texture) override;
 
