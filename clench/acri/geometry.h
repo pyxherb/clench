@@ -12,6 +12,13 @@ namespace clench {
 			math::Vec2f vertices[3];
 		};
 
+		struct RectParams {
+			float left;
+			float right;
+			float top;
+			float bottom;
+		};
+
 		struct EllipseParams {
 			float direction;
 			math::Vec2f scale;

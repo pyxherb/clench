@@ -103,9 +103,7 @@ CLCWSAL_API base::ExceptionPtr X11Backend::createWindow(
 			FocusChangeMask |
 			EnterWindowMask | LeaveWindowMask |
 			PointerMotionMask |
-			ResizeRedirectMask |
 			ExposureMask |
-			StructureNotifyMask |
 			PropertyChangeMask);
 
 	std::unique_ptr<X11Window, peff::RcObjectUniquePtrDeleter> windowPtr(X11Window::alloc(this, nativeHandle));

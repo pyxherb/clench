@@ -71,6 +71,8 @@ CLCWSAL_API void VirtualWindow::setSize(int width, int height) {
 	_width = width;
 	_height = height;
 
+	this->onResize(width, height);
+
 	for (auto i = _childWindows.begin(); i != _childWindows.end(); ++i) {
 		if ((*i)->isNative())
 			continue;

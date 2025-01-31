@@ -85,24 +85,20 @@ CLCVWC_API void DefaultButton::dealloc() {
 }
 
 CLCVWC_API void DefaultButton::onDraw() {
-	acri::TriangleParams triangleParams;
+	acri::RectParams rectParams;
 
-	triangleParams.vertices[0].x = -1.0f;
-	triangleParams.vertices[0].y = -1.0f;
-
-	triangleParams.vertices[1].x = 1.0f;
-	triangleParams.vertices[1].y = -1.0f;
-
-	triangleParams.vertices[2].x = -1.0f;
-	triangleParams.vertices[2].y = 1.0f;
+	rectParams.left = -1.0f;
+	rectParams.right = 1.0f;
+	rectParams.top = 1.0f;
+	rectParams.bottom = -1.0f;
 
 	if (_isPressed) {
-		acriDeviceContext->fillTriangle(triangleParams, pressedBackgroundBrush.get());
+		acriDeviceContext->fillRect(rectParams, pressedBackgroundBrush.get());
 	} else {
 		if (_isHovered) {
-			acriDeviceContext->fillTriangle(triangleParams, hoverBackgroundBrush.get());
+			acriDeviceContext->fillRect(rectParams, hoverBackgroundBrush.get());
 		} else {
-			acriDeviceContext->fillTriangle(triangleParams, backgroundBrush.get());
+			acriDeviceContext->fillRect(rectParams, backgroundBrush.get());
 		}
 	}
 }

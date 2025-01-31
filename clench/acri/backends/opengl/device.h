@@ -13,10 +13,8 @@ namespace clench {
 		class GLDevice : public Device {
 		public:
 			struct DeviceResources {
-				struct {
-					peff::RcObjectPtr<ghal::VertexLayout> solidColorVertexLayout;
-					peff::RcObjectPtr<ghal::ShaderProgram> solidColorShaderProgram;
-				} forTriangle;
+				peff::RcObjectPtr<ghal::VertexLayout> solidColorVertexLayout;
+				peff::RcObjectPtr<ghal::ShaderProgram> solidColorShaderProgram;
 			} deviceResources;
 
 			CLCACRI_API GLDevice(ghal::Device *associatedDevice, peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator);
@@ -36,6 +34,10 @@ namespace clench {
 					peff::RcObjectPtr<ghal::Buffer> solidColorVertexBuffer;
 					std::mutex solidColorLock;
 				} forTriangle;
+				struct {
+					peff::RcObjectPtr<ghal::Buffer> solidColorVertexBuffer;
+					std::mutex solidColorLock;
+				} forRect;
 			} localDeviceResources;
 
 			CLCACRI_API GLDeviceContext(Device *device, ghal::DeviceContext *deviceContext);
@@ -45,6 +47,8 @@ namespace clench {
 
 			CLCACRI_API virtual void drawTriangle(const TriangleParams &params, Brush *brush, float width) override;
 			CLCACRI_API virtual void fillTriangle(const TriangleParams &params, Brush *brush) override;
+			CLCACRI_API virtual void drawRect(const RectParams &params, Brush *brush, float width) override;
+			CLCACRI_API virtual void fillRect(const RectParams &params, Brush *brush) override;
 			CLCACRI_API virtual void drawEllipse(const EllipseParams &params, Brush *brush, float width) override;
 			CLCACRI_API virtual void fillEllipse(const EllipseParams &params, Brush *brush) override;
 			CLCACRI_API virtual void drawPath(const PathParams &params, Brush *brush, float width) override;

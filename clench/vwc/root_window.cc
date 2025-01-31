@@ -17,6 +17,11 @@ CLCVWC_API VWCRootWindow::VWCRootWindow(
 		  0),
 	  ghalDevice(ghalDevice) {
 	ghalDevice->createDeviceContextForWindow(parent, ghalDeviceContext.getRef());
+
+	int width, height;
+	parent->getSize(width, height);
+
+	setSize(width, height);
 }
 
 CLCVWC_API VWCRootWindow::~VWCRootWindow() {

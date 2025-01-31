@@ -45,13 +45,53 @@ CLCACRI_API void GLDeviceContext::fillTriangle(const TriangleParams &params, Bru
 
 			std::lock_guard<std::mutex> triangleSolidColorMutex(localDeviceResources.forTriangle.solidColorLock);
 
-			ghalDeviceContext->setShaderProgram(((GLDevice *)device)->deviceResources.forTriangle.solidColorShaderProgram.get());
+			ghalDeviceContext->setShaderProgram(((GLDevice *)device)->deviceResources.solidColorShaderProgram.get());
 			ghalDeviceContext->bindVertexBuffer(localDeviceResources.forTriangle.solidColorVertexBuffer.get(), sizeof(vertices));
-			ghalDeviceContext->bindVertexLayout(((GLDevice *)device)->deviceResources.forTriangle.solidColorVertexLayout.get());
+			ghalDeviceContext->bindVertexLayout(((GLDevice *)device)->deviceResources.solidColorVertexLayout.get());
 			ghalDeviceContext->setData(localDeviceResources.forTriangle.solidColorVertexBuffer.get(), vertices);
 
 			ghalDeviceContext->drawTriangle(1);
 
+			break;
+		}
+	}
+}
+
+CLCACRI_API void GLDeviceContext::drawRect(const RectParams &params, Brush *brush, float width) {
+}
+
+CLCACRI_API void GLDeviceContext::fillRect(const RectParams &params, Brush *brush) {
+	switch (brush->brushType) {
+		case BrushType::SolidColor: {
+			SolidColorBrush *b = (SolidColorBrush *)brush;
+			float vertices[] = {
+				b->color.r, b->color.g, b->color.b, b->color.a,
+				params.left, params.bottom,
+
+				b->color.r, b->color.g, b->color.b, b->color.a,
+				params.left, params.top,
+
+				b->color.r, b->color.g, b->color.b, b->color.a,
+				params.right, params.bottom,
+
+				b->color.r, b->color.g, b->color.b, b->color.a,
+				params.left, params.top,
+
+				b->color.r, b->color.g, b->color.b, b->color.a,
+				params.right, params.bottom,
+
+				b->color.r, b->color.g, b->color.b, b->color.a,
+				params.right, params.top
+			};
+
+			std::lock_guard<std::mutex> rectSolidColorMutex(localDeviceResources.forRect.solidColorLock);
+
+			ghalDeviceContext->setShaderProgram(((GLDevice *)device)->deviceResources.solidColorShaderProgram.get());
+			ghalDeviceContext->bindVertexBuffer(localDeviceResources.forRect.solidColorVertexBuffer.get(), sizeof(float) * 18);
+			ghalDeviceContext->bindVertexLayout(((GLDevice *)device)->deviceResources.solidColorVertexLayout.get());
+			ghalDeviceContext->setData(localDeviceResources.forRect.solidColorVertexBuffer.get(), vertices);
+
+			ghalDeviceContext->drawTriangle(2);
 			break;
 		}
 	}

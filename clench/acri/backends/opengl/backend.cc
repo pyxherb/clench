@@ -40,7 +40,7 @@ CLCACRI_API base::ExceptionPtr GLBackend::createDevice(ghal::Device *ghalDevice,
 		CLENCH_RETURN_IF_EXCEPT(
 			ghalDevice->linkShaderProgram(
 				shaders, std::size(shaders),
-				ptr->deviceResources.forTriangle.solidColorShaderProgram.getRef()));
+				ptr->deviceResources.solidColorShaderProgram.getRef()));
 
 		static clench::ghal::VertexLayoutElementDesc descs[] = {
 			{ clench::ghal::InputVertexShaderSemanticType::Color,
@@ -60,7 +60,7 @@ CLCACRI_API base::ExceptionPtr GLBackend::createDevice(ghal::Device *ghalDevice,
 				descs,
 				std::size(descs),
 				solidColorVertexShader.get(),
-				ptr->deviceResources.forTriangle.solidColorVertexLayout.getRef()));
+				ptr->deviceResources.solidColorVertexLayout.getRef()));
 	}
 
 	deviceOut = ptr.release();
@@ -90,6 +90,22 @@ base::ExceptionPtr GLBackend::createDeviceContext(
 				bufDesc,
 				nullptr,
 				ptr->localDeviceResources.forTriangle.solidColorVertexBuffer.getRef()));
+	}
+
+	{
+		ghal::BufferDesc bufDesc;
+
+		bufDesc.size = (sizeof(float) * 4 + sizeof(float) * 2) * 3 * 2;
+		bufDesc.usage = ghal::BufferUsage::Dynamic;
+		bufDesc.proposedTarget = ghal::BufferTarget::Vertex;
+		bufDesc.cpuWritable = true;
+		bufDesc.cpuReadable = false;
+
+		CLENCH_RETURN_IF_EXCEPT(
+			acriDevice->associatedDevice->createBuffer(
+				bufDesc,
+				nullptr,
+				ptr->localDeviceResources.forRect.solidColorVertexBuffer.getRef()));
 	}
 
 	ptr->incRef();

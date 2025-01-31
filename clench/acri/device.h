@@ -73,6 +73,8 @@ namespace clench {
 
 			virtual void drawTriangle(const TriangleParams &params, Brush *brush, float width) = 0;
 			virtual void fillTriangle(const TriangleParams &params, Brush *brush) = 0;
+			virtual void drawRect(const RectParams &params, Brush *brush, float width) = 0;
+			virtual void fillRect(const RectParams &params, Brush *brush) = 0;
 			virtual void drawEllipse(const EllipseParams &params, Brush *brush, float width) = 0;
 			virtual void fillEllipse(const EllipseParams &params, Brush *brush) = 0;
 			virtual void drawPath(const PathParams &params, Brush *brush, float width) = 0;

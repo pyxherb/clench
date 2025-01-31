@@ -133,22 +133,20 @@ CLCWSAL_API void X11Window::pollEvents() {
 				onMouseLeave();
 				break;
 			case ConfigureNotify: {
+				this->onResize(ev.xconfigure.width, ev.xconfigure.height);
+
 				/*if (ev.xconfigure.width != _width ||
 					ev.xconfigure.height != _height)*/
-				setSize(ev.xconfigure.width, ev.xconfigure.height);
 
 				/*if (ev.xconfigure.x != _x || ev.xconfigure.y != _y)*/
 				onMove(ev.xconfigure.x, ev.xconfigure.y);
 
-				break;
-			}
-			case ResizeRequest:
-				onResize(ev.xresizerequest.width, ev.xresizerequest.height);
-
 				[[fallthrough]];
+			}
 			case Expose:
 			case GraphicsExpose:
-				XSync(nativeHandle.display, false);
+				this->onExpose();
+				XFlush(nativeHandle.display);
 				break;
 			case ClientMessage: {
 				const Atom msg = ev.xclient.data.l[0];
@@ -207,30 +205,6 @@ CLCWSAL_API void X11Window::getPos(int &xOut, int &yOut) const {
 
 CLCWSAL_API void X11Window::setSize(int width, int height) {
 	XResizeWindow(nativeHandle.display, nativeHandle.window, width, height);
-
-	for (auto i = _childVirtualWindows.begin(); i != _childVirtualWindows.end(); ++i) {
-		if (const wsal::LayoutAttributes *layoutAttribs =
-				((wsal::VirtualWindow *)(*i).get())->getLayoutAttributes();
-			layoutAttribs) {
-			int windowX, windowY, windowWidth, windowHeight;
-			int newX, newY, newWidth, newHeight;
-
-			(*i)->getPos(windowX, windowY);
-			(*i)->getSize(windowWidth, windowHeight);
-
-			wsal::calcWindowLayout(
-				layoutAttribs,
-				0, 0,
-				width, height,
-				windowX, windowY,
-				windowWidth, windowHeight,
-				newX, newY,
-				newWidth, newHeight);
-
-			(*i)->setPos(newX, newY);
-			(*i)->setSize(newWidth, newHeight);
-		}
-	}
 }
 
 CLCWSAL_API void X11Window::getSize(int &widthOut, int &heightOut) const {
