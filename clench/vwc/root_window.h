@@ -9,7 +9,6 @@ namespace clench {
 		public:
 			ghal::Device *ghalDevice;
 			peff::RcObjectPtr<ghal::DeviceContext> ghalDeviceContext;
-			ghal::TextureFormat renderBufferFormat;
 			wsal::LayoutAttributes layoutAttribs;
 
 			CLCVWC_API VWCRootWindow(

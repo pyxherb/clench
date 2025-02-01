@@ -175,6 +175,33 @@ namespace clench {
 		};
 
 		template <>
+		struct alignas(16) Vec2<double> {
+			union {
+				float data[2];
+				struct {
+					double x;
+					double y;
+				};
+	#if defined(CLCMATH_SSE_INTRINSICS)
+				__m128d m128d;
+	#endif
+			};
+
+			CLENCH_FORCEINLINE Vec2() = default;
+			CLENCH_FORCEINLINE Vec2(double x, double y) : x(x), y(y) {}
+			CLENCH_FORCEINLINE Vec2(__m128d m128d) : m128d(m128d) {}
+
+			CLENCH_FORCEINLINE float &operator[](size_t index) {
+				CLCMATH_INDEX_ASSERT(index, 2);
+				return data[index];
+			}
+			CLENCH_FORCEINLINE const float &operator[](size_t index) const {
+				CLCMATH_INDEX_ASSERT(index, 2);
+				return data[index];
+			}
+		};
+
+		template <>
 		struct alignas(32) Vec3<double> {
 			union {
 				double data[3];

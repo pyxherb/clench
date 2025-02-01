@@ -12,6 +12,11 @@ namespace clench {
 			math::Vec2f vertices[3];
 		};
 
+		struct PolygonParams {
+			math::Vec2f *vertices;
+			size_t nVertices;
+		};
+
 		struct RectParams {
 			float left;
 			float right;
@@ -20,8 +25,8 @@ namespace clench {
 		};
 
 		struct EllipseParams {
-			float direction;
-			math::Vec2f scale;
+			float radiusX;
+			float radiusY;
 		};
 
 		enum class PathInstructionOpcode {
@@ -30,7 +35,9 @@ namespace clench {
 			SmoothQuadraticBezierCurve,
 			BezierCurve,
 			SmoothBezierCurve,
-			Close
+			Close,
+			HoleOpen,
+			HoleClose
 		};
 
 		struct LinePathInstructionParams {

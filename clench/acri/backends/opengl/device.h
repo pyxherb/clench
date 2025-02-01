@@ -47,6 +47,8 @@ namespace clench {
 
 			CLCACRI_API virtual void drawTriangle(const TriangleParams &params, Brush *brush, float width) override;
 			CLCACRI_API virtual void fillTriangle(const TriangleParams &params, Brush *brush) override;
+			CLCACRI_API virtual void drawPolygon(const PolygonParams &params, Brush *brush, float width) override;
+			CLCACRI_API virtual void fillPolygon(const PolygonParams &params, Brush *brush) override;
 			CLCACRI_API virtual void drawRect(const RectParams &params, Brush *brush, float width) override;
 			CLCACRI_API virtual void fillRect(const RectParams &params, Brush *brush) override;
 			CLCACRI_API virtual void drawEllipse(const EllipseParams &params, Brush *brush, float width) override;

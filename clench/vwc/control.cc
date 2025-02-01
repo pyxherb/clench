@@ -8,7 +8,6 @@ CLCVWC_API Control::Control(
 	wsal::CreateWindowFlags createWindowFlags,
 	acri::Device *acriDevice,
 	acri::DeviceContext *acriDeviceContext,
-	ghal::TextureFormat renderBufferFormat,
 	wsal::Window *parent,
 	int x,
 	int y,
@@ -16,29 +15,13 @@ CLCVWC_API Control::Control(
 	int height)
 	: VirtualWindow(selfAllocator, createWindowFlags, parent, x, y, width, height),
 	  acriDevice(acriDevice),
-	  acriDeviceContext(acriDeviceContext),
-	  renderBufferFormat(renderBufferFormat) {
+	  acriDeviceContext(acriDeviceContext) {
 }
 
 CLCVWC_API Control::~Control() {
 }
 
 CLCVWC_API void Control::onResize(int width, int height) {
-	/* renderTargetView.reset();
-	renderBuffer.reset();
-
-	acri::Texture2DDesc textureDesc = {};
-
-	textureDesc.format = renderBufferFormat;
-	textureDesc.width = width;
-	textureDesc.height = height;
-	textureDesc.mipmapLevel = 0;
-	textureDesc.bindingFlags =
-		acri::TEXTURE_BINDING_RENDER_TARGET |
-		acri::TEXTURE_BINDING_SHADER_RESOURCE;
-
-	renderBuffer = acriDevice->createTexture2D(nullptr, 0, textureDesc);
-	renderTargetView = acriDevice->createRenderTargetViewForTexture2D(renderBuffer.get());*/
 }
 
 CLCVWC_API void Control::onExpose() {

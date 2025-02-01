@@ -10,7 +10,6 @@ namespace clench {
 		public:
 			acri::Device *acriDevice;
 			acri::DeviceContext *acriDeviceContext;
-			ghal::TextureFormat renderBufferFormat;
 
 			std::unique_ptr<wsal::LayoutAttributes> layoutAttributes;
 
@@ -19,7 +18,6 @@ namespace clench {
 				wsal::CreateWindowFlags createWindowFlags,
 				acri::Device *acriDevice,
 				acri::DeviceContext *acriDeviceContext,
-				ghal::TextureFormat renderBufferFormat,
 				Window *parent,
 				int x,
 				int y,

@@ -87,13 +87,10 @@ int main(int argc, char **argv) {
 	acri::createDeviceContext(g_mainWindow->ghalDeviceContext.get(), g_mainAcriDevice.get(), acriDeviceContext.getRef());
 
 	peff::RcObjectPtr<clench::vwc::DefaultButton> button =
-		peff::allocAndConstruct<clench::vwc::DefaultButton>(
-			peff::getDefaultAlloc(),
-			sizeof(std::max_align_t),
+		clench::vwc::DefaultButton::alloc(
 			peff::getDefaultAlloc(),
 			g_mainAcriDevice.get(),
 			acriDeviceContext.get(),
-			clench::ghal::TextureFormat::RGBA8,
 			g_mainWindow.get(),
 			10,
 			10,

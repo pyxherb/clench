@@ -599,7 +599,7 @@ CLCGHAL_API GLDeviceContext::GLDeviceContext(
 }
 
 CLCGHAL_API GLDeviceContext::~GLDeviceContext() {
-	if(contextLocalVertexArray)
+	if (contextLocalVertexArray)
 		glDeleteVertexArrays(1, &contextLocalVertexArray);
 	nativeGLContext.destroy();
 }
@@ -619,15 +619,20 @@ CLCGHAL_API void GLDeviceContext::onResize(int width, int height) {
 	windowWidth = width;
 	windowHeight = height;
 
-	nativeGLContext.destroySurface();
+	NativeGLContext oldContext = nativeGLContext;
 
 	if ((nativeGLContext.eglReadSurface =
 				(nativeGLContext.eglDrawSurface =
 						eglCreateWindowSurface(nativeGLContext.eglDisplay,
 							nativeGLContext.eglConfig,
 							nativeGLContext.eglWindow,
-							nullptr))) == EGL_NO_SURFACE)
-		throw std::runtime_error("Error creating EGL surface");
+							nullptr))) == EGL_NO_SURFACE) {
+		nativeGLContext = oldContext;
+	}
+
+	NativeGLContext::restoreContextCurrent(nativeGLContext);
+
+	oldContext.destroySurface();
 #endif
 }
 

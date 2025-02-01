@@ -7,7 +7,6 @@ CLCVWC_API Button::Button(
 	peff::Alloc *selfAllocator,
 	acri::Device *acriDevice,
 	acri::DeviceContext *acriDeviceContext,
-	ghal::TextureFormat renderBufferFormat,
 	Window *parent,
 	int x,
 	int y,
@@ -18,7 +17,6 @@ CLCVWC_API Button::Button(
 		  wsal::CREATEWINDOW_NOFRAME,
 		  acriDevice,
 		  acriDeviceContext,
-		  renderBufferFormat,
 		  parent,
 		  x,
 		  y,
@@ -56,7 +54,6 @@ CLCVWC_API DefaultButton::DefaultButton(
 	peff::Alloc *selfAllocator,
 	acri::Device *acriDevice,
 	acri::DeviceContext *acriDeviceContext,
-	ghal::TextureFormat renderBufferFormat,
 	Window *parent,
 	int x,
 	int y,
@@ -66,15 +63,11 @@ CLCVWC_API DefaultButton::DefaultButton(
 		  selfAllocator,
 		  acriDevice,
 		  acriDeviceContext,
-		  renderBufferFormat,
 		  parent,
 		  x,
 		  y,
 		  width,
 		  height) {
-	backgroundBrush = acriDevice->createSolidColorBrush(backgroundColor);
-	hoverBackgroundBrush = acriDevice->createSolidColorBrush(hoverBackgroundColor);
-	pressedBackgroundBrush = acriDevice->createSolidColorBrush(pressedBackgroundColor);
 }
 
 CLCVWC_API DefaultButton::~DefaultButton() {
@@ -101,6 +94,21 @@ CLCVWC_API void DefaultButton::onDraw() {
 			acriDeviceContext->fillRect(rectParams, backgroundBrush.get());
 		}
 	}
+
+	math::Vec2f vertices[]= {
+		{0.0f, 1.0f},
+		{1.0f, 0.5f},
+		{1.0f, -0.5f},
+		{0.0f, -1.0f},
+		{-1.0f, -0.5f},
+		{-1.0f, 0.5f}
+	};
+
+	acri::PolygonParams polygonParams;
+	polygonParams.vertices = vertices;
+	polygonParams.nVertices = 6;
+
+	acriDeviceContext->fillPolygon(polygonParams, pressedBackgroundBrush.get());
 }
 
 CLCVWC_API void DefaultButton::onHover() {
@@ -135,4 +143,41 @@ CLCVWC_API void DefaultButton::onRelease() {
 
 CLCVWC_API bool DefaultButton::isPressed() const {
 	return _isPressed;
+}
+
+CLCVWC_API DefaultButton *DefaultButton::alloc(
+	peff::Alloc *selfAllocator,
+	acri::Device *acriDevice,
+	acri::DeviceContext *acriDeviceContext,
+	Window *parent,
+	int x,
+	int y,
+	int width,
+	int height) {
+	std::unique_ptr<DefaultButton, peff::RcObjectUniquePtrDeleter> ptr(
+		peff::allocAndConstruct<clench::vwc::DefaultButton>(
+			selfAllocator,
+			sizeof(std::max_align_t),
+			selfAllocator,
+			acriDevice,
+			acriDeviceContext,
+			parent,
+			x,
+			y,
+			width,
+			height));
+
+	if(!(ptr->backgroundBrush = acriDevice->createSolidColorBrush(backgroundColor))) {
+		return nullptr;
+	}
+
+	if(!(ptr->hoverBackgroundBrush = acriDevice->createSolidColorBrush(hoverBackgroundColor))) {
+		return nullptr;
+	}
+
+	if(!(ptr->pressedBackgroundBrush = acriDevice->createSolidColorBrush(pressedBackgroundColor))) {
+		return nullptr;
+	}
+
+	return ptr.release();
 }

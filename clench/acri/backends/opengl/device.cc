@@ -57,6 +57,56 @@ CLCACRI_API void GLDeviceContext::fillTriangle(const TriangleParams &params, Bru
 	}
 }
 
+CLCACRI_API void GLDeviceContext::drawPolygon(const PolygonParams &params, Brush *brush, float width) {
+}
+
+CLCACRI_API void GLDeviceContext::fillPolygon(const PolygonParams &params, Brush *brush) {
+	bool isConcave = false;
+	{
+		math::Vec2f lastVec(params.vertices[1] - params.vertices[0]), curVec(params.vertices[2] - params.vertices[1]);
+
+		bool sign = math::crossZ(lastVec, curVec) > 0;
+
+		for (size_t i = 2; i < params.nVertices - 1; ++i) {
+			lastVec = curVec;
+			curVec = params.vertices[i + 1] - params.vertices[i];
+
+			if (sign != (math::crossZ(lastVec, curVec) > 0)) {
+				isConcave = true;
+				goto concaveDetectionEnd;
+			}
+		}
+
+		if (sign != (math::crossZ(curVec, params.vertices[0] - params.vertices[params.nVertices - 1]) > 0)) {
+			isConcave = true;
+		}
+	}
+
+concaveDetectionEnd:;
+
+	switch (brush->brushType) {
+		case BrushType::SolidColor: {
+			SolidColorBrush *b = (SolidColorBrush *)brush;
+
+			if(isConcave) {
+				std::terminate();
+			} else {
+				for(size_t i = 2; i < params.nVertices; ++i) {
+					TriangleParams triangleParams;
+
+					triangleParams.vertices[0] = params.vertices[0];
+					triangleParams.vertices[1] = params.vertices[i - 1];
+					triangleParams.vertices[2] = params.vertices[i];
+
+					fillTriangle(triangleParams, brush);
+				}
+			}
+
+			break;
+		}
+	}
+}
+
 CLCACRI_API void GLDeviceContext::drawRect(const RectParams &params, Brush *brush, float width) {
 }
 

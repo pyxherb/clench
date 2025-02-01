@@ -11,7 +11,6 @@ namespace clench {
 				peff::Alloc *selfAllocator,
 				acri::Device *acriDevice,
 				acri::DeviceContext *acriDeviceContext,
-				ghal::TextureFormat renderBufferFormat,
 				Window *parent,
 				int x,
 				int y,
@@ -44,15 +43,14 @@ namespace clench {
 			peff::RcObjectPtr<acri::Brush> pressedBackgroundBrush;
 			peff::RcObjectPtr<acri::Brush> hoverBackgroundBrush;
 
-			ghal::Color backgroundColor = { 0.7f, 0.7f, 0.7f, 1.0f };
-			ghal::Color pressedBackgroundColor = { 0.6f, 0.6f, 0.6f, 1.0f };
-			ghal::Color hoverBackgroundColor = { 0.8f, 0.8f, 0.8f, 1.0f };
+			constexpr static ghal::Color backgroundColor = { 0.7f, 0.7f, 0.7f, 1.0f };
+			constexpr static ghal::Color pressedBackgroundColor = { 0.6f, 0.6f, 0.6f, 1.0f };
+			constexpr static ghal::Color hoverBackgroundColor = { 0.8f, 0.8f, 0.8f, 1.0f };
 
 			CLCVWC_API DefaultButton(
 				peff::Alloc *selfAllocator,
 				acri::Device *acriDevice,
 				acri::DeviceContext *acriDeviceContext,
-				ghal::TextureFormat renderBufferFormat,
 				Window *parent,
 				int x,
 				int y,
@@ -69,6 +67,17 @@ namespace clench {
 			CLCVWC_API virtual void onPress() override;
 			CLCVWC_API virtual void onRelease() override;
 			CLCVWC_API virtual bool isPressed() const override;
+
+			CLCVWC_API static DefaultButton *alloc(
+				peff::Alloc *selfAllocator,
+				acri::Device *acriDevice,
+				acri::DeviceContext *acriDeviceContext,
+				Window *parent,
+				int x,
+				int y,
+				int width,
+				int height
+			);
 		};
 	}
 }
