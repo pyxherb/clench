@@ -63,11 +63,11 @@ CLCACRI_API void GLDeviceContext::drawPolygon(const PolygonParams &params, Brush
 CLCACRI_API void GLDeviceContext::fillPolygon(const PolygonParams &params, Brush *brush) {
 	bool isConcave = false;
 	{
-		math::Vec2f lastVec(params.vertices[1] - params.vertices[0]), curVec(params.vertices[2] - params.vertices[1]);
+		math::Vec2f lastVec, curVec(params.vertices[1] - params.vertices[0]);
 
 		bool sign = math::crossZ(lastVec, curVec) > 0;
 
-		for (size_t i = 2; i < params.nVertices - 1; ++i) {
+		for (size_t i = 1; i < params.nVertices - 1; ++i) {
 			lastVec = curVec;
 			curVec = params.vertices[i + 1] - params.vertices[i];
 
