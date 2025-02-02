@@ -119,7 +119,7 @@ concaveDetectionEnd:;
 					}
 				}
 
-				peff::Set<size_t> concaveVertices, convexVertices, idxVertices;
+				peff::Set<size_t> concaveVertices, convexVertices, earVertices, idxVertices;
 
 				// Find out all concave and convex vertices and create the vertex set.
 				if (isAntiClockwise) {
@@ -212,13 +212,61 @@ concaveDetectionEnd:;
 					idxVertices.insert(params.nVertices - 1);
 				}
 
+				for (auto i : convexVertices) {
+					size_t idxFormer, idxLatter;
+
+					if (!i) {
+						idxFormer = *idxVertices.beginReversed();
+					} else {
+						idxFormer = i - 1;
+					}
+
+					if (i == *idxVertices.beginReversed()) {
+						idxLatter = 0;
+					} else {
+						idxLatter = i + 1;
+					}
+
+					for (auto j : idxVertices) {
+						if ((j == idxFormer) || (j == idxLatter) || (j == i))
+							continue;
+
+						math::Vec2f
+							pa = params.vertices[idxFormer] - params.vertices[j],
+							pb = params.vertices[i] - params.vertices[j],
+							pc = params.vertices[idxLatter] - params.vertices[j];
+						{
+							float prodA =
+								math::crossZ(pa, pb);
+
+							float prodB =
+								math::crossZ(pb, pc);
+
+							float prodC =
+								math::crossZ(pc, pa);
+
+							uint32_t signA = *((uint32_t *)&prodA) >> 31, signB = *((uint32_t *)&prodB) >> 31, signC = *((uint32_t *)&prodC) >> 31;
+
+							if ((signA == signB) &&
+								(signA == signC) &&
+								(signB == signC)) {
+								goto skipCurVertex;
+							}
+						}
+					}
+
+					earVertices.insert(+i);
+
+				skipCurVertex:;
+				}
+
 				peff::List<TriangleParams> triangles;
 
 				// Try to apply ear-clipping algorithm for our polygon.
 				while (idxVertices.size() > 3) {
-					auto curEarIt = convexVertices.begin();
+					auto curEarIt = earVertices.begin();
+					assert(curEarIt != earVertices.end());
 					size_t idxCurEar = *curEarIt;
-					math::Vec2f earVertex = params.vertices[idxCurEar];
 
 					size_t idxFormer, idxFormerFormer, idxLatter, idxLatterLatter;
 
@@ -238,13 +286,14 @@ concaveDetectionEnd:;
 						idxLatter = *latterIt;
 						idxLatterLatter = *latterLatterIt;
 					}
-					idxVertices.remove(idxCurEar);
 					if (idxCurEar) {
 						if (auto it = idxVertices.findMaxLteq(idxCurEar - 1); it != idxVertices.end()) {
 							idxFormer = *it;
 						} else {
 							idxFormer = *idxVertices.beginReversed();
 						}
+					} else {
+						idxFormer = *idxVertices.beginReversed();
 					}
 					if (idxFormer) {
 						if (auto it = idxVertices.findMaxLteq(idxFormer - 1); it != idxVertices.end()) {
@@ -256,29 +305,113 @@ concaveDetectionEnd:;
 						idxFormerFormer = *idxVertices.beginReversed();
 					}
 
+					bool isFormerVertexConvex = false, isLatterVertexConvex = false;
 					math::Vec2f a, b;
 
 					a = params.vertices[idxFormer] - params.vertices[idxFormerFormer];
-					b = params.vertices[idxCurEar] - params.vertices[idxFormerFormer];
+					b = params.vertices[idxLatter] - params.vertices[idxFormerFormer];
 
 					if (math::crossZ(a, b) >= 0) {
 						if (!convexVertices.contains(idxFormer)) {
 							concaveVertices.remove(idxFormer);
 							convexVertices.insert(+idxFormer);
 						}
+						isFormerVertexConvex = true;
+					} else {
+						if (!concaveVertices.contains(idxFormer)) {
+							convexVertices.remove(idxFormer);
+							concaveVertices.insert(+idxFormer);
+						}
+						isFormerVertexConvex = false;
 					}
 
-					a = params.vertices[idxLatter] - params.vertices[idxCurEar];
-					b = params.vertices[idxLatterLatter] - params.vertices[idxCurEar];
+					a = params.vertices[idxLatter] - params.vertices[idxFormer];
+					b = params.vertices[idxLatterLatter] - params.vertices[idxFormer];
 
 					if (math::crossZ(a, b) >= 0) {
 						if (!convexVertices.contains(idxLatter)) {
 							concaveVertices.remove(idxLatter);
 							convexVertices.insert(+idxLatter);
 						}
+						isLatterVertexConvex = true;
+					} else {
+						if (!concaveVertices.contains(idxLatter)) {
+							convexVertices.remove(idxLatter);
+							concaveVertices.insert(+idxLatter);
+						}
+						isLatterVertexConvex = false;
 					}
 
+					idxVertices.remove(idxCurEar);
 					convexVertices.remove(idxCurEar);
+					earVertices.remove(idxCurEar);
+
+					if (isFormerVertexConvex) {
+						for (auto j : idxVertices) {
+							if ((j == idxFormer) || (j == idxLatter) || (j == idxFormerFormer))
+								continue;
+
+							math::Vec2f
+								pa = params.vertices[idxFormerFormer] - params.vertices[j],
+								pb = params.vertices[idxFormer] - params.vertices[j],
+								pc = params.vertices[idxLatter] - params.vertices[j];
+							{
+								float prodA =
+									math::crossZ(pa, pb);
+
+								float prodB =
+									math::crossZ(pb, pc);
+
+								float prodC =
+									math::crossZ(pc, pa);
+
+								uint32_t signA = *((uint32_t *)&prodA) >> 31, signB = *((uint32_t *)&prodB) >> 31, signC = *((uint32_t *)&prodC) >> 31;
+
+								if ((signA == signB) &&
+									(signA == signC) &&
+									(signB == signC)) {
+									goto skipCurFormerVertex;
+								}
+							}
+						}
+
+						earVertices.insert(+idxFormer);
+					skipCurFormerVertex:;
+					}
+
+					if (isLatterVertexConvex) {
+						for (auto j : idxVertices) {
+							if ((j == idxFormer) || (j == idxLatter) || (j == idxLatterLatter))
+								continue;
+
+							math::Vec2f
+								pa = params.vertices[idxFormer] - params.vertices[j],
+								pb = params.vertices[idxLatter] - params.vertices[j],
+								pc = params.vertices[idxLatterLatter] - params.vertices[j];
+							{
+								float prodA =
+									math::crossZ(pa, pb);
+
+								float prodB =
+									math::crossZ(pb, pc);
+
+								float prodC =
+									math::crossZ(pc, pa);
+
+								uint32_t signA = *((uint32_t *)&prodA) >> 31, signB = *((uint32_t *)&prodB) >> 31, signC = *((uint32_t *)&prodC) >> 31;
+
+								if ((signA == signB) &&
+									(signA == signC) &&
+									(signB == signC)) {
+									goto skipCurLatterVertex;
+								}
+							}
+						}
+
+						earVertices.insert(+idxLatter);
+
+					skipCurLatterVertex:;
+					}
 
 					TriangleParams curParams;
 

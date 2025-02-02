@@ -844,6 +844,7 @@ CLCGHAL_API void GLDeviceContext::getViewport(
 }
 
 CLCGHAL_API void GLDeviceContext::drawTriangle(unsigned int nTriangles) {
+	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glDrawArrays(GL_TRIANGLES, 0, nTriangles * 3);
 }
 

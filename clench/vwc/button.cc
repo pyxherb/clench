@@ -95,18 +95,22 @@ CLCVWC_API void DefaultButton::onDraw() {
 		}
 	}
 
-	math::Vec2f vertices[]= {
-		{0.0f, 0.0f},
-		{1.0f, 0.5f},
-		{1.0f, -0.5f},
-		{0.0f, -1.0f},
-		{-1.0f, -0.5f},
-		{-1.0f, 0.5f}
+	math::Vec2f vertices[] = {
+		{ 3.0f / 200.0f, 48.0f / 200.0f },
+		{ 52.0f / 200.0f, 8.0f / 200.0f },
+		{ 99.0f / 200.0f, 50.0f / 200.0f },
+		{ 138.0f / 200.0f, 25.0f / 200.0f },
+		{ 175.0f / 200.0f, 77.0f / 200.0f },
+		{ 131.0f / 200.0f, 72.0f / 200.0f },
+		{ 111.0f / 200.0f, 113.0f / 200.0f },
+		{ 72.0f / 200.0f, 43.0f / 200.0f },
+		{ 26.0f / 200.0f, 55.0f / 200.0f },
+		{ 29.0f / 200.0f, 100.0f / 200.0f }
 	};
 
 	acri::PolygonParams polygonParams;
 	polygonParams.vertices = vertices;
-	polygonParams.nVertices = 6;
+	polygonParams.nVertices = 10;
 
 	acriDeviceContext->fillPolygon(polygonParams, pressedBackgroundBrush.get());
 }
@@ -167,15 +171,15 @@ CLCVWC_API DefaultButton *DefaultButton::alloc(
 			width,
 			height));
 
-	if(!(ptr->backgroundBrush = acriDevice->createSolidColorBrush(backgroundColor))) {
+	if (!(ptr->backgroundBrush = acriDevice->createSolidColorBrush(backgroundColor))) {
 		return nullptr;
 	}
 
-	if(!(ptr->hoverBackgroundBrush = acriDevice->createSolidColorBrush(hoverBackgroundColor))) {
+	if (!(ptr->hoverBackgroundBrush = acriDevice->createSolidColorBrush(hoverBackgroundColor))) {
 		return nullptr;
 	}
 
-	if(!(ptr->pressedBackgroundBrush = acriDevice->createSolidColorBrush(pressedBackgroundColor))) {
+	if (!(ptr->pressedBackgroundBrush = acriDevice->createSolidColorBrush(pressedBackgroundColor))) {
 		return nullptr;
 	}
 
