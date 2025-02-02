@@ -1,4 +1,5 @@
 #include "device.h"
+#include <cmath>
 
 using namespace clench;
 using namespace clench::acri;
@@ -63,21 +64,21 @@ CLCACRI_API void GLDeviceContext::drawPolygon(const PolygonParams &params, Brush
 CLCACRI_API void GLDeviceContext::fillPolygon(const PolygonParams &params, Brush *brush) {
 	bool isConcave = false;
 	{
-		math::Vec2f lastVec, curVec(params.vertices[1] - params.vertices[0]);
+		math::Vec2f lastVec(params.vertices[0] - params.vertices[params.nVertices - 1]), curVec(params.vertices[1] - params.vertices[0]);
 
-		bool sign = math::crossZ(lastVec, curVec) > 0;
+		bool sign = math::crossZ(lastVec, curVec) >= 0;
 
 		for (size_t i = 1; i < params.nVertices - 1; ++i) {
 			lastVec = curVec;
 			curVec = params.vertices[i + 1] - params.vertices[i];
 
-			if (sign != (math::crossZ(lastVec, curVec) > 0)) {
+			if (sign != (math::crossZ(lastVec, curVec) >= 0)) {
 				isConcave = true;
 				goto concaveDetectionEnd;
 			}
 		}
 
-		if (sign != (math::crossZ(curVec, params.vertices[0] - params.vertices[params.nVertices - 1]) > 0)) {
+		if (sign != (math::crossZ(curVec, params.vertices[0] - params.vertices[params.nVertices - 1]) >= 0)) {
 			isConcave = true;
 		}
 	}
@@ -88,10 +89,220 @@ concaveDetectionEnd:;
 		case BrushType::SolidColor: {
 			SolidColorBrush *b = (SolidColorBrush *)brush;
 
-			if(isConcave) {
-				std::terminate();
+			if (isConcave) {
+				bool isAntiClockwise = false;
+				{
+					size_t idxVertexWithMaxY;
+					float maxY = -INFINITY;
+
+					for (size_t i = 0; i < params.nVertices; ++i) {
+						if (maxY < params.vertices[i].y) {
+							idxVertexWithMaxY = i;
+							maxY = params.vertices[i].y;
+						}
+					}
+
+					size_t idxFormer, idxLatter;
+					if (!idxVertexWithMaxY) {
+						idxFormer = params.nVertices - 1;
+						idxLatter = idxVertexWithMaxY + 1;
+					} else if (idxVertexWithMaxY + 1 == params.nVertices) {
+						idxFormer = idxVertexWithMaxY - 1;
+						idxLatter = 0;
+					} else {
+						idxFormer = idxVertexWithMaxY - 1;
+						idxLatter = idxVertexWithMaxY + 1;
+					}
+
+					if (math::crossZ(params.vertices[idxVertexWithMaxY] - params.vertices[idxFormer], params.vertices[idxLatter] - params.vertices[idxFormer]) >= 0) {
+						isAntiClockwise = true;
+					}
+				}
+
+				peff::Set<size_t> concaveVertices, convexVertices, idxVertices;
+
+				// Find out all concave and convex vertices and create the vertex set.
+				if (isAntiClockwise) {
+					math::Vec2f a, b;
+
+					for (size_t i = 0; i < params.nVertices - 3; ++i) {
+						a = params.vertices[i + 1] - params.vertices[i];
+						b = params.vertices[i + 2] - params.vertices[i];
+
+						if (math::crossZ(a, b) < 0) {
+							concaveVertices.insert(i + 1);
+						} else {
+							convexVertices.insert(i + 1);
+						}
+						idxVertices.insert(i + 1);
+					}
+
+					a = params.vertices[params.nVertices - 3] - params.vertices[params.nVertices - 2];
+					b = params.vertices[params.nVertices - 3] - params.vertices[params.nVertices - 1];
+
+					if (math::crossZ(a, b) < 0) {
+						concaveVertices.insert(params.nVertices - 3 + 1);
+					} else {
+						convexVertices.insert(params.nVertices - 3 + 1);
+					}
+					idxVertices.insert(params.nVertices - 3 + 1);
+
+					a = params.vertices[params.nVertices - 2] - params.vertices[params.nVertices - 1];
+					b = params.vertices[params.nVertices - 2] - params.vertices[0];
+
+					if (math::crossZ(a, b) < 0) {
+						concaveVertices.insert(params.nVertices - 2 + 1);
+					} else {
+						convexVertices.insert(params.nVertices - 2 + 1);
+					}
+					idxVertices.insert(params.nVertices - 2 + 1);
+
+					a = params.vertices[params.nVertices - 1] - params.vertices[0];
+					b = params.vertices[params.nVertices - 1] - params.vertices[1];
+
+					if (math::crossZ(a, b) < 0) {
+						concaveVertices.insert(0);
+					} else {
+						convexVertices.insert(0);
+					}
+					idxVertices.insert(0);
+				} else {
+					math::Vec2f a, b;
+
+					for (size_t i = params.nVertices - 1; i > 2; --i) {
+						a = params.vertices[i - 1] - params.vertices[i];
+						b = params.vertices[i - 2] - params.vertices[i];
+
+						if (math::crossZ(a, b) < 0) {
+							concaveVertices.insert(i - 1);
+						} else {
+							convexVertices.insert(i - 1);
+						}
+						idxVertices.insert(i - 1);
+					}
+
+					a = params.vertices[1] - params.vertices[2];
+					b = params.vertices[0] - params.vertices[2];
+
+					if (math::crossZ(a, b) < 0) {
+						concaveVertices.insert(1);
+					} else {
+						convexVertices.insert(1);
+					}
+					idxVertices.insert(1);
+
+					a = params.vertices[0] - params.vertices[1];
+					b = params.vertices[params.nVertices - 1] - params.vertices[1];
+
+					if (math::crossZ(a, b) < 0) {
+						concaveVertices.insert(0);
+					} else {
+						convexVertices.insert(0);
+					}
+					idxVertices.insert(0);
+
+					a = params.vertices[params.nVertices - 1] - params.vertices[0];
+					b = params.vertices[params.nVertices - 1 - 1] - params.vertices[0];
+
+					if (math::crossZ(a, b) < 0) {
+						concaveVertices.insert(params.nVertices - 1);
+					} else {
+						convexVertices.insert(params.nVertices - 1);
+					}
+					idxVertices.insert(params.nVertices - 1);
+				}
+
+				peff::List<TriangleParams> triangles;
+
+				// Try to apply ear-clipping algorithm for our polygon.
+				while (idxVertices.size() > 3) {
+					auto curEarIt = convexVertices.begin();
+					size_t idxCurEar = *curEarIt;
+					math::Vec2f earVertex = params.vertices[idxCurEar];
+
+					size_t idxFormer, idxFormerFormer, idxLatter, idxLatterLatter;
+
+					{
+						auto latterIt = idxVertices.find(idxCurEar);
+						++latterIt;
+						if (latterIt == idxVertices.end()) {
+							latterIt = idxVertices.begin();
+						}
+
+						auto latterLatterIt = latterIt;
+						++latterLatterIt;
+						if (latterLatterIt == idxVertices.end()) {
+							latterLatterIt = idxVertices.begin();
+						}
+
+						idxLatter = *latterIt;
+						idxLatterLatter = *latterLatterIt;
+					}
+					idxVertices.remove(idxCurEar);
+					if (idxCurEar) {
+						if (auto it = idxVertices.findMaxLteq(idxCurEar - 1); it != idxVertices.end()) {
+							idxFormer = *it;
+						} else {
+							idxFormer = *idxVertices.beginReversed();
+						}
+					}
+					if (idxFormer) {
+						if (auto it = idxVertices.findMaxLteq(idxFormer - 1); it != idxVertices.end()) {
+							idxFormerFormer = *it;
+						} else {
+							idxFormerFormer = *idxVertices.beginReversed();
+						}
+					} else {
+						idxFormerFormer = *idxVertices.beginReversed();
+					}
+
+					math::Vec2f a, b;
+
+					a = params.vertices[idxFormer] - params.vertices[idxFormerFormer];
+					b = params.vertices[idxCurEar] - params.vertices[idxFormerFormer];
+
+					if (math::crossZ(a, b) >= 0) {
+						if (!convexVertices.contains(idxFormer)) {
+							concaveVertices.remove(idxFormer);
+							convexVertices.insert(+idxFormer);
+						}
+					}
+
+					a = params.vertices[idxLatter] - params.vertices[idxCurEar];
+					b = params.vertices[idxLatterLatter] - params.vertices[idxCurEar];
+
+					if (math::crossZ(a, b) >= 0) {
+						if (!convexVertices.contains(idxLatter)) {
+							concaveVertices.remove(idxLatter);
+							convexVertices.insert(+idxLatter);
+						}
+					}
+
+					convexVertices.remove(idxCurEar);
+
+					TriangleParams curParams;
+
+					curParams.vertices[0] = params.vertices[idxFormer];
+					curParams.vertices[1] = params.vertices[idxCurEar];
+					curParams.vertices[2] = params.vertices[idxLatter];
+
+					triangles.pushBack(std::move(curParams));
+				}
+
+				// Push the last triangle.
+				TriangleParams curParams;
+
+				curParams.vertices[0] = params.vertices[*idxVertices.begin()];
+				curParams.vertices[1] = params.vertices[*++idxVertices.begin()];
+				curParams.vertices[2] = params.vertices[*idxVertices.beginReversed()];
+
+				triangles.pushBack(std::move(curParams));
+
+				for (auto &i : triangles) {
+					fillTriangle(i, brush);
+				}
 			} else {
-				for(size_t i = 2; i < params.nVertices; ++i) {
+				for (size_t i = 2; i < params.nVertices; ++i) {
 					TriangleParams triangleParams;
 
 					triangleParams.vertices[0] = params.vertices[0];
