@@ -113,6 +113,10 @@ CLCVWC_API void DefaultButton::onDraw() {
 	polygonParams.nVertices = 10;
 
 	acriDeviceContext->fillPolygon(polygonParams, pressedBackgroundBrush.get());
+
+	acri::EllipseParams ellipseParams;
+	ellipseParams.radiusX = 10;
+	ellipseParams.radiusY = 20;
 }
 
 CLCVWC_API void DefaultButton::onHover() {

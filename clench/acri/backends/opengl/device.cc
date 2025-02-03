@@ -119,145 +119,141 @@ concaveDetectionEnd:;
 					}
 				}
 
-				peff::Set<size_t> concaveVertices, convexVertices, earVertices, idxVertices;
+				peff::Set<size_t> earVertices, idxVertices;
 
-				// Find out all concave and convex vertices and create the vertex set.
-				if (isAntiClockwise) {
-					math::Vec2f a, b;
+				// Find out all convex vertices and create the ear vertex set and the total vertex set.
+				{
+					peff::Set<size_t> convexVertices;
+					if (isAntiClockwise) {
+						math::Vec2f a, b;
 
-					for (size_t i = 0; i < params.nVertices - 3; ++i) {
-						a = params.vertices[i + 1] - params.vertices[i];
-						b = params.vertices[i + 2] - params.vertices[i];
+						for (size_t i = 0; i < params.nVertices - 3; ++i) {
+							a = params.vertices[i + 1] - params.vertices[i];
+							b = params.vertices[i + 2] - params.vertices[i];
+
+							if (math::crossZ(a, b) < 0) {
+							} else {
+								convexVertices.insert(i + 1);
+							}
+							idxVertices.insert(i + 1);
+						}
+
+						a = params.vertices[params.nVertices - 3] - params.vertices[params.nVertices - 2];
+						b = params.vertices[params.nVertices - 3] - params.vertices[params.nVertices - 1];
 
 						if (math::crossZ(a, b) < 0) {
-							concaveVertices.insert(i + 1);
 						} else {
-							convexVertices.insert(i + 1);
+							convexVertices.insert(params.nVertices - 3 + 1);
 						}
-						idxVertices.insert(i + 1);
-					}
+						idxVertices.insert(params.nVertices - 3 + 1);
 
-					a = params.vertices[params.nVertices - 3] - params.vertices[params.nVertices - 2];
-					b = params.vertices[params.nVertices - 3] - params.vertices[params.nVertices - 1];
-
-					if (math::crossZ(a, b) < 0) {
-						concaveVertices.insert(params.nVertices - 3 + 1);
-					} else {
-						convexVertices.insert(params.nVertices - 3 + 1);
-					}
-					idxVertices.insert(params.nVertices - 3 + 1);
-
-					a = params.vertices[params.nVertices - 2] - params.vertices[params.nVertices - 1];
-					b = params.vertices[params.nVertices - 2] - params.vertices[0];
-
-					if (math::crossZ(a, b) < 0) {
-						concaveVertices.insert(params.nVertices - 2 + 1);
-					} else {
-						convexVertices.insert(params.nVertices - 2 + 1);
-					}
-					idxVertices.insert(params.nVertices - 2 + 1);
-
-					a = params.vertices[params.nVertices - 1] - params.vertices[0];
-					b = params.vertices[params.nVertices - 1] - params.vertices[1];
-
-					if (math::crossZ(a, b) < 0) {
-						concaveVertices.insert(0);
-					} else {
-						convexVertices.insert(0);
-					}
-					idxVertices.insert(0);
-				} else {
-					math::Vec2f a, b;
-
-					for (size_t i = params.nVertices - 1; i > 2; --i) {
-						a = params.vertices[i - 1] - params.vertices[i];
-						b = params.vertices[i - 2] - params.vertices[i];
+						a = params.vertices[params.nVertices - 2] - params.vertices[params.nVertices - 1];
+						b = params.vertices[params.nVertices - 2] - params.vertices[0];
 
 						if (math::crossZ(a, b) < 0) {
-							concaveVertices.insert(i - 1);
 						} else {
-							convexVertices.insert(i - 1);
+							convexVertices.insert(params.nVertices - 2 + 1);
 						}
-						idxVertices.insert(i - 1);
-					}
+						idxVertices.insert(params.nVertices - 2 + 1);
 
-					a = params.vertices[1] - params.vertices[2];
-					b = params.vertices[0] - params.vertices[2];
+						a = params.vertices[params.nVertices - 1] - params.vertices[0];
+						b = params.vertices[params.nVertices - 1] - params.vertices[1];
 
-					if (math::crossZ(a, b) < 0) {
-						concaveVertices.insert(1);
+						if (math::crossZ(a, b) < 0) {
+							;
+						} else {
+							convexVertices.insert(0);
+						}
+						idxVertices.insert(0);
 					} else {
-						convexVertices.insert(1);
+						math::Vec2f a, b;
+
+						for (size_t i = params.nVertices - 1; i > 2; --i) {
+							a = params.vertices[i - 1] - params.vertices[i];
+							b = params.vertices[i - 2] - params.vertices[i];
+
+							if (math::crossZ(a, b) < 0) {
+							} else {
+								convexVertices.insert(i - 1);
+							}
+							idxVertices.insert(i - 1);
+						}
+
+						a = params.vertices[1] - params.vertices[2];
+						b = params.vertices[0] - params.vertices[2];
+
+						if (math::crossZ(a, b) < 0) {
+						} else {
+							convexVertices.insert(1);
+						}
+						idxVertices.insert(1);
+
+						a = params.vertices[0] - params.vertices[1];
+						b = params.vertices[params.nVertices - 1] - params.vertices[1];
+
+						if (math::crossZ(a, b) < 0) {
+						} else {
+							convexVertices.insert(0);
+						}
+						idxVertices.insert(0);
+
+						a = params.vertices[params.nVertices - 1] - params.vertices[0];
+						b = params.vertices[params.nVertices - 1 - 1] - params.vertices[0];
+
+						if (math::crossZ(a, b) < 0) {
+						} else {
+							convexVertices.insert(params.nVertices - 1);
+						}
+						idxVertices.insert(params.nVertices - 1);
 					}
-					idxVertices.insert(1);
 
-					a = params.vertices[0] - params.vertices[1];
-					b = params.vertices[params.nVertices - 1] - params.vertices[1];
+					for (auto i : convexVertices) {
+						size_t idxFormer, idxLatter;
 
-					if (math::crossZ(a, b) < 0) {
-						concaveVertices.insert(0);
-					} else {
-						convexVertices.insert(0);
-					}
-					idxVertices.insert(0);
+						if (!i) {
+							idxFormer = *idxVertices.beginReversed();
+						} else {
+							idxFormer = i - 1;
+						}
 
-					a = params.vertices[params.nVertices - 1] - params.vertices[0];
-					b = params.vertices[params.nVertices - 1 - 1] - params.vertices[0];
+						if (i == *idxVertices.beginReversed()) {
+							idxLatter = 0;
+						} else {
+							idxLatter = i + 1;
+						}
 
-					if (math::crossZ(a, b) < 0) {
-						concaveVertices.insert(params.nVertices - 1);
-					} else {
-						convexVertices.insert(params.nVertices - 1);
-					}
-					idxVertices.insert(params.nVertices - 1);
-				}
+						for (auto j : idxVertices) {
+							if ((j == idxFormer) || (j == idxLatter) || (j == i))
+								continue;
 
-				for (auto i : convexVertices) {
-					size_t idxFormer, idxLatter;
+							math::Vec2f
+								pa = params.vertices[idxFormer] - params.vertices[j],
+								pb = params.vertices[i] - params.vertices[j],
+								pc = params.vertices[idxLatter] - params.vertices[j];
+							{
+								float prodA =
+									math::crossZ(pa, pb);
 
-					if (!i) {
-						idxFormer = *idxVertices.beginReversed();
-					} else {
-						idxFormer = i - 1;
-					}
+								float prodB =
+									math::crossZ(pb, pc);
 
-					if (i == *idxVertices.beginReversed()) {
-						idxLatter = 0;
-					} else {
-						idxLatter = i + 1;
-					}
+								float prodC =
+									math::crossZ(pc, pa);
 
-					for (auto j : idxVertices) {
-						if ((j == idxFormer) || (j == idxLatter) || (j == i))
-							continue;
+								uint32_t signA = *((uint32_t *)&prodA) >> 31, signB = *((uint32_t *)&prodB) >> 31, signC = *((uint32_t *)&prodC) >> 31;
 
-						math::Vec2f
-							pa = params.vertices[idxFormer] - params.vertices[j],
-							pb = params.vertices[i] - params.vertices[j],
-							pc = params.vertices[idxLatter] - params.vertices[j];
-						{
-							float prodA =
-								math::crossZ(pa, pb);
-
-							float prodB =
-								math::crossZ(pb, pc);
-
-							float prodC =
-								math::crossZ(pc, pa);
-
-							uint32_t signA = *((uint32_t *)&prodA) >> 31, signB = *((uint32_t *)&prodB) >> 31, signC = *((uint32_t *)&prodC) >> 31;
-
-							if ((signA == signB) &&
-								(signA == signC) &&
-								(signB == signC)) {
-								goto skipCurVertex;
+								if ((signA == signB) &&
+									(signA == signC) &&
+									(signB == signC)) {
+									goto skipCurVertex;
+								}
 							}
 						}
+
+						earVertices.insert(+i);
+
+					skipCurVertex:;
 					}
-
-					earVertices.insert(+i);
-
-				skipCurVertex:;
 				}
 
 				peff::List<TriangleParams> triangles;
@@ -312,16 +308,8 @@ concaveDetectionEnd:;
 					b = params.vertices[idxLatter] - params.vertices[idxFormerFormer];
 
 					if (math::crossZ(a, b) >= 0) {
-						if (!convexVertices.contains(idxFormer)) {
-							concaveVertices.remove(idxFormer);
-							convexVertices.insert(+idxFormer);
-						}
 						isFormerVertexConvex = true;
 					} else {
-						if (!concaveVertices.contains(idxFormer)) {
-							convexVertices.remove(idxFormer);
-							concaveVertices.insert(+idxFormer);
-						}
 						isFormerVertexConvex = false;
 					}
 
@@ -329,21 +317,12 @@ concaveDetectionEnd:;
 					b = params.vertices[idxLatterLatter] - params.vertices[idxFormer];
 
 					if (math::crossZ(a, b) >= 0) {
-						if (!convexVertices.contains(idxLatter)) {
-							concaveVertices.remove(idxLatter);
-							convexVertices.insert(+idxLatter);
-						}
 						isLatterVertexConvex = true;
 					} else {
-						if (!concaveVertices.contains(idxLatter)) {
-							convexVertices.remove(idxLatter);
-							concaveVertices.insert(+idxLatter);
-						}
 						isLatterVertexConvex = false;
 					}
 
 					idxVertices.remove(idxCurEar);
-					convexVertices.remove(idxCurEar);
 					earVertices.remove(idxCurEar);
 
 					if (isFormerVertexConvex) {
