@@ -474,6 +474,25 @@ CLCACRI_API void GLDeviceContext::drawEllipse(const EllipseParams &params, Brush
 }
 
 CLCACRI_API void GLDeviceContext::fillEllipse(const EllipseParams &params, Brush *brush) {
+	int x, y, width, height;
+	float minDepth, maxDepth;
+	ghalDeviceContext->getViewport(x, y, width, height, minDepth, maxDepth);
+
+	size_t precisionFactor = std::min(width * params.radiusX, height * params.radiusY);
+	float angle = 0.0f;
+	for (size_t i = 0; i < precisionFactor; ++i) {
+		TriangleParams triangleParams;
+
+		triangleParams.vertices[0] = { params.origin.x, params.origin.y };
+
+		triangleParams.vertices[1] = { params.origin.x + params.radiusX * cosf(angle), params.origin.y + params.radiusY * sinf(angle) };
+
+		angle += M_PI * 2 / precisionFactor;
+
+		triangleParams.vertices[2] = { params.origin.x + params.radiusX * cosf(angle), params.origin.y + params.radiusY * sinf(angle) };
+
+		fillTriangle(triangleParams, brush);
+	}
 }
 
 CLCACRI_API void GLDeviceContext::drawPath(const PathParams &params, Brush *brush, float width) {

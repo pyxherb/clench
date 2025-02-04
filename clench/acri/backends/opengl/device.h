@@ -27,8 +27,6 @@ namespace clench {
 
 		class GLDeviceContext : public DeviceContext {
 		public:
-			peff::RcObjectPtr<ghal::DeviceContext> deviceContext;
-
 			struct LocalDeviceResources {
 				struct {
 					peff::RcObjectPtr<ghal::Buffer> solidColorVertexBuffer;

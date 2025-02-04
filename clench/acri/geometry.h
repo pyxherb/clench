@@ -25,6 +25,7 @@ namespace clench {
 		};
 
 		struct EllipseParams {
+			math::Vec2f origin;
 			float radiusX;
 			float radiusY;
 		};
