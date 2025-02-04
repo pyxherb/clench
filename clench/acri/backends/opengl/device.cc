@@ -485,11 +485,22 @@ CLCACRI_API void GLDeviceContext::fillEllipse(const EllipseParams &params, Brush
 	// n >= PI/(arccos(1 - (hmax/R)))
 	//
 	// n: Number of segments.
-	// hmax: Maximum height per pixel.
+	// hmax: Maximum chord height error rate (we set to size of one pixel in window coordinates).
 	// R: Radius of the circle.
 	//
+	// Deduction of the formula:
+	//
+	// hmax = R-R*cos(PI/n)
+	// hmax = R*(1-cos(PI/n))
+	// hmax/R = 1-cos(PI/n)
+	// hmax/R-1 = -cos(PI/n)
+	// 1-hmax/R = cos(PI/n)
+	// PI/n = acos(1-hmax/R)
+	// n/PI = 1/acos(1-hmax/R)
+	// n = PI*1/acos(1-hmax/R)
+	//
 	int maxAxisLen = std::max(width, height);
-	float minSizePerPixel = (2.0f / (float)maxAxisLen);
+	float minSizePerPixel = 1.0f / (float)maxAxisLen;
 
 	float maxRadius = std::max(params.radiusX * width, params.radiusY * height);
 
