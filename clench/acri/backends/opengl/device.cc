@@ -492,16 +492,18 @@ CLCACRI_API void GLDeviceContext::fillEllipse(const EllipseParams &params, Brush
 
 	size_t nSegments = (M_PI / acosf(1.0f - minSizePerPixel / maxRadius) + 0.5f);
 
-	float angle = 0.0f;
+	float angle;
 	float deltaAngle = M_PI * 2 / nSegments;
-	for (size_t i = 0; i <= nSegments; ++i) {
+	for (size_t i = 0; i < nSegments; ++i) {
 		TriangleParams triangleParams;
 
-		triangleParams.vertices[0] = { params.origin.x, params.origin.y };
+		angle = deltaAngle * i;
 
-		triangleParams.vertices[1] = { params.origin.x + params.radiusX * cosf(angle), params.origin.y + params.radiusY * sinf(angle) };
+		triangleParams.vertices[0] = { params.origin.x + params.radiusX * cosf(angle), params.origin.y + params.radiusY * sinf(angle) };
 
-		angle += deltaAngle;
+		triangleParams.vertices[1] = { params.origin.x, params.origin.y };
+
+		angle = deltaAngle * (i + 1);
 
 		triangleParams.vertices[2] = { params.origin.x + params.radiusX * cosf(angle), params.origin.y + params.radiusY * sinf(angle) };
 
