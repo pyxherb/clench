@@ -478,16 +478,30 @@ CLCACRI_API void GLDeviceContext::fillEllipse(const EllipseParams &params, Brush
 	float minDepth, maxDepth;
 	ghalDeviceContext->getViewport(x, y, width, height, minDepth, maxDepth);
 
-	size_t precisionFactor = std::min(width * params.radiusX, height * params.radiusY);
+	//
+	// n >= PI/(arccos(1 - (hmax/R)))
+	//
+	// n: Number of segments.
+	// hmax: Maximum height per pixel.
+	// R: Radius of the circle.
+	//
+	int maxAxisLen = std::max(width, height);
+	float minSizePerPixel = (1.0f / (float)maxAxisLen);
+
+	float maxRadius = std::max(params.radiusX * width, params.radiusY * height);
+
+	size_t nSegments = (M_PI / acosf(1.0f - minSizePerPixel / maxRadius) + 0.5f);
+
 	float angle = 0.0f;
-	for (size_t i = 0; i < precisionFactor; ++i) {
+	float deltaAngle = M_PI * 2 / nSegments;
+	for (size_t i = 0; i <= nSegments; ++i) {
 		TriangleParams triangleParams;
 
 		triangleParams.vertices[0] = { params.origin.x, params.origin.y };
 
 		triangleParams.vertices[1] = { params.origin.x + params.radiusX * cosf(angle), params.origin.y + params.radiusY * sinf(angle) };
 
-		angle += M_PI * 2 / precisionFactor;
+		angle += deltaAngle;
 
 		triangleParams.vertices[2] = { params.origin.x + params.radiusX * cosf(angle), params.origin.y + params.radiusY * sinf(angle) };
 
