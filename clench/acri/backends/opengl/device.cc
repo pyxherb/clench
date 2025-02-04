@@ -1,6 +1,9 @@
 #include "device.h"
 #include <cmath>
 
+#undef max
+#undef min
+
 using namespace clench;
 using namespace clench::acri;
 
@@ -490,10 +493,10 @@ CLCACRI_API void GLDeviceContext::fillEllipse(const EllipseParams &params, Brush
 
 	float maxRadius = std::max(params.radiusX * width, params.radiusY * height);
 
-	size_t nSegments = (M_PI / acosf(1.0f - minSizePerPixel / maxRadius) + 0.5f);
+	size_t nSegments = (M_PIf / acosf(1.0f - minSizePerPixel / maxRadius) + 0.5f);
 
 	float angle;
-	float deltaAngle = M_PI * 2 / nSegments;
+	float deltaAngle = M_PIf * 2 / nSegments;
 	for (size_t i = 0; i < nSegments; ++i) {
 		TriangleParams triangleParams;
 
