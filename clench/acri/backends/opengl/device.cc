@@ -486,7 +486,7 @@ CLCACRI_API void GLDeviceContext::fillEllipse(const EllipseParams &params, Brush
 	// R: Radius of the circle.
 	//
 	int maxAxisLen = std::max(width, height);
-	float minSizePerPixel = (1.0f / (float)maxAxisLen);
+	float minSizePerPixel = (2.0f / (float)maxAxisLen);
 
 	float maxRadius = std::max(params.radiusX * width, params.radiusY * height);
 
