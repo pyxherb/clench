@@ -305,7 +305,7 @@ CLCWSAL_API void X11Window::enumChildWindows(ChildWindowEnumer &&enumer) {
 		}
 	}
 
-	for (auto i = _childVirtualWindows.begin(); i != _childVirtualWindows.end(); ++i) {
+	for (auto i = childVirtualWindows.begin(); i != childVirtualWindows.end(); ++i) {
 		enumer((*i).get());
 	}
 }

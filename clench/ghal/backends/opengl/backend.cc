@@ -24,7 +24,14 @@ CLCGHAL_API void *clench::ghal::_loadGlProc(const char *name) {
 #endif
 }
 
-CLCGHAL_API GLBackend::GLBackend(peff::Alloc *selfAllocator) : Backend("opengl", selfAllocator), initializedEglDisplays(selfAllocator) {
+CLCGHAL_API GLBackend::GLBackend(peff::Alloc *selfAllocator)
+	: Backend("opengl", selfAllocator)
+#if _WIN32
+#else
+	  ,
+	  initializedEglDisplays(selfAllocator)
+#endif
+{
 	g_glBackend = this;
 }
 

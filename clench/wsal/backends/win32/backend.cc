@@ -10,7 +10,7 @@ CLCWSAL_API bool Win32Backend::doInit() {
 
 	WNDCLASS wndClass = {};
 
-	wndClass.style = CS_HREDRAW | CS_VREDRAW;
+	wndClass.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
 	wndClass.lpfnWndProc = Win32Window::_win32WndProc;
 	wndClass.hInstance = GetModuleHandle(NULL);
 	wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
@@ -36,13 +36,18 @@ CLCWSAL_API Win32Backend::Win32Backend(
 }
 CLCWSAL_API Win32Backend::~Win32Backend() {}
 
-CLCWSAL_API wsal::Window *Win32Backend::createWindow(
+CLCWSAL_API void Win32Backend::dealloc() {
+	peff::destroyAndRelease<Win32Backend>(selfAllocator.get(), this, sizeof(std::max_align_t));
+}
+
+CLCWSAL_API base::ExceptionPtr Win32Backend::createWindow(
 	CreateWindowFlags flags,
 	Window *parent,
 	int x,
 	int y,
 	int width,
-	int height) {
+	int height,
+	Window *&windowOut) {
 	Win32WindowHandle nativeHandle;
 	DWORD style = parent ? WS_CHILDWINDOW : WS_OVERLAPPEDWINDOW;
 
@@ -70,16 +75,22 @@ CLCWSAL_API wsal::Window *Win32Backend::createWindow(
 			  NULL,
 			  GetModuleHandle(NULL),
 			  0)))
-		throw std::runtime_error("Error creating new window");
+		return base::wrapIfExceptAllocFailed(
+			ErrorCreatingWindowException::alloc(
+				resourceAllocator.get(),
+				/* stub */ base::InvalidArgsException::alloc(resourceAllocator.get())));
 
 	std::unique_ptr<Win32Window, peff::RcObjectUniquePtrDeleter> windowPtr(Win32Window::alloc(this, nativeHandle));
 
 	if (!windowPtr) {
 		// TODO: Destroy the native window handle;
-		return nullptr;
+		return base::OutOfMemoryException::alloc();
 	}
 
-	return windowPtr.release();
+	windowPtr->incRef();
+	windowOut = windowPtr.release();
+
+	return {};
 }
 
 CLCWSAL_API void Win32Backend::setMouseCapture(Window *window, Window *childWindow) {

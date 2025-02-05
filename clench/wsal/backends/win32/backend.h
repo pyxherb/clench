@@ -22,13 +22,16 @@ namespace clench {
 				peff::Alloc *resourceAllocator);
 			CLCWSAL_API virtual ~Win32Backend();
 
-			CLCWSAL_API virtual Window *createWindow(
+			CLCWSAL_API virtual void dealloc() override;
+
+			CLCWSAL_API virtual base::ExceptionPtr createWindow(
 				CreateWindowFlags flags,
 				Window *parent,
 				int x,
 				int y,
 				int width,
-				int height) override;
+				int height,
+				Window *&windowOut) override;
 			CLCWSAL_API virtual void setMouseCapture(Window *window, Window *childWindow) override;
 			CLCWSAL_API virtual void releaseMouseCapture(Window *window, Window *childWindow) override;
 

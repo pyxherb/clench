@@ -57,8 +57,8 @@ CLCGHAL_API base::ExceptionPtr GLDevice::createDeviceContextForWindow(clench::ws
 	if (!deviceContext)
 		return nullptr;
 #ifdef _WIN32
-	deviceContext->hWnd = ((wsal::Win32Window *)window)->nativeHandle;
-	deviceContext->hdc = GetDC(deviceContext->hWnd);
+	deviceContext->nativeGLContext.hWnd = ((wsal::Win32Window *)window)->nativeHandle;
+	deviceContext->nativeGLContext.hdc = GetDC(deviceContext->nativeGLContext.hWnd);
 	{
 		PIXELFORMATDESCRIPTOR pfd = { 0 };
 		pfd.nSize = sizeof(pfd);
@@ -67,26 +67,29 @@ CLCGHAL_API base::ExceptionPtr GLDevice::createDeviceContextForWindow(clench::ws
 		pfd.iPixelType = PFD_TYPE_RGBA;
 		pfd.cColorBits = 24;
 
-		auto pxFmt = ChoosePixelFormat(deviceContext->hdc, &pfd);
+		auto pxFmt = ChoosePixelFormat(deviceContext->nativeGLContext.hdc, &pfd);
 		if (!pxFmt)
 			throw std::runtime_error("Incompatible ghal device");
 
-		SetPixelFormat(deviceContext->hdc, pxFmt, &pfd);
+		SetPixelFormat(deviceContext->nativeGLContext.hdc, pxFmt, &pfd);
 	}
 
-	if (!(deviceContext->wglContext = wglCreateContext(deviceContext->hdc)))
+	if (!(deviceContext->nativeGLContext.wglContext = wglCreateContext(deviceContext->nativeGLContext.hdc)))
 		throw std::runtime_error("Error creating WGL context");
 
-	NativeGLContext prevContext = GLDeviceContext::saveContextCurrent();
+	NativeGLContext prevContext = NativeGLContext::saveContextCurrent();
 	peff::ScopeGuard restoreContextGuard([&prevContext]() noexcept {
-		GLDeviceContext::restoreContextCurrent(prevContext);
+		NativeGLContext::restoreContextCurrent(prevContext);
 	});
-	deviceContext->makeContextCurrent();
+	NativeGLContext::restoreContextCurrent(deviceContext->nativeGLContext);
 
 	if (!g_glInitialized) {
 		int version = gladLoadGL((GLADloadfunc)_loadGlProc);
 		if (!version)
-			throw std::runtime_error("Error initializing GLAD");
+			return base::wrapIfExceptAllocFailed(
+				ErrorCreatingDeviceContextException::alloc(
+					resourceAllocator.get(),
+					base::wrapIfExceptAllocFailed(ErrorInitializingGLLoaderException::alloc(resourceAllocator.get()))));
 		g_glInitialized = true;
 	}
 #else
@@ -614,11 +617,10 @@ CLCGHAL_API void GLDeviceContext::onResize(int width, int height) {
 		NativeGLContext::restoreContextCurrent(prevContext);
 	});
 
-#ifdef _WIN32
-#else
 	windowWidth = width;
 	windowHeight = height;
-
+#ifdef _WIN32
+#else
 	NativeGLContext oldContext = nativeGLContext;
 
 	if ((nativeGLContext.eglReadSurface =
@@ -861,7 +863,7 @@ CLCGHAL_API void GLDeviceContext::end() {
 
 CLCGHAL_API void GLDeviceContext::present() {
 #ifdef _WIN32
-	SwapBuffers(hdc);
+	SwapBuffers(nativeGLContext.hdc);
 #else
 	eglSwapBuffers(nativeGLContext.eglDisplay, nativeGLContext.eglDrawSurface);
 #endif
@@ -869,9 +871,12 @@ CLCGHAL_API void GLDeviceContext::present() {
 
 CLCGHAL_API NativeGLContext NativeGLContext::saveContextCurrent() {
 #if _WIN32
+	HDC hdc = wglGetCurrentDC();
+
 	return {
 		wglGetCurrentContext(),
-		wglGetCurrentDC()
+		WindowFromDC(hdc),
+		hdc
 	};
 #else
 	return { eglGetCurrentDisplay(),
@@ -890,6 +895,8 @@ CLCGHAL_API bool NativeGLContext::restoreContextCurrent(const NativeGLContext &c
 }
 
 CLCGHAL_API void NativeGLContext::destroySurface() {
+#ifdef _WIN32
+#else
 	if (eglDrawSurface != eglReadSurface) {
 		if (eglDrawSurface != EGL_NO_SURFACE) {
 			eglDestroySurface(eglDisplay, eglDrawSurface);
@@ -903,6 +910,7 @@ CLCGHAL_API void NativeGLContext::destroySurface() {
 			eglDestroySurface(eglDisplay, eglDrawSurface);
 		}
 	}
+#endif
 }
 
 CLCGHAL_API void NativeGLContext::destroy() {

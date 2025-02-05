@@ -49,7 +49,6 @@ namespace clench {
 			XSizeHints *_sizeHints;
 			peff::Map<uint32_t, Time> _keyPressedTimes;
 
-			peff::Set<peff::RcObjectPtr<VirtualWindow>> _childVirtualWindows;
 			peff::Set<Window *> hoveredChildWindows;
 
 			CLENCH_NO_COPY_MOVE_METHODS(X11Window);

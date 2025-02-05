@@ -21,4 +21,5 @@ CLCACRI_API bool clench::acri::registerBackend(Backend *backend) {
 
 CLCACRI_API bool clench::acri::unregisterBackend(std::string_view name) {
 	g_registeredBackends.remove(name);
+	return true;
 }
