@@ -22,8 +22,8 @@ CLCGHAL_API GLVertexShader *GLVertexShader::alloc(
 	Device *ownedDevice,
 	GLuint shaderHandle) {
 	return peff::allocAndConstruct<GLVertexShader>(
-			ownedDevice->resourceAllocator.get(), sizeof(std::max_align_t),
-			ownedDevice, shaderHandle);
+		ownedDevice->resourceAllocator.get(), sizeof(std::max_align_t),
+		ownedDevice, shaderHandle);
 }
 
 CLCGHAL_API GLFragmentShader::GLFragmentShader(Device *ownedDevice, GLuint shaderHandle) : FragmentShader(ownedDevice), shaderHandle(shaderHandle) {
@@ -41,8 +41,8 @@ CLCGHAL_API GLFragmentShader *GLFragmentShader::alloc(
 	Device *ownedDevice,
 	GLuint shaderHandle) {
 	return peff::allocAndConstruct<GLFragmentShader>(
-			ownedDevice->resourceAllocator.get(), sizeof(std::max_align_t),
-			ownedDevice, shaderHandle);
+		ownedDevice->resourceAllocator.get(), sizeof(std::max_align_t),
+		ownedDevice, shaderHandle);
 }
 
 CLCGHAL_API GLGeometryShader::GLGeometryShader(Device *ownedDevice, GLuint shaderHandle) : GeometryShader(ownedDevice), shaderHandle(shaderHandle) {

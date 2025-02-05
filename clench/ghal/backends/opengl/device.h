@@ -4,6 +4,7 @@
 #include "except.h"
 #include "backend.h"
 #include "views.h"
+#include "shader.h"
 // #include "buffer.h"
 #include <clench/ghal/device.h>
 #include <thread>
@@ -63,7 +64,7 @@ namespace clench {
 				VertexShader *vertexShader,
 				VertexLayout *&vertexLayoutOut) override;
 
-			CLCGHAL_API virtual bool isVertexDataTypeSupported(const VertexDataType &vertexDataType) override;
+			CLCGHAL_API virtual bool isShaderDataTypeSupported(const ShaderDataType &vertexDataType) override;
 
 			CLCGHAL_API virtual base::ExceptionPtr createVertexShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo, VertexShader *&vertexShaderOut) override;
 			CLCGHAL_API virtual base::ExceptionPtr createFragmentShader(const char *sources, size_t size, ShaderSourceInfo *sourceInfo, FragmentShader *&fragmentShaderOut) override;
@@ -160,6 +161,8 @@ namespace clench {
 			CLCGHAL_API virtual void begin() override;
 			CLCGHAL_API virtual void end() override;
 
+			CLCGHAL_API virtual void setUniformBuffer(Buffer *buffer, size_t index) override;
+
 			CLCGHAL_API virtual void present() override;
 
 			CLCGHAL_API virtual void dealloc() override;
@@ -168,7 +171,7 @@ namespace clench {
 		};
 
 		CLCGHAL_API base::ExceptionPtr glErrorToExceptionPtr(GLenum error);
-		CLCGHAL_API GLenum toGLVertexDataType(const VertexDataType &vertexDataType, size_t &sizeOut);
+		CLCGHAL_API GLenum toGLVertexDataType(const ShaderDataType &vertexDataType, size_t &sizeOut);
 		CLCGHAL_API GLenum toGLTextureFormat(TextureFormat format, GLenum &typeOut);
 	}
 }

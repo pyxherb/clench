@@ -212,7 +212,7 @@ CLCGHAL_API base::ExceptionPtr GLDevice::createVertexLayout(
 	return {};
 }
 
-CLCGHAL_API bool GLDevice::isVertexDataTypeSupported(const VertexDataType &vertexDataType) {
+CLCGHAL_API bool GLDevice::isShaderDataTypeSupported(const ShaderDataType &vertexDataType) {
 	return true;
 }
 
@@ -803,6 +803,12 @@ CLCGHAL_API void GLDeviceContext::setData(Buffer *buffer, const void *data) {
 }
 
 CLCGHAL_API void GLDeviceContext::setShaderProgram(ShaderProgram *shaderProgram) {
+	NativeGLContext prevContext = NativeGLContext::saveContextCurrent();
+	peff::ScopeGuard restoreContextGuard([&prevContext]() noexcept {
+		NativeGLContext::restoreContextCurrent(prevContext);
+	});
+	NativeGLContext::restoreContextCurrent(nativeGLContext);
+
 	glUseProgram(((GLShaderProgram *)shaderProgram)->programHandle);
 }
 
@@ -871,6 +877,21 @@ CLCGHAL_API void GLDeviceContext::begin() {
 }
 
 CLCGHAL_API void GLDeviceContext::end() {
+}
+
+CLCGHAL_API void GLDeviceContext::setUniformBuffer(Buffer *buffer, size_t index) {
+	NativeGLContext prevContext = NativeGLContext::saveContextCurrent();
+	peff::ScopeGuard restoreContextGuard([&prevContext]() noexcept {
+		NativeGLContext::restoreContextCurrent(prevContext);
+	});
+	NativeGLContext::restoreContextCurrent(nativeGLContext);
+
+	GLint program;
+	glGetIntegerv(GL_CURRENT_PROGRAM, &program);
+
+	glUniformBlockBinding(program, index, 0);
+	glBindBuffer(GL_UNIFORM_BUFFER, ((GLBuffer *)buffer)->bufferHandle);
+	glBindBufferBase(GL_UNIFORM_BUFFER, index, ((GLBuffer *)buffer)->bufferHandle);
 }
 
 CLCGHAL_API void GLDeviceContext::present() {
@@ -972,27 +993,27 @@ CLCGHAL_API base::ExceptionPtr clench::ghal::glErrorToExceptionPtr(GLenum error)
 	return {};
 }
 
-CLCGHAL_API GLenum clench::ghal::toGLVertexDataType(const VertexDataType &vertexDataType, size_t &sizeOut) {
+CLCGHAL_API GLenum clench::ghal::toGLVertexDataType(const ShaderDataType &vertexDataType, size_t &sizeOut) {
 	switch (vertexDataType.elementType) {
-		case VertexElementType::Int:
+		case ShaderElementType::Int:
 			sizeOut = sizeof(GLint) * vertexDataType.nElements;
 			return GL_INT;
-		case VertexElementType::UInt:
+		case ShaderElementType::UInt:
 			sizeOut = sizeof(GLuint) * vertexDataType.nElements;
 			return GL_UNSIGNED_INT;
-		case VertexElementType::Short:
+		case ShaderElementType::Short:
 			sizeOut = sizeof(GLshort) * vertexDataType.nElements;
 			return GL_SHORT;
-		case VertexElementType::UShort:
+		case ShaderElementType::UShort:
 			sizeOut = sizeof(GLushort) * vertexDataType.nElements;
 			return GL_UNSIGNED_SHORT;
-		case VertexElementType::Float:
+		case ShaderElementType::Float:
 			sizeOut = sizeof(GLfloat) * vertexDataType.nElements;
 			return GL_FLOAT;
-		case VertexElementType::Double:
+		case ShaderElementType::Double:
 			sizeOut = sizeof(GLdouble) * vertexDataType.nElements;
 			return GL_DOUBLE;
-		case VertexElementType::Boolean:
+		case ShaderElementType::Boolean:
 			sizeOut = sizeof(GLboolean) * vertexDataType.nElements;
 			return GL_BOOL;
 		default:

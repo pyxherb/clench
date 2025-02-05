@@ -6,36 +6,10 @@
 
 namespace clench {
 	namespace ghal {
-		enum class VertexElementType : uint8_t {
-			Int = 0,
-			UInt,
-			Short,
-			UShort,
-			Long,
-			ULong,
-			Float,
-			Double,
-			Half,
-			Boolean
-		};
-
-		struct VertexDataType {
-			VertexElementType elementType;
-			uint32_t nElements;
-
-			PEFF_FORCEINLINE bool operator<(const VertexDataType &rhs) {
-				if(elementType < rhs.elementType)
-					return true;
-				if(elementType > rhs.elementType)
-					return false;
-				return nElements < rhs.nElements;
-			}
-		};
-
 		struct VertexLayoutElementDesc {
 			InputVertexShaderSemanticType semanticType;
 			uint32_t semanticIndex;
-			VertexDataType dataType;
+			ShaderDataType dataType;
 			size_t stride;
 			size_t off;
 		};

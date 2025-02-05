@@ -50,7 +50,11 @@ CLCACRI_API void GLDeviceContext::fillTriangle(const TriangleParams &params, Bru
 
 			std::lock_guard<std::mutex> triangleSolidColorMutex(localDeviceResources.forTriangle.solidColorLock);
 
+			math::Vec4f testColor = { 0.75f, 1.0f, 0.75f, 1.0f };
+			ghalDeviceContext->setData(localDeviceResources.testColorUniformBuffer.get(), (void*)&testColor);
+
 			ghalDeviceContext->setShaderProgram(((GLDevice *)device)->deviceResources.solidColorShaderProgram.get());
+			ghalDeviceContext->setUniformBuffer(localDeviceResources.testColorUniformBuffer.get(), 0);
 			ghalDeviceContext->bindVertexBuffer(localDeviceResources.forTriangle.solidColorVertexBuffer.get(), sizeof(vertices));
 			ghalDeviceContext->bindVertexLayout(((GLDevice *)device)->deviceResources.solidColorVertexLayout.get());
 			ghalDeviceContext->setData(localDeviceResources.forTriangle.solidColorVertexBuffer.get(), vertices);
@@ -463,7 +467,11 @@ CLCACRI_API void GLDeviceContext::fillRect(const RectParams &params, Brush *brus
 
 			std::lock_guard<std::mutex> rectSolidColorMutex(localDeviceResources.forRect.solidColorLock);
 
+			math::Vec4f testColor = { 0.75f, 1.0f, 0.75f, 1.0f };
+			ghalDeviceContext->setData(localDeviceResources.testColorUniformBuffer.get(), (void *)&testColor);
+
 			ghalDeviceContext->setShaderProgram(((GLDevice *)device)->deviceResources.solidColorShaderProgram.get());
+			ghalDeviceContext->setUniformBuffer(localDeviceResources.testColorUniformBuffer.get(), 0);
 			ghalDeviceContext->bindVertexBuffer(localDeviceResources.forRect.solidColorVertexBuffer.get(), sizeof(float) * 18);
 			ghalDeviceContext->bindVertexLayout(((GLDevice *)device)->deviceResources.solidColorVertexLayout.get());
 			ghalDeviceContext->setData(localDeviceResources.forRect.solidColorVertexBuffer.get(), vertices);

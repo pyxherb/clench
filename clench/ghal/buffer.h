@@ -15,6 +15,7 @@ namespace clench {
 		enum class BufferTarget {
 			Vertex = 0,
 			Index,
+			UniformBuffer
 		};
 
 		struct BufferDesc {

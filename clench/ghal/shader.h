@@ -65,27 +65,52 @@ namespace clench {
 
 		class VertexShader : public Shader {
 		public:
-			CLCGHAL_API VertexShader(Device* ownedDevice);
+			CLCGHAL_API VertexShader(Device *ownedDevice);
 			CLCGHAL_API virtual ~VertexShader();
 		};
 
 		class FragmentShader : public Shader {
 		public:
-			CLCGHAL_API FragmentShader(Device* ownedDevice);
+			CLCGHAL_API FragmentShader(Device *ownedDevice);
 			CLCGHAL_API virtual ~FragmentShader();
 		};
 
 		class GeometryShader : public Shader {
 		public:
-			CLCGHAL_API GeometryShader(Device* ownedDevice);
+			CLCGHAL_API GeometryShader(Device *ownedDevice);
 			CLCGHAL_API virtual ~GeometryShader();
+		};
+
+		enum class ShaderElementType : uint8_t {
+			Int = 0,
+			UInt,
+			Short,
+			UShort,
+			Long,
+			ULong,
+			Float,
+			Double,
+			Half,
+			Boolean
+		};
+
+		struct ShaderDataType {
+			ShaderElementType elementType;
+			uint32_t nElements;
+
+			PEFF_FORCEINLINE bool operator<(const ShaderDataType &rhs) {
+				if (elementType < rhs.elementType)
+					return true;
+				if (elementType > rhs.elementType)
+					return false;
+				return nElements < rhs.nElements;
+			}
 		};
 
 		class ShaderProgram : public DeviceResource {
 		public:
 			CLCGHAL_API ShaderProgram(
-				Device *ownerDevice
-			);
+				Device *ownerDevice);
 			CLCGHAL_API virtual ~ShaderProgram();
 		};
 	}

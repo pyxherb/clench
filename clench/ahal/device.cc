@@ -13,7 +13,3 @@ CLCAHAL_API Device::~Device() {
 CLCAHAL_API void Device::dealloc() {
 	peff::destroyAndRelease<Device>(selfAllocator.get(), this, sizeof(std::max_align_t));
 }
-
-CLCAHAL_API DeviceContext::DeviceContext(Device *ownerDevice) : DeviceResource(ownerDevice) {}
-
-CLCAHAL_API DeviceContext::~DeviceContext() {}

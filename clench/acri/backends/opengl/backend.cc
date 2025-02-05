@@ -45,12 +45,12 @@ CLCACRI_API base::ExceptionPtr GLBackend::createDevice(ghal::Device *ghalDevice,
 		static clench::ghal::VertexLayoutElementDesc descs[] = {
 			{ clench::ghal::InputVertexShaderSemanticType::Color,
 				0,
-				{ clench::ghal::VertexElementType::Float, 4 },
+				{ clench::ghal::ShaderElementType::Float, 4 },
 				sizeof(float) * 2 + sizeof(float) * 4,
 				0 },
 			{ clench::ghal::InputVertexShaderSemanticType::Position,
 				0,
-				{ clench::ghal::VertexElementType::Float, 2 },
+				{ clench::ghal::ShaderElementType::Float, 2 },
 				sizeof(float) * 2 + sizeof(float) * 4,
 				sizeof(float) * 4 }
 		};
@@ -106,6 +106,22 @@ base::ExceptionPtr GLBackend::createDeviceContext(
 				bufDesc,
 				nullptr,
 				ptr->localDeviceResources.forRect.solidColorVertexBuffer.getRef()));
+	}
+
+	{
+		ghal::BufferDesc bufDesc;
+
+		bufDesc.size = sizeof(float) * 4;
+		bufDesc.usage = ghal::BufferUsage::Dynamic;
+		bufDesc.proposedTarget = ghal::BufferTarget::UniformBuffer;
+		bufDesc.cpuWritable = true;
+		bufDesc.cpuReadable = false;
+
+		CLENCH_RETURN_IF_EXCEPT(
+			acriDevice->associatedDevice->createBuffer(
+				bufDesc,
+				nullptr,
+				ptr->localDeviceResources.testColorUniformBuffer.getRef()));
 	}
 
 	ptr->incRef();

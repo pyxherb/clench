@@ -46,17 +46,17 @@ namespace clench {
 		constexpr ghal::VertexLayoutElementDesc vertexLayoutElementDescs[] = {
 			{ clench::ghal::InputVertexShaderSemanticType::Position,
 				0,
-				{ clench::ghal::VertexElementType::Float, 3 },
+				{ clench::ghal::ShaderElementType::Float, 3 },
 				sizeof(TriangleVertex),
 				0 },
 			{ clench::ghal::InputVertexShaderSemanticType::Color,
 				0,
-				{ clench::ghal::VertexElementType::Float, 4 },
+				{ clench::ghal::ShaderElementType::Float, 4 },
 				sizeof(TriangleVertex),
 				sizeof(TriangleVertex().position) },
 			{ clench::ghal::InputVertexShaderSemanticType::TextureCoord,
 				0,
-				{ clench::ghal::VertexElementType::Float, 2 },
+				{ clench::ghal::ShaderElementType::Float, 2 },
 				sizeof(TriangleVertex),
 				sizeof(TriangleVertex().position) + sizeof(TriangleVertex().color) }
 		};

@@ -39,7 +39,7 @@ namespace clench {
 				VertexShader *vertexShader,
 				VertexLayout *&vertexLayoutOut) = 0;
 
-			virtual bool isVertexDataTypeSupported(const VertexDataType &vertexDataType) = 0;
+			virtual bool isShaderDataTypeSupported(const ShaderDataType &vertexDataType) = 0;
 
 			virtual base::ExceptionPtr createVertexShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo, VertexShader *&vertexShaderOut) = 0;
 			virtual base::ExceptionPtr createFragmentShader(const char *sources, size_t size, ShaderSourceInfo *sourceInfo, FragmentShader *&fragmentShaderOut) = 0;
@@ -109,6 +109,8 @@ namespace clench {
 
 			virtual void begin() = 0;
 			virtual void end() = 0;
+
+			virtual void setUniformBuffer(Buffer *buffer, size_t index) = 0;
 
 			virtual void drawTriangle(unsigned int nTriangles) = 0;
 			virtual void drawIndexed(unsigned int nIndices) = 0;
