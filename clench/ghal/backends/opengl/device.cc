@@ -57,6 +57,7 @@ CLCGHAL_API base::ExceptionPtr GLDevice::createDeviceContextForWindow(clench::ws
 	if (!deviceContext)
 		return nullptr;
 #ifdef _WIN32
+	deviceContext->nativeGLContext = {};
 	deviceContext->nativeGLContext.hWnd = ((wsal::Win32Window *)window)->nativeHandle;
 	deviceContext->nativeGLContext.hdc = GetDC(deviceContext->nativeGLContext.hWnd);
 	{
@@ -65,13 +66,16 @@ CLCGHAL_API base::ExceptionPtr GLDevice::createDeviceContextForWindow(clench::ws
 		pfd.nVersion = 1;
 		pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
 		pfd.iPixelType = PFD_TYPE_RGBA;
-		pfd.cColorBits = 24;
+		pfd.cColorBits = 32;
+		pfd.cDepthBits = 32;
+		pfd.iLayerType = PFD_MAIN_PLANE;
 
 		auto pxFmt = ChoosePixelFormat(deviceContext->nativeGLContext.hdc, &pfd);
 		if (!pxFmt)
 			throw std::runtime_error("Incompatible ghal device");
 
-		SetPixelFormat(deviceContext->nativeGLContext.hdc, pxFmt, &pfd);
+		if (!SetPixelFormat(deviceContext->nativeGLContext.hdc, pxFmt, &pfd))
+			throw std::runtime_error("Error setting pixel format");
 	}
 
 	if (!(deviceContext->nativeGLContext.wglContext = wglCreateContext(deviceContext->nativeGLContext.hdc)))
@@ -153,11 +157,12 @@ CLCGHAL_API base::ExceptionPtr GLDevice::createDeviceContextForWindow(clench::ws
 				ErrorCreatingDeviceContextException::alloc(
 					resourceAllocator.get(),
 					base::wrapIfExceptAllocFailed(ErrorInitializingGLLoaderException::alloc(resourceAllocator.get()))));
-		glEnable(GL_DEBUG_OUTPUT);
-		glDebugMessageCallback(_glMessageCallback, 0);
 		g_glInitialized = true;
 	}
 #endif
+	glEnable(GL_DEBUG_OUTPUT);
+	glDebugMessageCallback(_glMessageCallback, 0);
+
 	GLint defaultFramebuffer;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *)&defaultFramebuffer);
 	deviceContext->defaultRenderTargetView = GLRenderTargetView::alloc(this, RenderTargetViewType::Buffer, defaultFramebuffer);
@@ -616,6 +621,7 @@ CLCGHAL_API void GLDeviceContext::onResize(int width, int height) {
 	peff::ScopeGuard restoreContextGuard([&prevContext]() noexcept {
 		NativeGLContext::restoreContextCurrent(prevContext);
 	});
+	NativeGLContext::restoreContextCurrent(nativeGLContext);
 
 	windowWidth = width;
 	windowHeight = height;
@@ -648,6 +654,7 @@ CLCGHAL_API void GLDeviceContext::clearRenderTargetView(
 	peff::ScopeGuard restoreContextGuard([&prevContext]() noexcept {
 		NativeGLContext::restoreContextCurrent(prevContext);
 	});
+	NativeGLContext::restoreContextCurrent(nativeGLContext);
 
 	GLuint prevRenderTarget;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *)&prevRenderTarget);
@@ -671,6 +678,7 @@ CLCGHAL_API void GLDeviceContext::clearDepth(
 	peff::ScopeGuard restoreContextGuard([&prevContext]() noexcept {
 		NativeGLContext::restoreContextCurrent(prevContext);
 	});
+	NativeGLContext::restoreContextCurrent(nativeGLContext);
 
 	GLuint prevRenderTarget;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *)&prevRenderTarget);
@@ -692,6 +700,7 @@ CLCGHAL_API void GLDeviceContext::clearStencil(
 	peff::ScopeGuard restoreContextGuard([&prevContext]() noexcept {
 		NativeGLContext::restoreContextCurrent(prevContext);
 	});
+	NativeGLContext::restoreContextCurrent(nativeGLContext);
 
 	GLuint prevRenderTarget;
 	glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *)&prevRenderTarget);
@@ -711,6 +720,7 @@ CLCGHAL_API void GLDeviceContext::bindVertexBuffer(Buffer *buffer, size_t stride
 	peff::ScopeGuard restoreContextGuard([&prevContext]() noexcept {
 		NativeGLContext::restoreContextCurrent(prevContext);
 	});
+	NativeGLContext::restoreContextCurrent(nativeGLContext);
 
 	glBindBuffer(GL_ARRAY_BUFFER, ((GLBuffer *)buffer)->bufferHandle);
 }
@@ -720,6 +730,7 @@ CLCGHAL_API void GLDeviceContext::bindIndexBuffer(Buffer *buffer) {
 	peff::ScopeGuard restoreContextGuard([&prevContext]() noexcept {
 		NativeGLContext::restoreContextCurrent(prevContext);
 	});
+	NativeGLContext::restoreContextCurrent(nativeGLContext);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ((GLBuffer *)buffer)->bufferHandle);
 }
@@ -729,6 +740,7 @@ CLCGHAL_API void GLDeviceContext::bindVertexLayout(VertexLayout *vertexArray) {
 	peff::ScopeGuard restoreContextGuard([&prevContext]() noexcept {
 		NativeGLContext::restoreContextCurrent(prevContext);
 	});
+	NativeGLContext::restoreContextCurrent(nativeGLContext);
 
 	glBindVertexArray(contextLocalVertexArray);
 
