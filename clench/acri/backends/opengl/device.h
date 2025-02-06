@@ -2,6 +2,7 @@
 #define _CLENCH_ACRI_BACKENDS_OPENGL_DEVICE_H_
 
 #include <clench/acri/device.h>
+#include <clench/ghal/backends/opengl/device.h>
 
 namespace clench {
 	namespace acri {
@@ -10,11 +11,24 @@ namespace clench {
 		extern const char g_triangle_solidcolor_fragment_330[];
 		extern const size_t g_triangle_solidcolor_fragment_330_length;
 
+		extern const char g_ellipse_solidcolor_vertex_330[];
+		extern const size_t g_ellipse_solidcolor_vertex_330_length;
+		extern const char g_ellipse_solidcolor_fragment_330[];
+		extern const size_t g_ellipse_solidcolor_fragment_330_length;
+
+		struct EllipseRenderInfo {
+			math::Vec2f resolution;
+			math::Vec2f offset;
+			math::Vec2f origin;
+			math::Vec2f radius;
+		};
+
 		class GLDevice : public Device {
 		public:
 			struct DeviceResources {
 				peff::RcObjectPtr<ghal::VertexLayout> solidColorVertexLayout;
 				peff::RcObjectPtr<ghal::ShaderProgram> solidColorShaderProgram;
+				peff::RcObjectPtr<ghal::ShaderProgram> solidColorEllipseShaderProgram;
 			} deviceResources;
 
 			CLCACRI_API GLDevice(ghal::Device *associatedDevice, peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator);
@@ -28,7 +42,6 @@ namespace clench {
 		class GLDeviceContext : public DeviceContext {
 		public:
 			struct LocalDeviceResources {
-				peff::RcObjectPtr<ghal::Buffer> testColorUniformBuffer;
 				struct {
 					peff::RcObjectPtr<ghal::Buffer> solidColorVertexBuffer;
 					std::mutex solidColorLock;
@@ -37,6 +50,11 @@ namespace clench {
 					peff::RcObjectPtr<ghal::Buffer> solidColorVertexBuffer;
 					std::mutex solidColorLock;
 				} forRect;
+				struct {
+					peff::RcObjectPtr<ghal::Buffer> solidColorVertexBuffer;
+					peff::RcObjectPtr<ghal::Buffer> solidColorUniformBuffer;
+					std::mutex solidColorLock;
+				} forEllipse;
 			} localDeviceResources;
 
 			CLCACRI_API GLDeviceContext(Device *device, ghal::DeviceContext *deviceContext);

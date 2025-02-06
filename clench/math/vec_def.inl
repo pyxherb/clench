@@ -91,21 +91,17 @@ namespace clench {
 
 #if CLCMATH_X86_INTRINSICS
 		template <>
-		struct alignas(16) Vec2<float> {
+		struct alignas(8) Vec2<float> {
 			union {
 				float data[2];
 				struct {
 					float x;
 					float y;
 				};
-	#if defined(CLCMATH_SSE_INTRINSICS)
-				__m128 m128;
-	#endif
 			};
 
 			CLENCH_FORCEINLINE Vec2() = default;
 			CLENCH_FORCEINLINE Vec2(float x, float y) : x(x), y(y) {}
-			CLENCH_FORCEINLINE Vec2(__m128 m128) : m128(m128) {}
 
 			CLENCH_FORCEINLINE float &operator[](size_t index) {
 				CLCMATH_INDEX_ASSERT(index, 2);

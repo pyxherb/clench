@@ -63,6 +63,35 @@ CLCACRI_API base::ExceptionPtr GLBackend::createDevice(ghal::Device *ghalDevice,
 				ptr->deviceResources.solidColorVertexLayout.getRef()));
 	}
 
+	{
+		peff::RcObjectPtr<ghal::VertexShader> solidColorVertexShader;
+		peff::RcObjectPtr<ghal::FragmentShader> solidColorFragmentShader;
+
+		CLENCH_RETURN_IF_EXCEPT(
+			ghalDevice->createVertexShader(
+				g_ellipse_solidcolor_vertex_330,
+				g_ellipse_solidcolor_vertex_330_length,
+				nullptr,
+				solidColorVertexShader.getRef()));
+
+		CLENCH_RETURN_IF_EXCEPT(
+			ghalDevice->createFragmentShader(
+				g_ellipse_solidcolor_fragment_330,
+				g_ellipse_solidcolor_fragment_330_length,
+				nullptr,
+				solidColorFragmentShader.getRef()));
+
+		ghal::Shader *shaders[] = {
+			solidColorVertexShader.get(),
+			solidColorFragmentShader.get()
+		};
+
+		CLENCH_RETURN_IF_EXCEPT(
+			ghalDevice->linkShaderProgram(
+				shaders, std::size(shaders),
+				ptr->deviceResources.solidColorEllipseShaderProgram.getRef()));
+	}
+
 	deviceOut = ptr.release();
 	return {};
 }
@@ -111,7 +140,23 @@ base::ExceptionPtr GLBackend::createDeviceContext(
 	{
 		ghal::BufferDesc bufDesc;
 
-		bufDesc.size = sizeof(float) * 4;
+		bufDesc.size = (sizeof(float) * 4 + sizeof(float) * 2) * 3 * 2;
+		bufDesc.usage = ghal::BufferUsage::Dynamic;
+		bufDesc.proposedTarget = ghal::BufferTarget::Vertex;
+		bufDesc.cpuWritable = true;
+		bufDesc.cpuReadable = false;
+
+		CLENCH_RETURN_IF_EXCEPT(
+			acriDevice->associatedDevice->createBuffer(
+				bufDesc,
+				nullptr,
+				ptr->localDeviceResources.forEllipse.solidColorVertexBuffer.getRef()));
+	}
+
+	{
+		ghal::BufferDesc bufDesc;
+
+		bufDesc.size = sizeof(EllipseRenderInfo);
 		bufDesc.usage = ghal::BufferUsage::Dynamic;
 		bufDesc.proposedTarget = ghal::BufferTarget::UniformBuffer;
 		bufDesc.cpuWritable = true;
@@ -121,7 +166,7 @@ base::ExceptionPtr GLBackend::createDeviceContext(
 			acriDevice->associatedDevice->createBuffer(
 				bufDesc,
 				nullptr,
-				ptr->localDeviceResources.testColorUniformBuffer.getRef()));
+				ptr->localDeviceResources.forEllipse.solidColorUniformBuffer.getRef()));
 	}
 
 	ptr->incRef();

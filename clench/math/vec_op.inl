@@ -468,19 +468,6 @@ CLENCH_FORCEINLINE clench::math::Vec4<T> operator/(const clench::math::Vec4<T> &
 }
 
 #if CLCMATH_X86_INTRINSICS
-template <>
-CLENCH_FORCEINLINE clench::math::Vec2f &operator+=(clench::math::Vec2f &lhs, const clench::math::Vec2f &rhs) {
-	#if CLCMATH_SSE_INTRINSICS
-	lhs.m128 = _mm_add_ps(lhs.m128, rhs.m128);
-	#endif
-
-	return lhs;
-}
-
-template <>
-CLENCH_FORCEINLINE clench::math::Vec2f operator+(const clench::math::Vec2f &lhs, const clench::math::Vec2f &rhs) {
-	return { _mm_add_ps(lhs.m128, rhs.m128) };
-}
 
 template <>
 CLENCH_FORCEINLINE clench::math::Vec3f &operator+=(clench::math::Vec3f &lhs, const clench::math::Vec3f &rhs) {
