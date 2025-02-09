@@ -4,6 +4,7 @@ out vec4 FragColor;
 in vec4 vertexColor;
 
 layout (std140) uniform RenderInfo {
+	vec4 color;
 	vec2 resolution;
 	vec2 offset;
 	vec2 origin;
@@ -22,7 +23,7 @@ void main() {
 				b * b / (u_renderInfo.radius.y * u_renderInfo.radius.y);
 
 	if(result <= 1.0f) {
-		FragColor = vertexColor;
+		FragColor = u_renderInfo.color;
 	} else {
 		FragColor = vec4(0.0f, 0.0f, 0.0f, 0.0f);
 	}

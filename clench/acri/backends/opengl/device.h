@@ -16,7 +16,12 @@ namespace clench {
 		extern const char g_ellipse_solidcolor_fragment_330[];
 		extern const size_t g_ellipse_solidcolor_fragment_330_length;
 
+		struct TriangleRenderInfo {
+			math::Vec4f color;
+		};
+
 		struct EllipseRenderInfo {
+			math::Vec4f color;
 			math::Vec2f resolution;
 			math::Vec2f offset;
 			math::Vec2f origin;
@@ -44,10 +49,12 @@ namespace clench {
 			struct LocalDeviceResources {
 				struct {
 					peff::RcObjectPtr<ghal::Buffer> solidColorVertexBuffer;
+					peff::RcObjectPtr<ghal::Buffer> solidColorUniformBuffer;
 					std::mutex solidColorLock;
 				} forTriangle;
 				struct {
 					peff::RcObjectPtr<ghal::Buffer> solidColorVertexBuffer;
+					peff::RcObjectPtr<ghal::Buffer> solidColorUniformBuffer;
 					std::mutex solidColorLock;
 				} forRect;
 				struct {

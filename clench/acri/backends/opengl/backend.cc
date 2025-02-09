@@ -43,16 +43,11 @@ CLCACRI_API base::ExceptionPtr GLBackend::createDevice(ghal::Device *ghalDevice,
 				ptr->deviceResources.solidColorShaderProgram.getRef()));
 
 		static clench::ghal::VertexLayoutElementDesc descs[] = {
-			{ clench::ghal::InputVertexShaderSemanticType::Color,
-				0,
-				{ clench::ghal::ShaderElementType::Float, 4 },
-				sizeof(float) * 2 + sizeof(float) * 4,
-				0 },
 			{ clench::ghal::InputVertexShaderSemanticType::Position,
 				0,
 				{ clench::ghal::ShaderElementType::Float, 2 },
-				sizeof(float) * 2 + sizeof(float) * 4,
-				sizeof(float) * 4 }
+				sizeof(float) * 2,
+				0 }
 		};
 
 		CLENCH_RETURN_IF_EXCEPT(
@@ -108,7 +103,7 @@ base::ExceptionPtr GLBackend::createDeviceContext(
 	{
 		ghal::BufferDesc bufDesc;
 
-		bufDesc.size = (sizeof(float) * 4 + sizeof(float) * 2) * 3;
+		bufDesc.size = sizeof(float) * 2 * 3;
 		bufDesc.usage = ghal::BufferUsage::Dynamic;
 		bufDesc.proposedTarget = ghal::BufferTarget::Vertex;
 		bufDesc.cpuWritable = true;
@@ -124,7 +119,23 @@ base::ExceptionPtr GLBackend::createDeviceContext(
 	{
 		ghal::BufferDesc bufDesc;
 
-		bufDesc.size = (sizeof(float) * 4 + sizeof(float) * 2) * 3 * 2;
+		bufDesc.size = sizeof(TriangleRenderInfo);
+		bufDesc.usage = ghal::BufferUsage::Dynamic;
+		bufDesc.proposedTarget = ghal::BufferTarget::UniformBuffer;
+		bufDesc.cpuWritable = true;
+		bufDesc.cpuReadable = false;
+
+		CLENCH_RETURN_IF_EXCEPT(
+			acriDevice->associatedDevice->createBuffer(
+				bufDesc,
+				nullptr,
+				ptr->localDeviceResources.forTriangle.solidColorUniformBuffer.getRef()));
+	}
+
+	{
+		ghal::BufferDesc bufDesc;
+
+		bufDesc.size = sizeof(float) * 2 * 3 * 2;
 		bufDesc.usage = ghal::BufferUsage::Dynamic;
 		bufDesc.proposedTarget = ghal::BufferTarget::Vertex;
 		bufDesc.cpuWritable = true;
@@ -140,7 +151,23 @@ base::ExceptionPtr GLBackend::createDeviceContext(
 	{
 		ghal::BufferDesc bufDesc;
 
-		bufDesc.size = (sizeof(float) * 4 + sizeof(float) * 2) * 3 * 2;
+		bufDesc.size = sizeof(TriangleRenderInfo);
+		bufDesc.usage = ghal::BufferUsage::Dynamic;
+		bufDesc.proposedTarget = ghal::BufferTarget::UniformBuffer;
+		bufDesc.cpuWritable = true;
+		bufDesc.cpuReadable = false;
+
+		CLENCH_RETURN_IF_EXCEPT(
+			acriDevice->associatedDevice->createBuffer(
+				bufDesc,
+				nullptr,
+				ptr->localDeviceResources.forRect.solidColorUniformBuffer.getRef()));
+	}
+
+	{
+		ghal::BufferDesc bufDesc;
+
+		bufDesc.size = sizeof(float) * 2 * 3 * 2;
 		bufDesc.usage = ghal::BufferUsage::Dynamic;
 		bufDesc.proposedTarget = ghal::BufferTarget::Vertex;
 		bufDesc.cpuWritable = true;

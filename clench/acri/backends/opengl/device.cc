@@ -40,17 +40,21 @@ CLCACRI_API void GLDeviceContext::fillTriangle(const TriangleParams &params, Bru
 		case BrushType::SolidColor: {
 			SolidColorBrush *b = (SolidColorBrush *)brush;
 			float vertices[] = {
-				b->color.r, b->color.g, b->color.b, b->color.a,
 				params.vertices[0].x, params.vertices[0].y,
-				b->color.r, b->color.g, b->color.b, b->color.a,
 				params.vertices[1].x, params.vertices[1].y,
-				b->color.r, b->color.g, b->color.b, b->color.a,
 				params.vertices[2].x, params.vertices[2].y
 			};
 
 			std::lock_guard<std::mutex> triangleSolidColorMutex(localDeviceResources.forTriangle.solidColorLock);
 
+			TriangleRenderInfo renderInfo;
+
+			renderInfo.color = b->color.vec;
+
+			ghalDeviceContext->setData(localDeviceResources.forTriangle.solidColorUniformBuffer.get(), (void *)&renderInfo);
+
 			ghalDeviceContext->setShaderProgram(((GLDevice *)device)->deviceResources.solidColorShaderProgram.get());
+			ghalDeviceContext->setUniformBuffer(localDeviceResources.forTriangle.solidColorUniformBuffer.get(), 0);
 			ghalDeviceContext->bindVertexBuffer(localDeviceResources.forTriangle.solidColorVertexBuffer.get(), sizeof(vertices));
 			ghalDeviceContext->bindVertexLayout(((GLDevice *)device)->deviceResources.solidColorVertexLayout.get());
 			ghalDeviceContext->setData(localDeviceResources.forTriangle.solidColorVertexBuffer.get(), vertices);
@@ -442,28 +446,29 @@ CLCACRI_API void GLDeviceContext::fillRect(const RectParams &params, Brush *brus
 		case BrushType::SolidColor: {
 			SolidColorBrush *b = (SolidColorBrush *)brush;
 			float vertices[] = {
-				b->color.r, b->color.g, b->color.b, b->color.a,
 				params.left, params.bottom,
 
-				b->color.r, b->color.g, b->color.b, b->color.a,
 				params.left, params.top,
 
-				b->color.r, b->color.g, b->color.b, b->color.a,
 				params.right, params.bottom,
 
-				b->color.r, b->color.g, b->color.b, b->color.a,
 				params.left, params.top,
 
-				b->color.r, b->color.g, b->color.b, b->color.a,
 				params.right, params.bottom,
 
-				b->color.r, b->color.g, b->color.b, b->color.a,
 				params.right, params.top
 			};
 
 			std::lock_guard<std::mutex> rectSolidColorMutex(localDeviceResources.forRect.solidColorLock);
 
+			TriangleRenderInfo renderInfo;
+
+			renderInfo.color = b->color.vec;
+
+			ghalDeviceContext->setData(localDeviceResources.forRect.solidColorUniformBuffer.get(), (void *)&renderInfo);
+
 			ghalDeviceContext->setShaderProgram(((GLDevice *)device)->deviceResources.solidColorShaderProgram.get());
+			ghalDeviceContext->setUniformBuffer(localDeviceResources.forRect.solidColorUniformBuffer.get(), 0);
 			ghalDeviceContext->bindVertexBuffer(localDeviceResources.forRect.solidColorVertexBuffer.get(), sizeof(float) * 18 * 2);
 			ghalDeviceContext->bindVertexLayout(((GLDevice *)device)->deviceResources.solidColorVertexLayout.get());
 			ghalDeviceContext->setData(localDeviceResources.forRect.solidColorVertexBuffer.get(), vertices);
@@ -528,22 +533,16 @@ CLCACRI_API void GLDeviceContext::fillEllipse(const EllipseParams &params, Brush
 		case BrushType::SolidColor: {
 			SolidColorBrush *b = (SolidColorBrush *)brush;
 			float vertices[] = {
-				b->color.r, b->color.g, b->color.b, b->color.a,
 				params.origin.x - params.radiusX, params.origin.y - params.radiusY,
 
-				b->color.r, b->color.g, b->color.b, b->color.a,
 				params.origin.x - params.radiusX, params.origin.y + params.radiusY,
 
-				b->color.r, b->color.g, b->color.b, b->color.a,
 				params.origin.x + params.radiusX, params.origin.y - params.radiusY,
 
-				b->color.r, b->color.g, b->color.b, b->color.a,
 				params.origin.x - params.radiusX, params.origin.y + params.radiusY,
 
-				b->color.r, b->color.g, b->color.b, b->color.a,
 				params.origin.x + params.radiusX, params.origin.y - params.radiusY,
 
-				b->color.r, b->color.g, b->color.b, b->color.a,
 				params.origin.x + params.radiusX, params.origin.y + params.radiusY
 			};
 
@@ -557,6 +556,8 @@ CLCACRI_API void GLDeviceContext::fillEllipse(const EllipseParams &params, Brush
 			int x, y, width, height;
 			float minDepth, maxDepth;
 			ghalDeviceContext->getViewport(x, y, width, height, minDepth, maxDepth);
+
+			renderInfo.color = b->color.vec;
 
 			renderInfo.resolution.x = width;
 			renderInfo.resolution.y = height;

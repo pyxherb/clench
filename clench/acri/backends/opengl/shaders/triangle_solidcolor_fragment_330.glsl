@@ -1,8 +1,10 @@
 #version 330 core
 out vec4 FragColor;
 
-in vec4 vertexColor;
+layout (std140) uniform RenderInfo {
+	vec4 color;
+} u_renderInfo;
 
 void main() {
-	FragColor = vertexColor;
+	FragColor = u_renderInfo.color;
 }
