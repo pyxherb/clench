@@ -108,11 +108,11 @@ CLCVWC_API void DefaultButton::onDraw() {
 		{ 29.0f / 200.0f, 100.0f / 200.0f }
 	};
 
-	/*acri::PolygonParams polygonParams;
+	acri::PolygonParams polygonParams;
 	polygonParams.vertices = vertices;
 	polygonParams.nVertices = 10;
 
-	acriDeviceContext->fillPolygon(polygonParams, pressedBackgroundBrush.get());*/
+	acriDeviceContext->fillPolygon(polygonParams, pressedBackgroundBrush.get());
 
 	acri::EllipseParams ellipseParams;
 	ellipseParams.origin = { 0.0f, 0.0f };
