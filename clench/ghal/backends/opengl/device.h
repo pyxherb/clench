@@ -176,4 +176,10 @@ namespace clench {
 	}
 }
 
+#define CLCGHAL_GL_OPERATION(op)                                                   \
+	{                                                                              \
+		op;                                                                        \
+		CLENCH_RETURN_IF_EXCEPT(clench::ghal::glErrorToExceptionPtr(glGetError())) \
+	}
+
 #endif

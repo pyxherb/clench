@@ -160,15 +160,14 @@ CLCGHAL_API base::ExceptionPtr GLDevice::createDeviceContextForWindow(clench::ws
 		g_glInitialized = true;
 	}
 #endif
-	glEnable(GL_DEBUG_OUTPUT);
-	glDebugMessageCallback(_glMessageCallback, 0);
+	CLCGHAL_GL_OPERATION(glEnable(GL_DEBUG_OUTPUT));
+	CLCGHAL_GL_OPERATION(glDebugMessageCallback(_glMessageCallback, 0));
 
 	GLint defaultFramebuffer;
-	glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *)&defaultFramebuffer);
+	CLCGHAL_GL_OPERATION(glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint *)&defaultFramebuffer));
 	deviceContext->defaultRenderTargetView = GLRenderTargetView::alloc(this, RenderTargetViewType::Buffer, defaultFramebuffer);
 
-	glGenVertexArrays(1, &deviceContext->contextLocalVertexArray);
-	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
+	CLCGHAL_GL_OPERATION(glGenVertexArrays(1, &deviceContext->contextLocalVertexArray));
 
 	deviceContext->onResize(width, height);
 
@@ -217,33 +216,28 @@ CLCGHAL_API bool GLDevice::isShaderDataTypeSupported(const ShaderDataType &verte
 }
 
 CLCGHAL_API base::ExceptionPtr GLDevice::createVertexShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo, VertexShader *&vertexShaderOut) {
-	GLuint shader = glCreateShader(GL_VERTEX_SHADER);
+	GLuint shader;
+	CLCGHAL_GL_OPERATION(shader = glCreateShader(GL_VERTEX_SHADER));
 	peff::ScopeGuard deleteShaderGuard([shader]() noexcept {
 		glDeleteShader(shader);
 	});
 
-	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
-
 	GLint sz = size;
-	glShaderSource(shader, 1, &source, &sz);
-	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
-
-	glCompileShader(shader);
-
-	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
+	CLCGHAL_GL_OPERATION(glShaderSource(shader, 1, &source, &sz));
+	CLCGHAL_GL_OPERATION(glCompileShader(shader));
 
 	GLint success;
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+	CLCGHAL_GL_OPERATION(glGetShaderiv(shader, GL_COMPILE_STATUS, &success));
 	if (!success) {
 		GLsizei size;
-		glGetShaderInfoLog(shader, 0, &size, NULL);
+		CLCGHAL_GL_OPERATION(glGetShaderInfoLog(shader, 0, &size, NULL));
 
 		peff::String log;
 		if (!log.resize(size)) {
 			return base::OutOfMemoryException::alloc();
 		}
 
-		glGetShaderInfoLog(shader, 1024, &size, log.data());
+		CLCGHAL_GL_OPERATION(glGetShaderInfoLog(shader, 1024, &size, log.data()));
 		return base::wrapIfExceptAllocFailed(
 			ErrorCompilingShaderException::alloc(
 				resourceAllocator.get(),
@@ -263,33 +257,29 @@ CLCGHAL_API base::ExceptionPtr GLDevice::createVertexShader(const char *source, 
 }
 
 CLCGHAL_API base::ExceptionPtr GLDevice::createFragmentShader(const char *source, size_t size, ShaderSourceInfo *sourceInfo, FragmentShader *&fragmentShaderOut) {
-	GLuint shader = glCreateShader(GL_FRAGMENT_SHADER);
+	GLuint shader;
+	CLCGHAL_GL_OPERATION(shader = glCreateShader(GL_FRAGMENT_SHADER));
 	peff::ScopeGuard deleteShaderGuard([shader]() noexcept {
 		glDeleteShader(shader);
 	});
 
-	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
-
 	GLint sz = size;
-	glShaderSource(shader, 1, &source, &sz);
-	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
+	CLCGHAL_GL_OPERATION(glShaderSource(shader, 1, &source, &sz));
 
-	glCompileShader(shader);
-
-	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
+	CLCGHAL_GL_OPERATION(glCompileShader(shader));
 
 	GLint success;
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+	CLCGHAL_GL_OPERATION(glGetShaderiv(shader, GL_COMPILE_STATUS, &success));
 	if (!success) {
 		GLsizei size;
-		glGetShaderInfoLog(shader, 0, &size, NULL);
+		CLCGHAL_GL_OPERATION(glGetShaderInfoLog(shader, 0, &size, NULL));
 
 		peff::String log;
 		if (!log.resize(size)) {
 			return base::OutOfMemoryException::alloc();
 		}
 
-		glGetShaderInfoLog(shader, 1024, &size, log.data());
+		CLCGHAL_GL_OPERATION(glGetShaderInfoLog(shader, 1024, &size, log.data()));
 		return base::wrapIfExceptAllocFailed(
 			ErrorCompilingShaderException::alloc(
 				resourceAllocator.get(),
@@ -349,34 +339,29 @@ CLCGHAL_API base::ExceptionPtr GLDevice::linkShaderProgram(Shader **shaders, siz
 		return base::wrapIfExceptAllocFailed(
 			MissingShaderPartException::alloc(resourceAllocator.get(), ShaderType::Fragment));
 
-	GLuint program = glCreateProgram();
+	GLuint program;
+	CLCGHAL_GL_OPERATION(program = glCreateProgram());
 	peff::ScopeGuard deleteProgramGuard([program]() noexcept {
 		glDeleteProgram(program);
 	});
 
-	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
-
-	glAttachShader(program, vertexShader->shaderHandle);
-	glAttachShader(program, fragmentShader->shaderHandle);
-
-	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
+	CLCGHAL_GL_OPERATION(glAttachShader(program, vertexShader->shaderHandle));
+	CLCGHAL_GL_OPERATION(glAttachShader(program, fragmentShader->shaderHandle));
 
 	GLint success;
-	glLinkProgram(program);
+	CLCGHAL_GL_OPERATION(glLinkProgram(program));
 
-	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
-
-	glGetProgramiv(program, GL_LINK_STATUS, &success);
+	CLCGHAL_GL_OPERATION(glGetProgramiv(program, GL_LINK_STATUS, &success));
 	if (!success) {
 		GLsizei size;
-		glGetProgramInfoLog(program, 0, &size, NULL);
+		CLCGHAL_GL_OPERATION(glGetProgramInfoLog(program, 0, &size, NULL));
 
 		peff::String log;
 		if (!log.resize(size)) {
 			return base::OutOfMemoryException::alloc();
 		}
 
-		glGetProgramInfoLog(program, 1024, &size, log.data());
+		CLCGHAL_GL_OPERATION(glGetProgramInfoLog(program, 1024, &size, log.data()));
 		return base::wrapIfExceptAllocFailed(
 			ErrorLinkingShaderException::alloc(
 				resourceAllocator.get(),
@@ -397,8 +382,7 @@ CLCGHAL_API base::ExceptionPtr GLDevice::linkShaderProgram(Shader **shaders, siz
 
 CLCGHAL_API base::ExceptionPtr GLDevice::createBuffer(const BufferDesc &bufferDesc, const void *initialData, Buffer *&bufferOut) {
 	GLuint buffer;
-	glGenBuffers(1, &buffer);
-	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
+	CLCGHAL_GL_OPERATION(glGenBuffers(1, &buffer));
 
 	peff::ScopeGuard deleteBufferGuard([buffer]() noexcept {
 		glDeleteBuffers(1, &buffer);
@@ -426,8 +410,7 @@ CLCGHAL_API base::ExceptionPtr GLDevice::createTexture1D(const char *data, size_
 		throw std::runtime_error("Invalid texture format");
 
 	GLuint texture;
-	glGenTextures(1, &texture);
-	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
+	CLCGHAL_GL_OPERATION(glGenTextures(1, &texture));
 
 	peff::ScopeGuard deleteTextureGuard([texture]() noexcept {
 		glDeleteTextures(1, &texture);
@@ -435,29 +418,29 @@ CLCGHAL_API base::ExceptionPtr GLDevice::createTexture1D(const char *data, size_
 
 	texture1dLock.lock();
 	GLint savedTexture;
-	glGetIntegerv(GL_TEXTURE_1D, &savedTexture);
+	CLCGHAL_GL_OPERATION(glGetIntegerv(GL_TEXTURE_1D, &savedTexture));
 	peff::ScopeGuard restoreTextureGuard([this, savedTexture]() noexcept {
 		glBindTexture(GL_TEXTURE_1D, savedTexture);
 		texture1dLock.unlock();
 	});
 
-	glBindTexture(GL_TEXTURE_1D, texture);
+	CLCGHAL_GL_OPERATION(glBindTexture(GL_TEXTURE_1D, texture));
 
-	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	CLCGHAL_GL_OPERATION(glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT));
+	CLCGHAL_GL_OPERATION(glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_REPEAT));
+	CLCGHAL_GL_OPERATION(glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+	CLCGHAL_GL_OPERATION(glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
 
-	glTexImage1D(
-		GL_TEXTURE_1D,
-		0,
-		glTextureFormat,
-		desc.width,
-		0,
-		glTextureFormat,
-		glType,
-		data);
-	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
+	CLCGHAL_GL_OPERATION(
+		glTexImage1D(
+			GL_TEXTURE_1D,
+			0,
+			glTextureFormat,
+			desc.width,
+			0,
+			glTextureFormat,
+			glType,
+			data));
 
 	std::unique_ptr<GLTexture1D, peff::RcObjectUniquePtrDeleter> texture1d(GLTexture1D::alloc(this, desc, texture));
 	if (!texture1d)
@@ -477,8 +460,7 @@ CLCGHAL_API base::ExceptionPtr GLDevice::createTexture2D(const char *data, size_
 		throw std::runtime_error("Invalid texture format");
 
 	GLuint texture;
-	glGenTextures(1, &texture);
-	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
+	CLCGHAL_GL_OPERATION(glGenTextures(1, &texture));
 
 	peff::ScopeGuard deleteTextureGuard([texture]() noexcept {
 		glDeleteTextures(1, &texture);
@@ -486,30 +468,30 @@ CLCGHAL_API base::ExceptionPtr GLDevice::createTexture2D(const char *data, size_
 
 	texture2dLock.lock();
 	GLint savedTexture;
-	glGetIntegerv(GL_TEXTURE_2D, &savedTexture);
+	CLCGHAL_GL_OPERATION(glGetIntegerv(GL_TEXTURE_2D, &savedTexture));
 	peff::ScopeGuard restoreTextureGuard([this, savedTexture]() noexcept {
 		glBindTexture(GL_TEXTURE_2D, savedTexture);
 		texture2dLock.unlock();
 	});
 
-	glBindTexture(GL_TEXTURE_2D, texture);
+	CLCGHAL_GL_OPERATION(glBindTexture(GL_TEXTURE_2D, texture));
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	CLCGHAL_GL_OPERATION(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
+	CLCGHAL_GL_OPERATION(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
+	CLCGHAL_GL_OPERATION(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+	CLCGHAL_GL_OPERATION(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
 
-	glTexImage2D(
-		GL_TEXTURE_2D,
-		0,
-		glTextureFormat,
-		desc.width,
-		desc.height,
-		0,
-		glTextureFormat,
-		glType,
-		data);
-	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
+	CLCGHAL_GL_OPERATION(
+		glTexImage2D(
+			GL_TEXTURE_2D,
+			0,
+			glTextureFormat,
+			desc.width,
+			desc.height,
+			0,
+			glTextureFormat,
+			glType,
+			data));
 
 	std::unique_ptr<GLTexture2D, peff::RcObjectUniquePtrDeleter> texture2d(GLTexture2D::alloc(this, desc, texture));
 	if (!texture2d)
@@ -529,8 +511,7 @@ CLCGHAL_API base::ExceptionPtr GLDevice::createTexture3D(const char *data, size_
 		throw std::runtime_error("Invalid texture format");
 
 	GLuint texture;
-	glGenTextures(1, &texture);
-	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
+	CLCGHAL_GL_OPERATION(glGenTextures(1, &texture));
 
 	peff::ScopeGuard deleteTextureGuard([texture]() noexcept {
 		glDeleteTextures(1, &texture);
@@ -538,31 +519,31 @@ CLCGHAL_API base::ExceptionPtr GLDevice::createTexture3D(const char *data, size_
 
 	texture3dLock.lock();
 	GLuint savedTexture;
-	glGetIntegerv(GL_TEXTURE_3D, (GLint *)&savedTexture);
+	CLCGHAL_GL_OPERATION(glGetIntegerv(GL_TEXTURE_3D, (GLint *)&savedTexture));
 	peff::ScopeGuard restoreTextureGuard([this, savedTexture]() noexcept {
 		glBindTexture(GL_TEXTURE_3D, savedTexture);
 		texture3dLock.unlock();
 	});
 
-	glBindTexture(GL_TEXTURE_3D, texture);
+	CLCGHAL_GL_OPERATION(glBindTexture(GL_TEXTURE_3D, texture));
 
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	CLCGHAL_GL_OPERATION(glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT));
+	CLCGHAL_GL_OPERATION(glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT));
+	CLCGHAL_GL_OPERATION(glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+	CLCGHAL_GL_OPERATION(glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
 
-	glTexImage3D(
-		GL_TEXTURE_3D,
-		0,
-		glTextureFormat,
-		desc.width,
-		desc.height,
-		desc.depth,
-		0,
-		glTextureFormat,
-		glType,
-		data);
-	CLENCH_RETURN_IF_EXCEPT(glErrorToExceptionPtr(glGetError()));
+	CLCGHAL_GL_OPERATION(
+		glTexImage3D(
+			GL_TEXTURE_3D,
+			0,
+			glTextureFormat,
+			desc.width,
+			desc.height,
+			desc.depth,
+			0,
+			glTextureFormat,
+			glType,
+			data));
 
 	std::unique_ptr<GLTexture3D, peff::RcObjectUniquePtrDeleter> texture3d(GLTexture3D::alloc(this, desc, texture));
 	if (!texture3d)
