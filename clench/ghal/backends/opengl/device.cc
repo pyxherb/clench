@@ -600,7 +600,10 @@ CLCGHAL_API RenderTargetView *GLDeviceContext::getDefaultRenderTargetView() {
 CLCGHAL_API void GLDeviceContext::onResize(int width, int height) {
 	NativeGLContext prevContext = NativeGLContext::saveContextCurrent();
 	peff::ScopeGuard restoreContextGuard([&prevContext]() noexcept {
-		NativeGLContext::restoreContextCurrent(prevContext);
+		if (prevContext) {
+			NativeGLContext::restoreContextCurrent(prevContext);
+		}
+		clench::ghal::glErrorToExceptionPtr(glGetError());
 	});
 	NativeGLContext::restoreContextCurrent(nativeGLContext);
 
@@ -969,6 +972,8 @@ CLCGHAL_API base::ExceptionPtr clench::ghal::glErrorToExceptionPtr(GLenum error)
 			break;
 		case GL_OUT_OF_MEMORY:
 			return clench::base::OutOfMemoryException::alloc();
+		default:
+			std::terminate();
 	}
 
 	return {};

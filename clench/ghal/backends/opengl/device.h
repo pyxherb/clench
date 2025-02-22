@@ -21,6 +21,26 @@ namespace clench {
 			HGLRC wglContext = NULL;
 			HWND hWnd = NULL;
 			HDC hdc = NULL;
+
+			CLENCH_FORCEINLINE bool operator==(const NativeGLContext &rhs) {
+				if (wglContext != rhs.wglContext)
+					return false;
+				if (hWnd != rhs.hWnd)
+					return false;
+				if (hdc != rhs.hdc)
+					return false;
+				return true;
+			}
+
+			CLENCH_FORCEINLINE operator bool() {
+				if (wglContext)
+					return true;
+				if (hWnd)
+					return true;
+				if (hdc)
+					return true;
+				return false;
+			}
 #else
 			EGLDisplay eglDisplay = EGL_NO_DISPLAY;
 			EGLSurface eglReadSurface = EGL_NO_SURFACE;
