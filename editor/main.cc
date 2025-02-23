@@ -73,7 +73,6 @@ int main(int argc, char **argv) {
 		throw std::runtime_error("Error creating main native window");
 	g_mainNativeWindow->setTitle("Clench Editor");
 	g_mainWindow = MainWindow::alloc(peff::getDefaultAlloc(), g_mainNativeWindow.get());
-	clench::ghal::glErrorToExceptionPtr(glGetError());
 	if (!g_mainWindow)
 		throw std::bad_alloc();
 

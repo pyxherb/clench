@@ -48,6 +48,22 @@ namespace clench {
 			EGLContext eglContext = EGL_NO_CONTEXT;
 			EGLConfig eglConfig = NULL;
 			EGLNativeWindowType eglWindow;
+
+			CLENCH_FORCEINLINE operator bool() {
+				if (eglDisplay)
+					return true;
+				if (eglReadSurface)
+					return true;
+				if (eglDrawSurface)
+					return true;
+				if (eglContext)
+					return true;
+				if (eglConfig)
+					return true;
+				if (eglWindow)
+					return true;
+				return false;
+			}
 #endif
 
 			CLCGHAL_API static NativeGLContext saveContextCurrent();
