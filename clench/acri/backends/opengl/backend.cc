@@ -45,7 +45,7 @@ CLCACRI_API base::ExceptionPtr GLBackend::createDevice(ghal::Device *ghalDevice,
 		static clench::ghal::VertexLayoutElementDesc descs[] = {
 			{ clench::ghal::InputVertexShaderSemanticType::Position,
 				0,
-				{ clench::ghal::ShaderElementType::Float, 2 },
+				{ clench::ghal::ShaderElementType::Float, 2, 1, 1 },
 				sizeof(float) * 2,
 				0 }
 		};

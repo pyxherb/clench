@@ -7,8 +7,11 @@
 namespace clench {
 	namespace ghal {
 		struct VertexLayoutElementDesc {
+			/// @brief Semantic type for the input element.
 			InputVertexShaderSemanticType semanticType;
+			/// @brief Semantic index for the input element, used to form indexed semantics like `POSITION0`.
 			uint32_t semanticIndex;
+			/// @brief Data type of the input element.
 			ShaderDataType dataType;
 			size_t stride;
 			size_t off;

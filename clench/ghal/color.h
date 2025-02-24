@@ -5,6 +5,7 @@
 
 namespace clench {
 	namespace ghal {
+		/// @brief Color structure that presents RGBA colors in normalized [0.0, 1.0]
 		struct Color {
 			union {
 				math::Vec4f vec;

@@ -13,9 +13,34 @@
 #include <set>
 #include <peff/base/alloc.h>
 
+#define CLCGHAL_DEFINE_SIMPLE_SET_UNIFORM_PARAM(name, type) \
+	struct name##SetUniformParam : public clench::ghal::SetUniformParam {\
+		type data;\
+	}
+
 namespace clench {
 	namespace ghal {
 		class DeviceContext;
+
+		struct GraphicsCapabilities {
+			peff::Set<ShaderType> supportedShaderTypes;
+			peff::Set<ShaderElementType> supportedElementTypes;
+		};
+
+		/// @brief Base SetUniformParam structure, please use the derived structure types.
+		struct SetUniformParam {
+		};
+
+		CLCGHAL_DEFINE_SIMPLE_SET_UNIFORM_PARAM(Int, int);
+		CLCGHAL_DEFINE_SIMPLE_SET_UNIFORM_PARAM(UInt, unsigned int);
+		CLCGHAL_DEFINE_SIMPLE_SET_UNIFORM_PARAM(Short, short);
+		CLCGHAL_DEFINE_SIMPLE_SET_UNIFORM_PARAM(UShort, unsigned short);
+		CLCGHAL_DEFINE_SIMPLE_SET_UNIFORM_PARAM(Long, long long);
+		CLCGHAL_DEFINE_SIMPLE_SET_UNIFORM_PARAM(ULong, unsigned long long);
+		CLCGHAL_DEFINE_SIMPLE_SET_UNIFORM_PARAM(Float, float);
+		CLCGHAL_DEFINE_SIMPLE_SET_UNIFORM_PARAM(Double, double);
+		CLCGHAL_DEFINE_SIMPLE_SET_UNIFORM_PARAM(Half, uint16_t);
+		CLCGHAL_DEFINE_SIMPLE_SET_UNIFORM_PARAM(Boolean, bool);
 
 		class Device {
 		public:
@@ -110,6 +135,11 @@ namespace clench {
 			virtual void begin() = 0;
 			virtual void end() = 0;
 
+			/// @brief Set data of a uniform.
+			/// @param index Index of the uniform variable.
+			/// @param dataType Data type of the uniform variable.
+			/// @param setUniformParam Parameter used to set data in the specific type.
+			virtual void setUniform(size_t index, const ShaderDataType &dataType, const SetUniformParam &setUniformParam) = 0;
 			virtual void setUniformBuffer(Buffer *buffer, size_t index) = 0;
 
 			virtual void drawTriangle(unsigned int nTriangles) = 0;

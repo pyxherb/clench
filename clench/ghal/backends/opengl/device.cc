@@ -200,7 +200,7 @@ CLCGHAL_API base::ExceptionPtr GLDevice::createVertexLayout(
 		}
 
 		curDataInput.dataType = glType;
-		curDataInput.num = curDesc.dataType.nElements;
+		curDataInput.num = curDesc.dataType.columns * curDesc.dataType.rows * curDesc.dataType.nElements;
 		curDataInput.off = curDesc.off;
 		curDataInput.stride = curDesc.stride;
 	}
@@ -863,6 +863,10 @@ CLCGHAL_API void GLDeviceContext::begin() {
 CLCGHAL_API void GLDeviceContext::end() {
 }
 
+CLCGHAL_API void GLDeviceContext::setUniform(size_t index, const ShaderDataType &dataType, const SetUniformParam &setUniformParam) {
+	// TODO: Implement it
+}
+
 CLCGHAL_API void GLDeviceContext::setUniformBuffer(Buffer *buffer, size_t index) {
 	NativeGLContext prevContext = NativeGLContext::saveContextCurrent();
 	peff::ScopeGuard restoreContextGuard([&prevContext]() noexcept {
@@ -982,25 +986,25 @@ CLCGHAL_API base::ExceptionPtr clench::ghal::glErrorToExceptionPtr(GLenum error)
 CLCGHAL_API GLenum clench::ghal::toGLVertexDataType(const ShaderDataType &vertexDataType, size_t &sizeOut) {
 	switch (vertexDataType.elementType) {
 		case ShaderElementType::Int:
-			sizeOut = sizeof(GLint) * vertexDataType.nElements;
+			sizeOut = sizeof(GLint) * vertexDataType.columns * vertexDataType.rows * vertexDataType.nElements;
 			return GL_INT;
 		case ShaderElementType::UInt:
-			sizeOut = sizeof(GLuint) * vertexDataType.nElements;
+			sizeOut = sizeof(GLuint) * vertexDataType.columns * vertexDataType.rows * vertexDataType.nElements;
 			return GL_UNSIGNED_INT;
 		case ShaderElementType::Short:
-			sizeOut = sizeof(GLshort) * vertexDataType.nElements;
+			sizeOut = sizeof(GLshort) * vertexDataType.columns * vertexDataType.rows * vertexDataType.nElements;
 			return GL_SHORT;
 		case ShaderElementType::UShort:
-			sizeOut = sizeof(GLushort) * vertexDataType.nElements;
+			sizeOut = sizeof(GLushort) * vertexDataType.columns * vertexDataType.rows * vertexDataType.nElements;
 			return GL_UNSIGNED_SHORT;
 		case ShaderElementType::Float:
-			sizeOut = sizeof(GLfloat) * vertexDataType.nElements;
+			sizeOut = sizeof(GLfloat) * vertexDataType.columns * vertexDataType.rows * vertexDataType.nElements;
 			return GL_FLOAT;
 		case ShaderElementType::Double:
-			sizeOut = sizeof(GLdouble) * vertexDataType.nElements;
+			sizeOut = sizeof(GLdouble) * vertexDataType.columns * vertexDataType.rows * vertexDataType.nElements;
 			return GL_DOUBLE;
 		case ShaderElementType::Boolean:
-			sizeOut = sizeof(GLboolean) * vertexDataType.nElements;
+			sizeOut = sizeof(GLboolean) * vertexDataType.columns * vertexDataType.rows * vertexDataType.nElements;
 			return GL_BOOL;
 		default:
 			return GL_INVALID_ENUM;

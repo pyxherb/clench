@@ -197,6 +197,7 @@ namespace clench {
 			CLCGHAL_API virtual void begin() override;
 			CLCGHAL_API virtual void end() override;
 
+			CLCGHAL_API virtual void setUniform(size_t index, const ShaderDataType &dataType, const SetUniformParam &setUniformParam) override;
 			CLCGHAL_API virtual void setUniformBuffer(Buffer *buffer, size_t index) override;
 
 			CLCGHAL_API virtual void present() override;

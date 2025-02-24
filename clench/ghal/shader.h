@@ -96,6 +96,7 @@ namespace clench {
 
 		struct ShaderDataType {
 			ShaderElementType elementType;
+			uint8_t columns, rows;
 			uint32_t nElements;
 
 			PEFF_FORCEINLINE bool operator<(const ShaderDataType &rhs) {
@@ -103,6 +104,14 @@ namespace clench {
 					return true;
 				if (elementType > rhs.elementType)
 					return false;
+				if (columns > rhs.columns)
+					return false;
+				if (columns < rhs.columns)
+					return true;
+				if (rows > rhs.rows)
+					return false;
+				if (rows < rhs.rows)
+					return true;
 				return nElements < rhs.nElements;
 			}
 		};
