@@ -20,15 +20,15 @@ CLCACRI_API base::ExceptionPtr GLBackend::createDevice(ghal::Device *ghalDevice,
 
 		CLENCH_RETURN_IF_EXCEPT(
 			ghalDevice->createVertexShader(
-				g_triangle_solidcolor_vertex_330,
-				g_triangle_solidcolor_vertex_330_length,
+				g_triangle_solidcolor_fill_vertex_330,
+				g_triangle_solidcolor_fill_vertex_330_length,
 				nullptr,
 				solidColorVertexShader.getRef()));
 
 		CLENCH_RETURN_IF_EXCEPT(
 			ghalDevice->createFragmentShader(
-				g_triangle_solidcolor_fragment_330,
-				g_triangle_solidcolor_fragment_330_length,
+				g_triangle_solidcolor_fill_fragment_330,
+				g_triangle_solidcolor_fill_fragment_330_length,
 				nullptr,
 				solidColorFragmentShader.getRef()));
 
@@ -40,22 +40,24 @@ CLCACRI_API base::ExceptionPtr GLBackend::createDevice(ghal::Device *ghalDevice,
 		CLENCH_RETURN_IF_EXCEPT(
 			ghalDevice->linkShaderProgram(
 				shaders, std::size(shaders),
-				ptr->deviceResources.solidColorShaderProgram.getRef()));
+				ptr->deviceResources.solidColorFillShaderProgram.getRef()));
 
-		static clench::ghal::VertexLayoutElementDesc descs[] = {
-			{ clench::ghal::InputVertexShaderSemanticType::Position,
-				0,
-				{ clench::ghal::ShaderElementType::Float, 2, 1, 1 },
-				sizeof(float) * 2,
-				0 }
-		};
+		{
+			static clench::ghal::VertexLayoutElementDesc descs[] = {
+				{ clench::ghal::InputVertexShaderSemanticType::Position,
+					0,
+					{ clench::ghal::ShaderElementType::Float, 2, 1, 1 },
+					sizeof(float) * 2,
+					0 }
+			};
 
-		CLENCH_RETURN_IF_EXCEPT(
-			ghalDevice->createVertexLayout(
-				descs,
-				std::size(descs),
-				solidColorVertexShader.get(),
-				ptr->deviceResources.solidColorVertexLayout.getRef()));
+			CLENCH_RETURN_IF_EXCEPT(
+				ghalDevice->createVertexLayout(
+					descs,
+					std::size(descs),
+					solidColorVertexShader.get(),
+					ptr->deviceResources.solidColorFillVertexLayout.getRef()));
+		}
 	}
 
 	{
@@ -64,15 +66,15 @@ CLCACRI_API base::ExceptionPtr GLBackend::createDevice(ghal::Device *ghalDevice,
 
 		CLENCH_RETURN_IF_EXCEPT(
 			ghalDevice->createVertexShader(
-				g_ellipse_solidcolor_vertex_330,
-				g_ellipse_solidcolor_vertex_330_length,
+				g_ellipse_solidcolor_fill_vertex_330,
+				g_ellipse_solidcolor_fill_vertex_330_length,
 				nullptr,
 				solidColorVertexShader.getRef()));
 
 		CLENCH_RETURN_IF_EXCEPT(
 			ghalDevice->createFragmentShader(
-				g_ellipse_solidcolor_fragment_330,
-				g_ellipse_solidcolor_fragment_330_length,
+				g_ellipse_solidcolor_fill_fragment_330,
+				g_ellipse_solidcolor_fill_fragment_330_length,
 				nullptr,
 				solidColorFragmentShader.getRef()));
 
@@ -84,7 +86,53 @@ CLCACRI_API base::ExceptionPtr GLBackend::createDevice(ghal::Device *ghalDevice,
 		CLENCH_RETURN_IF_EXCEPT(
 			ghalDevice->linkShaderProgram(
 				shaders, std::size(shaders),
-				ptr->deviceResources.solidColorEllipseShaderProgram.getRef()));
+				ptr->deviceResources.solidColorEllipseFillShaderProgram.getRef()));
+	}
+
+	{
+		peff::RcObjectPtr<ghal::VertexShader> solidColorVertexShader;
+		peff::RcObjectPtr<ghal::FragmentShader> solidColorFragmentShader;
+
+		CLENCH_RETURN_IF_EXCEPT(
+			ghalDevice->createVertexShader(
+				g_ellipse_solidcolor_draw_vertex_330,
+				g_ellipse_solidcolor_draw_vertex_330_length,
+				nullptr,
+				solidColorVertexShader.getRef()));
+
+		CLENCH_RETURN_IF_EXCEPT(
+			ghalDevice->createFragmentShader(
+				g_ellipse_solidcolor_draw_fragment_330,
+				g_ellipse_solidcolor_draw_fragment_330_length,
+				nullptr,
+				solidColorFragmentShader.getRef()));
+
+		ghal::Shader *shaders[] = {
+			solidColorVertexShader.get(),
+			solidColorFragmentShader.get()
+		};
+
+		CLENCH_RETURN_IF_EXCEPT(
+			ghalDevice->linkShaderProgram(
+				shaders, std::size(shaders),
+				ptr->deviceResources.solidColorEllipseDrawShaderProgram.getRef()));
+
+		{
+			static clench::ghal::VertexLayoutElementDesc descs[] = {
+				{ clench::ghal::InputVertexShaderSemanticType::Position,
+					0,
+					{ clench::ghal::ShaderElementType::Float, 2, 1, 1 },
+					sizeof(float) * 2,
+					0 }
+			};
+
+			CLENCH_RETURN_IF_EXCEPT(
+				ghalDevice->createVertexLayout(
+					descs,
+					std::size(descs),
+					solidColorVertexShader.get(),
+					ptr->deviceResources.solidColorDrawVertexLayout.getRef()));
+		}
 	}
 
 	deviceOut = ptr.release();
@@ -113,13 +161,13 @@ base::ExceptionPtr GLBackend::createDeviceContext(
 			acriDevice->associatedDevice->createBuffer(
 				bufDesc,
 				nullptr,
-				ptr->localDeviceResources.forTriangle.solidColorVertexBuffer.getRef()));
+				ptr->localDeviceResources.forTriangle.solidColorFillVertexBuffer.getRef()));
 	}
 
 	{
 		ghal::BufferDesc bufDesc;
 
-		bufDesc.size = sizeof(TriangleRenderInfo);
+		bufDesc.size = sizeof(TriangleSolidColorFillRenderInfo);
 		bufDesc.usage = ghal::BufferUsage::Dynamic;
 		bufDesc.proposedTarget = ghal::BufferTarget::UniformBuffer;
 		bufDesc.cpuWritable = true;
@@ -129,7 +177,7 @@ base::ExceptionPtr GLBackend::createDeviceContext(
 			acriDevice->associatedDevice->createBuffer(
 				bufDesc,
 				nullptr,
-				ptr->localDeviceResources.forTriangle.solidColorUniformBuffer.getRef()));
+				ptr->localDeviceResources.forTriangle.solidColorFillUniformBuffer.getRef()));
 	}
 
 	{
@@ -145,13 +193,13 @@ base::ExceptionPtr GLBackend::createDeviceContext(
 			acriDevice->associatedDevice->createBuffer(
 				bufDesc,
 				nullptr,
-				ptr->localDeviceResources.forRect.solidColorVertexBuffer.getRef()));
+				ptr->localDeviceResources.forRect.solidColorFillVertexBuffer.getRef()));
 	}
 
 	{
 		ghal::BufferDesc bufDesc;
 
-		bufDesc.size = sizeof(TriangleRenderInfo);
+		bufDesc.size = sizeof(TriangleSolidColorFillRenderInfo);
 		bufDesc.usage = ghal::BufferUsage::Dynamic;
 		bufDesc.proposedTarget = ghal::BufferTarget::UniformBuffer;
 		bufDesc.cpuWritable = true;
@@ -161,7 +209,7 @@ base::ExceptionPtr GLBackend::createDeviceContext(
 			acriDevice->associatedDevice->createBuffer(
 				bufDesc,
 				nullptr,
-				ptr->localDeviceResources.forRect.solidColorUniformBuffer.getRef()));
+				ptr->localDeviceResources.forRect.solidColorFillUniformBuffer.getRef()));
 	}
 
 	{
@@ -177,13 +225,13 @@ base::ExceptionPtr GLBackend::createDeviceContext(
 			acriDevice->associatedDevice->createBuffer(
 				bufDesc,
 				nullptr,
-				ptr->localDeviceResources.forEllipse.solidColorVertexBuffer.getRef()));
+				ptr->localDeviceResources.forEllipse.solidColorFillVertexBuffer.getRef()));
 	}
 
 	{
 		ghal::BufferDesc bufDesc;
 
-		bufDesc.size = sizeof(EllipseRenderInfo);
+		bufDesc.size = sizeof(EllipseSolidColorFillRenderInfo);
 		bufDesc.usage = ghal::BufferUsage::Dynamic;
 		bufDesc.proposedTarget = ghal::BufferTarget::UniformBuffer;
 		bufDesc.cpuWritable = true;
@@ -193,7 +241,39 @@ base::ExceptionPtr GLBackend::createDeviceContext(
 			acriDevice->associatedDevice->createBuffer(
 				bufDesc,
 				nullptr,
-				ptr->localDeviceResources.forEllipse.solidColorUniformBuffer.getRef()));
+				ptr->localDeviceResources.forEllipse.solidColorFillUniformBuffer.getRef()));
+	}
+
+	{
+		ghal::BufferDesc bufDesc;
+
+		bufDesc.size = sizeof(float) * 2 * 3 * 2;
+		bufDesc.usage = ghal::BufferUsage::Dynamic;
+		bufDesc.proposedTarget = ghal::BufferTarget::Vertex;
+		bufDesc.cpuWritable = true;
+		bufDesc.cpuReadable = false;
+
+		CLENCH_RETURN_IF_EXCEPT(
+			acriDevice->associatedDevice->createBuffer(
+				bufDesc,
+				nullptr,
+				ptr->localDeviceResources.forEllipse.solidColorDrawVertexBuffer.getRef()));
+	}
+
+	{
+		ghal::BufferDesc bufDesc;
+
+		bufDesc.size = sizeof(EllipseSolidColorDrawRenderInfo);
+		bufDesc.usage = ghal::BufferUsage::Dynamic;
+		bufDesc.proposedTarget = ghal::BufferTarget::UniformBuffer;
+		bufDesc.cpuWritable = true;
+		bufDesc.cpuReadable = false;
+
+		CLENCH_RETURN_IF_EXCEPT(
+			acriDevice->associatedDevice->createBuffer(
+				bufDesc,
+				nullptr,
+				ptr->localDeviceResources.forEllipse.solidColorDrawUniformBuffer.getRef()));
 	}
 
 	ptr->incRef();

@@ -38,26 +38,31 @@ CLCACRI_API void GLDeviceContext::drawTriangle(const TriangleParams &params, Bru
 CLCACRI_API void GLDeviceContext::fillTriangle(const TriangleParams &params, Brush *brush) {
 	switch (brush->brushType) {
 		case BrushType::SolidColor: {
+			int x, y, width, height;
+			float minDepth, maxDepth;
+			ghalDeviceContext->getViewport(x, y, width, height, minDepth, maxDepth);
+
 			SolidColorBrush *b = (SolidColorBrush *)brush;
-			float vertices[] = {
-				params.vertices[0].x, params.vertices[0].y,
-				params.vertices[1].x, params.vertices[1].y,
-				params.vertices[2].x, params.vertices[2].y
+
+			math::Vec2f vertices[3] = {
+				uiCoordToGLDeviceCoord(params.vertices[0].x, params.vertices[0].y, width, height),
+				uiCoordToGLDeviceCoord(params.vertices[1].x, params.vertices[1].y, width, height),
+				uiCoordToGLDeviceCoord(params.vertices[2].x, params.vertices[2].y, width, height)
 			};
 
-			std::lock_guard<std::mutex> triangleSolidColorMutex(localDeviceResources.forTriangle.solidColorLock);
+			std::lock_guard<std::mutex> triangleSolidColorMutex(localDeviceResources.forTriangle.solidColorFillLock);
 
-			TriangleRenderInfo renderInfo;
+			TriangleSolidColorFillRenderInfo renderInfo;
 
 			renderInfo.color = b->color.vec;
 
-			ghalDeviceContext->setData(localDeviceResources.forTriangle.solidColorUniformBuffer.get(), (void *)&renderInfo);
+			ghalDeviceContext->setData(localDeviceResources.forTriangle.solidColorFillUniformBuffer.get(), (void *)&renderInfo);
 
-			ghalDeviceContext->setShaderProgram(((GLDevice *)device)->deviceResources.solidColorShaderProgram.get());
-			ghalDeviceContext->setUniformBuffer(localDeviceResources.forTriangle.solidColorUniformBuffer.get(), 0);
-			ghalDeviceContext->bindVertexBuffer(localDeviceResources.forTriangle.solidColorVertexBuffer.get(), sizeof(vertices));
-			ghalDeviceContext->bindVertexLayout(((GLDevice *)device)->deviceResources.solidColorVertexLayout.get());
-			ghalDeviceContext->setData(localDeviceResources.forTriangle.solidColorVertexBuffer.get(), vertices);
+			ghalDeviceContext->setShaderProgram(((GLDevice *)device)->deviceResources.solidColorFillShaderProgram.get());
+			ghalDeviceContext->setUniformBuffer(localDeviceResources.forTriangle.solidColorFillUniformBuffer.get(), 0);
+			ghalDeviceContext->bindVertexBuffer(localDeviceResources.forTriangle.solidColorFillVertexBuffer.get(), sizeof(vertices));
+			ghalDeviceContext->bindVertexLayout(((GLDevice *)device)->deviceResources.solidColorFillVertexLayout.get());
+			ghalDeviceContext->setData(localDeviceResources.forTriangle.solidColorFillVertexBuffer.get(), vertices);
 
 			ghalDeviceContext->drawTriangle(1);
 
@@ -459,19 +464,19 @@ CLCACRI_API void GLDeviceContext::fillRect(const RectParams &params, Brush *brus
 				params.right, params.top
 			};
 
-			std::lock_guard<std::mutex> rectSolidColorMutex(localDeviceResources.forRect.solidColorLock);
+			std::lock_guard<std::mutex> rectSolidColorMutex(localDeviceResources.forRect.solidColorFillLock);
 
-			TriangleRenderInfo renderInfo;
+			TriangleSolidColorFillRenderInfo renderInfo;
 
 			renderInfo.color = b->color.vec;
 
-			ghalDeviceContext->setData(localDeviceResources.forRect.solidColorUniformBuffer.get(), (void *)&renderInfo);
+			ghalDeviceContext->setData(localDeviceResources.forRect.solidColorFillUniformBuffer.get(), (void *)&renderInfo);
 
-			ghalDeviceContext->setShaderProgram(((GLDevice *)device)->deviceResources.solidColorShaderProgram.get());
-			ghalDeviceContext->setUniformBuffer(localDeviceResources.forRect.solidColorUniformBuffer.get(), 0);
-			ghalDeviceContext->bindVertexBuffer(localDeviceResources.forRect.solidColorVertexBuffer.get(), sizeof(float) * 18 * 2);
-			ghalDeviceContext->bindVertexLayout(((GLDevice *)device)->deviceResources.solidColorVertexLayout.get());
-			ghalDeviceContext->setData(localDeviceResources.forRect.solidColorVertexBuffer.get(), vertices);
+			ghalDeviceContext->setShaderProgram(((GLDevice *)device)->deviceResources.solidColorFillShaderProgram.get());
+			ghalDeviceContext->setUniformBuffer(localDeviceResources.forRect.solidColorFillUniformBuffer.get(), 0);
+			ghalDeviceContext->bindVertexBuffer(localDeviceResources.forRect.solidColorFillVertexBuffer.get(), sizeof(float) * 18 * 2);
+			ghalDeviceContext->bindVertexLayout(((GLDevice *)device)->deviceResources.solidColorFillVertexLayout.get());
+			ghalDeviceContext->setData(localDeviceResources.forRect.solidColorFillVertexBuffer.get(), vertices);
 
 			ghalDeviceContext->drawTriangle(2);
 			break;
@@ -480,6 +485,63 @@ CLCACRI_API void GLDeviceContext::fillRect(const RectParams &params, Brush *brus
 }
 
 CLCACRI_API void GLDeviceContext::drawEllipse(const EllipseParams &params, Brush *brush, float width) {
+	switch (brush->brushType) {
+		case BrushType::SolidColor: {
+			SolidColorBrush *b = (SolidColorBrush *)brush;
+			float radius = width / 2;
+			float vertices[] = {
+				params.origin.x - params.radiusX - radius, params.origin.y - params.radiusY - radius,
+
+				params.origin.x - params.radiusX - radius, params.origin.y + params.radiusY + radius,
+
+				params.origin.x + params.radiusX + radius, params.origin.y - params.radiusY - radius,
+
+				params.origin.x - params.radiusX - radius, params.origin.y + params.radiusY + radius,
+
+				params.origin.x + params.radiusX + radius, params.origin.y - params.radiusY - radius,
+
+				params.origin.x + params.radiusX + radius, params.origin.y + params.radiusY + radius
+			};
+
+			std::lock_guard<std::mutex> ellipseSolidColorMutex(localDeviceResources.forEllipse.solidColorFillLock);
+
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+			EllipseSolidColorDrawRenderInfo renderInfo;
+
+			int x, y, width, height;
+			float minDepth, maxDepth;
+			ghalDeviceContext->getViewport(x, y, width, height, minDepth, maxDepth);
+
+			renderInfo.color = b->color.vec;
+
+			renderInfo.resolution.x = width;
+			renderInfo.resolution.y = height;
+
+			renderInfo.offset.x = x;
+			renderInfo.offset.y = y;
+
+			renderInfo.origin.x = params.origin[0];
+			renderInfo.origin.y = params.origin[1];
+
+			renderInfo.radius.x = params.radiusX;
+			renderInfo.radius.y = params.radiusY;
+
+			renderInfo.strokeWidth = width;
+
+			ghalDeviceContext->setData(localDeviceResources.forEllipse.solidColorDrawUniformBuffer.get(), (void *)&renderInfo);
+
+			ghalDeviceContext->setShaderProgram(((GLDevice *)device)->deviceResources.solidColorEllipseDrawShaderProgram.get());
+			ghalDeviceContext->setUniformBuffer(localDeviceResources.forEllipse.solidColorDrawUniformBuffer.get(), 0);
+			ghalDeviceContext->bindVertexBuffer(localDeviceResources.forEllipse.solidColorDrawVertexBuffer.get(), sizeof(float) * 18 * 2);
+			ghalDeviceContext->bindVertexLayout(((GLDevice *)device)->deviceResources.solidColorDrawVertexLayout.get());
+			ghalDeviceContext->setData(localDeviceResources.forEllipse.solidColorDrawVertexBuffer.get(), vertices);
+
+			ghalDeviceContext->drawTriangle(2);
+			break;
+		}
+	}
 }
 
 CLCACRI_API void GLDeviceContext::fillEllipse(const EllipseParams &params, Brush *brush) {
@@ -546,12 +608,12 @@ CLCACRI_API void GLDeviceContext::fillEllipse(const EllipseParams &params, Brush
 				params.origin.x + params.radiusX, params.origin.y + params.radiusY
 			};
 
-			std::lock_guard<std::mutex> ellipseSolidColorMutex(localDeviceResources.forEllipse.solidColorLock);
+			std::lock_guard<std::mutex> ellipseSolidColorMutex(localDeviceResources.forEllipse.solidColorFillLock);
 
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-			EllipseRenderInfo renderInfo;
+			EllipseSolidColorFillRenderInfo renderInfo;
 
 			int x, y, width, height;
 			float minDepth, maxDepth;
@@ -571,13 +633,13 @@ CLCACRI_API void GLDeviceContext::fillEllipse(const EllipseParams &params, Brush
 			renderInfo.radius.x = params.radiusX;
 			renderInfo.radius.y = params.radiusY;
 
-			ghalDeviceContext->setData(localDeviceResources.forEllipse.solidColorUniformBuffer.get(), (void *)&renderInfo);
+			ghalDeviceContext->setData(localDeviceResources.forEllipse.solidColorFillUniformBuffer.get(), (void *)&renderInfo);
 
-			ghalDeviceContext->setShaderProgram(((GLDevice *)device)->deviceResources.solidColorEllipseShaderProgram.get());
-			ghalDeviceContext->setUniformBuffer(localDeviceResources.forEllipse.solidColorUniformBuffer.get(), 0);
-			ghalDeviceContext->bindVertexBuffer(localDeviceResources.forEllipse.solidColorVertexBuffer.get(), sizeof(float) * 18 * 2);
-			ghalDeviceContext->bindVertexLayout(((GLDevice *)device)->deviceResources.solidColorVertexLayout.get());
-			ghalDeviceContext->setData(localDeviceResources.forEllipse.solidColorVertexBuffer.get(), vertices);
+			ghalDeviceContext->setShaderProgram(((GLDevice *)device)->deviceResources.solidColorEllipseFillShaderProgram.get());
+			ghalDeviceContext->setUniformBuffer(localDeviceResources.forEllipse.solidColorFillUniformBuffer.get(), 0);
+			ghalDeviceContext->bindVertexBuffer(localDeviceResources.forEllipse.solidColorFillVertexBuffer.get(), sizeof(float) * 18 * 2);
+			ghalDeviceContext->bindVertexLayout(((GLDevice *)device)->deviceResources.solidColorFillVertexLayout.get());
+			ghalDeviceContext->setData(localDeviceResources.forEllipse.solidColorFillVertexBuffer.get(), vertices);
 
 			ghalDeviceContext->drawTriangle(2);
 			break;

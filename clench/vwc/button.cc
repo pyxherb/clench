@@ -96,16 +96,16 @@ CLCVWC_API void DefaultButton::onDraw() {
 	}
 
 	math::Vec2f vertices[] = {
-		{ 3.0f / 200.0f, 48.0f / 200.0f },
-		{ 52.0f / 200.0f, 8.0f / 200.0f },
-		{ 99.0f / 200.0f, 50.0f / 200.0f },
-		{ 138.0f / 200.0f, 25.0f / 200.0f },
-		{ 175.0f / 200.0f, 77.0f / 200.0f },
-		{ 131.0f / 200.0f, 72.0f / 200.0f },
-		{ 111.0f / 200.0f, 113.0f / 200.0f },
-		{ 72.0f / 200.0f, 43.0f / 200.0f },
-		{ 26.0f / 200.0f, 55.0f / 200.0f },
-		{ 29.0f / 200.0f, 100.0f / 200.0f }
+		{ 3.0f, 48.0f },
+		{ 52.0f, 8.0f },
+		{ 99.0f, 50.0f },
+		{ 138.0f, 25.0f },
+		{ 175.0f, 77.0f },
+		{ 131.0f, 72.0f },
+		{ 111.0f, 113.0f },
+		{ 72.0f, 43.0f },
+		{ 26.0f, 55.0f },
+		{ 29.0f, 100.0f }
 	};
 
 	acri::PolygonParams polygonParams;
@@ -114,12 +114,12 @@ CLCVWC_API void DefaultButton::onDraw() {
 
 	acriDeviceContext->fillPolygon(polygonParams, pressedBackgroundBrush.get());
 
-	acri::EllipseParams ellipseParams;
+	/*acri::EllipseParams ellipseParams;
 	ellipseParams.origin = { 0.0f, 0.0f };
 	ellipseParams.radiusX = 0.75f;
 	ellipseParams.radiusY = 0.75f;
 
-	acriDeviceContext->fillEllipse(ellipseParams, pressedBackgroundBrush.get());
+	acriDeviceContext->drawEllipse(ellipseParams, pressedBackgroundBrush.get(), 1.0f);*/
 }
 
 CLCVWC_API void DefaultButton::onHover() {
