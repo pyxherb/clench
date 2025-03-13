@@ -13,7 +13,11 @@ using namespace clench::wsal;
 
 CLCWSAL_API bool clench::wsal::WSAL::addBuiltinBackends(peff::Alloc *allocator) {
 #if CLCWSAL_HAS_X11_BACKEND
-	registerWSALBackend(X11Backend::alloc(selfAllocator, resourceAllocator));
+	Backend *x11Backend;
+	if(!(x11Backend = X11Backend::alloc(allocator, allocator)))
+		return false;
+	if(!registerBackend(x11Backend))
+		return false;
 #endif
 
 #if CLCWSAL_HAS_WIN32_BACKEND

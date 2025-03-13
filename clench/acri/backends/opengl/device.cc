@@ -127,11 +127,11 @@ concaveDetectionEnd:;
 					}
 				}
 
-				peff::Set<size_t> earVertices, idxVertices;
+				peff::Set<size_t> earVertices(device->resourceAllocator.get()), idxVertices(device->resourceAllocator.get());
 
 				// Find out all convex vertices and create the ear vertex set and the total vertex set.
 				{
-					peff::Set<size_t> convexVertices;
+					peff::Set<size_t> convexVertices(device->resourceAllocator.get());
 					if (isAntiClockwise) {
 						math::Vec2f a, b;
 
@@ -264,7 +264,7 @@ concaveDetectionEnd:;
 					}
 				}
 
-				peff::List<TriangleParams> triangles;
+				peff::List<TriangleParams> triangles(device->resourceAllocator.get());
 
 				// Try to apply ear-clipping algorithm for our polygon.
 				while (idxVertices.size() > 3) {

@@ -23,4 +23,6 @@ CLCGHAL_API bool clench::ghal::GHAL::addBuiltinBackends(peff::Alloc *selfAllocat
 #if CLCGHAL_HAS_D3D11_BACKEND
 	registerBackend(new D3D11Backend());
 #endif
+
+	return true;
 }

@@ -24,7 +24,7 @@ namespace clench {
 #if _WIN32
 #elif !defined(__ANDROID__)
 			// Explicit reference counter for initialized EGL displays.
-			// Android does not require it because Android has its own reference counter,
+			// Android does not require us to do so because of its own reference counter,
 			// see https://stackoverflow.com/questions/6365366/how-to-properly-initialize-and-terminate-egl-on-android
 			CLCGHAL_API peff::Map<EGLDisplay, size_t> initializedEglDisplays;
 #endif

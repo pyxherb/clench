@@ -28,6 +28,8 @@ CLCWSAL_API VirtualWindow::VirtualWindow(
 	int height)
 	: Window(nullptr),
 	  selfAllocator(selfAllocator),
+	  _childWindows(selfAllocator),
+	  hoveredChildWindows(selfAllocator),
 	  _createWindowFlags(flags),
 	  _parent(parent),
 	  _x(x),
@@ -208,7 +210,7 @@ CLCWSAL_API void VirtualWindow::onKeyUp(KeyboardKeyCode keyCode) {
 }
 
 CLCWSAL_API void VirtualWindow::onMouseButtonPress(MouseButton button, int x, int y) {
-	peff::Map<Window *, std::pair<int, int>> childWindows;
+	peff::Map<Window *, std::pair<int, int>> childWindows(selfAllocator.get());
 
 	findWindowsAtPos(x, y, childWindows);
 
@@ -218,7 +220,7 @@ CLCWSAL_API void VirtualWindow::onMouseButtonPress(MouseButton button, int x, in
 }
 
 CLCWSAL_API void VirtualWindow::onMouseButtonRelease(MouseButton button, int x, int y) {
-	peff::Map<Window *, std::pair<int, int>> childWindows;
+	peff::Map<Window *, std::pair<int, int>> childWindows(selfAllocator.get());
 
 	findWindowsAtPos(x, y, childWindows);
 
@@ -228,7 +230,7 @@ CLCWSAL_API void VirtualWindow::onMouseButtonRelease(MouseButton button, int x, 
 }
 
 CLCWSAL_API void VirtualWindow::onMouseHover(int x, int y) {
-	peff::Map<Window *, std::pair<int, int>> childWindows;
+	peff::Map<Window *, std::pair<int, int>> childWindows(selfAllocator.get());
 
 	findWindowsAtPos(x, y, childWindows);
 
@@ -247,15 +249,16 @@ CLCWSAL_API void VirtualWindow::onMouseLeave() {
 }
 
 CLCWSAL_API void VirtualWindow::onMouseMove(int x, int y) {
-	peff::Map<Window *, std::pair<int, int>> childWindows;
+	peff::Map<Window *, std::pair<int, int>> childWindows(selfAllocator.get());
 
 	findWindowsAtPos(x, y, childWindows);
 
 	{
-		peff::Set<Window *> leftWindows;
+		peff::Set<Window *> leftWindows(selfAllocator.get());
 		for (auto i : hoveredChildWindows) {
 			if (!childWindows.contains(i)) {
-				leftWindows.insert(+i);
+				if (!leftWindows.insert(+i))
+					return;
 			}
 		}
 
@@ -268,7 +271,8 @@ CLCWSAL_API void VirtualWindow::onMouseMove(int x, int y) {
 	for (auto i = childWindows.begin(); i != childWindows.end(); ++i) {
 		if (!hoveredChildWindows.contains(i.key())) {
 			i.key()->onMouseHover(x, y);
-			hoveredChildWindows.insert(+i.key());
+			if (!hoveredChildWindows.insert(+i.key()))
+				return;
 		} else
 			i.key()->onMouseMove(i.value().first, i.value().second);
 	}
@@ -470,7 +474,7 @@ CLCWSAL_API void VirtualWindow::findWindowsAtPos(int x, int y, peff::Map<Window 
 	}
 }
 
-CLCWSAL_API wsal::NativeWindow::NativeWindow(Backend *backend) : Window(backend) {}
+CLCWSAL_API wsal::NativeWindow::NativeWindow(Backend *backend) : Window(backend), childVirtualWindows(backend->resourceAllocator.get()), hoveredChildWindows(backend->resourceAllocator.get()) {}
 
 CLCWSAL_API wsal::NativeWindow::~NativeWindow() {
 }
@@ -544,7 +548,7 @@ CLCWSAL_API void NativeWindow::onMouseButtonPress(MouseButton button, int x, int
 
 		capturedWindow->onMouseButtonPress(button, x - xOffset, y - yOffset);
 	} else {
-		peff::Map<VirtualWindow *, std::pair<int, int>> childWindows;
+		peff::Map<VirtualWindow *, std::pair<int, int>> childWindows(backend->resourceAllocator.get());
 
 		findWindowsAtPos(x, y, childWindows);
 
@@ -561,7 +565,7 @@ CLCWSAL_API void NativeWindow::onMouseButtonRelease(MouseButton button, int x, i
 
 		capturedWindow->onMouseButtonRelease(button, x - xOffset, y - yOffset);
 	} else {
-		peff::Map<VirtualWindow *, std::pair<int, int>> childWindows;
+		peff::Map<VirtualWindow *, std::pair<int, int>> childWindows(backend->resourceAllocator.get());
 
 		findWindowsAtPos(x, y, childWindows);
 
@@ -578,7 +582,7 @@ CLCWSAL_API void NativeWindow::onMouseHover(int x, int y) {
 
 		capturedWindow->onMouseHover(x - xOffset, y - yOffset);
 	} else {
-		peff::Map<VirtualWindow *, std::pair<int, int>> childWindows;
+		peff::Map<VirtualWindow *, std::pair<int, int>> childWindows(backend->resourceAllocator.get());
 
 		findWindowsAtPos(x, y, childWindows);
 
@@ -617,16 +621,17 @@ CLCWSAL_API void NativeWindow::onMouseMove(int x, int y) {
 			}
 		}
 	} else {
-		peff::Map<VirtualWindow *, std::pair<int, int>> childWindows;
+		peff::Map<VirtualWindow *, std::pair<int, int>> childWindows(backend->resourceAllocator.get());
 
 		findWindowsAtPos(x, y, childWindows);
 
 		{
-			peff::Set<Window *> leftWindows;
+			peff::Set<Window *> leftWindows(backend->resourceAllocator.get());
 			for (auto i : hoveredChildWindows) {
 				if (!i->isNative()) {
 					if (!childWindows.contains((VirtualWindow *)i)) {
-						leftWindows.insert(+i);
+						if(!leftWindows.insert(+i))
+							return;
 					}
 				}
 			}
@@ -640,7 +645,8 @@ CLCWSAL_API void NativeWindow::onMouseMove(int x, int y) {
 		for (auto i = childWindows.begin(); i != childWindows.end(); ++i) {
 			if (!hoveredChildWindows.contains(i.key())) {
 				i.key()->onMouseHover(x, y);
-				hoveredChildWindows.insert(+i.key());
+				if(!hoveredChildWindows.insert(+i.key()))
+					return;
 			} else
 				i.key()->onMouseMove(i.value().first, i.value().second);
 		}

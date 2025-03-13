@@ -75,6 +75,15 @@ CLCGHAL_API void GLShaderProgram::dealloc() {
 	peff::destroyAndRelease<GLShaderProgram>(ownerDevice->resourceAllocator.get(), this, sizeof(std::max_align_t));
 }
 
+CLCGHAL_API size_t GLShaderProgram::getUniformBufferIndex(const std::string_view &name) {
+	GLuint index = glGetUniformBlockIndex(programHandle, name.data());
+
+	if(index == UINT_MAX)
+		return SIZE_MAX;
+
+	return index;
+}
+
 CLCGHAL_API GLShaderProgram *GLShaderProgram::alloc(
 	Device *ownedDevice,
 	GLuint programHandle) {

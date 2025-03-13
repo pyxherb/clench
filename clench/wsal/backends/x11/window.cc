@@ -12,7 +12,11 @@ using namespace clench::wsal;
 
 CLCWSAL_API X11Window::X11Window(
 	X11Backend *backend,
-	X11WindowHandle nativeHandle) : NativeWindow(backend), nativeHandle(nativeHandle) {
+	X11WindowHandle nativeHandle)
+	: NativeWindow(backend),
+	  nativeHandle(nativeHandle),
+	  _keyPressedTimes(backend->resourceAllocator.get()),
+	  hoveredChildWindows(backend->resourceAllocator.get()) {
 }
 
 CLCWSAL_API X11Window::~X11Window() {

@@ -10,10 +10,8 @@ namespace clench {
 			EXCEPTION_TYPE_WSAL = CLENCH_UUID(d0049276, b769, 44f7, bb3e, d1f7d0a16df2);
 
 		enum class WSALExceptionCode : uint32_t {
-			/// @brief Indicates that there's no suitable backend that can be used.s
-			NoBackendCandidate,
 			/// @brief Indicates that the display was failed to be opened.
-			ErrorOpeningDisplay,
+			ErrorOpeningDisplay = 0,
 			/// @brief Indicates that the creation of the window was failed.
 			ErrorCreatingWindow,
 		};

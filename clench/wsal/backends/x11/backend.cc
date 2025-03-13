@@ -21,7 +21,10 @@ CLCWSAL_API bool X11Backend::doDeinit() {
 CLCWSAL_API X11Backend::X11Backend(
 	peff::Alloc *selfAllocator,
 	peff::Alloc *resourceAllocator)
-	: Backend("x11", selfAllocator, resourceAllocator), operationMutex(this) {
+	: Backend("x11", selfAllocator, resourceAllocator),
+	  operationMutex(this),
+	  handleToWindowMap(selfAllocator),
+	  builtNativeKeyMap(selfAllocator) {
 }
 CLCWSAL_API X11Backend::~X11Backend() {}
 

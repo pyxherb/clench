@@ -46,7 +46,10 @@ namespace clench {
 		enum class ShaderType {
 			Vertex = 0,
 			Fragment,
-			Geometry
+			Geometry,
+			Hull,
+			Domain,
+			Compute
 		};
 
 		struct ShaderSourceInfo {
@@ -121,6 +124,8 @@ namespace clench {
 			CLCGHAL_API ShaderProgram(
 				Device *ownerDevice);
 			CLCGHAL_API virtual ~ShaderProgram();
+
+			virtual size_t getUniformBufferIndex(const std::string_view &name) = 0;
 		};
 	}
 }

@@ -13,7 +13,8 @@ CLCWSAL_API clench::editor::MainWindow::MainWindow(
 	: VWCRootWindow(
 		  selfAllocator,
 		  parent,
-		  g_mainGhalDevice.get()) {
+		  g_mainGhalDevice.get()),
+		  keyboardPressedKeys(selfAllocator) {
 	setTitle("Clench Engine");
 }
 

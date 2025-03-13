@@ -232,7 +232,7 @@ CLCGHAL_API base::ExceptionPtr GLDevice::createVertexShader(const char *source, 
 		GLsizei size;
 		CLCGHAL_GL_OPERATION(glGetShaderInfoLog(shader, 0, &size, NULL));
 
-		peff::String log;
+		peff::String log(resourceAllocator.get());
 		if (!log.resize(size)) {
 			return base::OutOfMemoryException::alloc();
 		}
@@ -274,7 +274,7 @@ CLCGHAL_API base::ExceptionPtr GLDevice::createFragmentShader(const char *source
 		GLsizei size;
 		CLCGHAL_GL_OPERATION(glGetShaderInfoLog(shader, 0, &size, NULL));
 
-		peff::String log;
+		peff::String log(resourceAllocator.get());
 		if (!log.resize(size)) {
 			return base::OutOfMemoryException::alloc();
 		}
@@ -356,7 +356,7 @@ CLCGHAL_API base::ExceptionPtr GLDevice::linkShaderProgram(Shader **shaders, siz
 		GLsizei size;
 		CLCGHAL_GL_OPERATION(glGetProgramInfoLog(program, 0, &size, NULL));
 
-		peff::String log;
+		peff::String log(resourceAllocator.get());
 		if (!log.resize(size)) {
 			return base::OutOfMemoryException::alloc();
 		}

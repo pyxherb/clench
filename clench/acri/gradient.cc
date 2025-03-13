@@ -10,7 +10,7 @@ CLCACRI_API Gradient::Gradient(Device *device, GradientType gradientType) : ACRI
 CLCACRI_API Gradient::~Gradient() {
 }
 
-CLCACRI_API LinearGradient::LinearGradient(Device *device) : Gradient(device, GradientType::Linear) {
+CLCACRI_API LinearGradient::LinearGradient(Device *device) : Gradient(device, GradientType::Linear), colorStops(device->resourceAllocator.get()) {
 }
 
 CLCACRI_API LinearGradient::~LinearGradient() {

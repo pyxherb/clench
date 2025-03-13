@@ -65,6 +65,10 @@ namespace clench {
 			PathInstruction *instructions;
 			size_t nInstructions;
 		};
+
+		struct TransformParams {
+			float a, b, c, d, e, f;
+		};
 	}
 }
 

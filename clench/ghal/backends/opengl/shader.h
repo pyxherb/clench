@@ -69,6 +69,8 @@ namespace clench {
 				Device *ownerDevice,
 				GLuint programHandle
 			);
+
+			CLCGHAL_API virtual size_t getUniformBufferIndex(const std::string_view &name) override;
 		};
 	}
 }

@@ -13,19 +13,58 @@
 #include <set>
 #include <peff/base/alloc.h>
 
-#define CLCGHAL_DEFINE_SIMPLE_SET_UNIFORM_PARAM(name, type) \
-	struct name##SetUniformParam : public clench::ghal::SetUniformParam {\
-		type data;\
+#define CLCGHAL_DEFINE_SIMPLE_SET_UNIFORM_PARAM(name, type)               \
+	struct name##SetUniformParam : public clench::ghal::SetUniformParam { \
+		type data;                                                        \
 	}
 
 namespace clench {
 	namespace ghal {
 		class DeviceContext;
 
-		struct GraphicsCapabilities {
-			peff::Set<ShaderType> supportedShaderTypes;
-			peff::Set<ShaderElementType> supportedElementTypes;
-		};
+		///
+		/// @name GCAP List
+		/// @{
+		constexpr base::UUID
+			/// @brief Indicates if the device supports vertex shaders.
+			GCAP_VERTEX_SHADER = CLENCH_UUID(a1c48a8d, 068b, 4b2c, bbe2, e68b46168624),
+			/// @brief Indicates if the device supports fragment shaders.
+			GCAP_FRAGMENT_SHADER = CLENCH_UUID(c5a34f71, b564, 4b6e, acbe, 1a15a7ac2869),
+			/// @brief Indicates if the device supports geometry shaders.
+			GCAP_GEOMETRY_SHADER = CLENCH_UUID(43a0ccba, 2fc2, 45e2, a2a5, e80e84a8aad7),
+			/// @brief Indicates if the device supports hull shaders.
+			GCAP_HULL_SHADER = CLENCH_UUID(8eeb55bb, 7974, 4c73, ab69, 5f7c169a9ca8),
+			/// @brief Indicates if the device supports domain shaders.
+			GCAP_DOMAIN_SHADER = CLENCH_UUID(82b8c34c, 0252, 43c1, aee3, a7a70e27065d),
+			/// @brief Indicates if the device supports compute shaders.
+			GCAP_COMPUTE_SHADER = CLENCH_UUID(1323c06c, de9b, 4d16, 9e17, 60cdd4fd79cd),
+
+			/// @brief Indicates if the device supports uniform variables.
+			GCAP_UNIFORM_VAR = CLENCH_UUID(34ff4211, 48e2, 48f3, 8dda, d08b97d47039),
+			/// @brief Indicates if the device supports uniform buffers.
+			GCAP_UNIFORM_BUFFER = CLENCH_UUID(cefd2009, f2d6, 4192, b33d, 8649e22a3398),
+
+			/// @brief Indicates if the device supports `int` as a shader element data type.
+			GCAP_INT_ELEMENT_TYPE = CLENCH_UUID(9be8d60d, 3979, 4ed1, b51a, 64b76dbec488),
+			/// @brief Indicates if the device supports `uint` as a shader element data type.
+			GCAP_UINT_ELEMENT_TYPE = CLENCH_UUID(4edccc52, d101, 455a, a603, 6d77081822d2),
+			/// @brief Indicates if the device supports `short` as a shader element data type.
+			GCAP_SHORT_ELEMENT_TYPE = CLENCH_UUID(a192c300, fd51, 4b7d, 9e7b, 963e39346327),
+			/// @brief Indicates if the device supports `ushort` as a shader element data type.
+			GCAP_USHORT_ELEMENT_TYPE = CLENCH_UUID(93b905f8, 4131, 4bfc, 98c1, 7e1878b3a2bb),
+			/// @brief Indicates if the device supports `long` as a shader element data type.
+			GCAP_LONG_ELEMENT_TYPE = CLENCH_UUID(10dadae9, 6be2, 4a1b, acd5, e4651b3a3cef),
+			/// @brief Indicates if the device supports `ulong` as a shader element data type.
+			GCAP_ULONG_ELEMENT_TYPE = CLENCH_UUID(f07d3ea6, fe2f, 4b1b, a647, 3fcb84a7e784),
+			/// @brief Indicates if the device supports `double` as a shader element data type.
+			GCAP_DOUBLE_FP_ELEMENT_TYPE = CLENCH_UUID(9ef8a0af, 8d1e, 4a08, ab57, e043f0e82c96),
+			/// @brief Indicates if the device supports `half` as a shader element data type.
+			GCAP_HALF_FP_ELEMENT_TYPE = CLENCH_UUID(47c7c1bb, 68a8, 464b, 9125, 9b76889f344d);
+		///
+		/// @}
+		///
+
+		using CapabilitySet = peff::Set<base::UUID>;
 
 		/// @brief Base SetUniformParam structure, please use the derived structure types.
 		struct SetUniformParam {
