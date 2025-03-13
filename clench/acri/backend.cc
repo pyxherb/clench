@@ -3,7 +3,7 @@
 using namespace clench;
 using namespace clench::acri;
 
-CLCACRI_API peff::HashMap<std::string_view, peff::RcObjectPtr<Backend>> clench::acri::g_registeredBackends;
+CLCACRI_API peff::HashMap<std::string_view, peff::RcObjectPtr<Backend>> clench::acri::g_registeredBackends(&peff::g_stdAlloc);
 
 CLCACRI_API Backend::Backend(const char *name, peff::Alloc *selfAllocator) : name(name), selfAllocator(selfAllocator) {
 }

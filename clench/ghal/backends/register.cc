@@ -11,9 +11,13 @@
 using namespace clench;
 using namespace clench::ghal;
 
-CLCGHAL_API void clench::ghal::registerBuiltinBackends(peff::Alloc *selfAllocator) {
+CLCGHAL_API bool clench::ghal::GHAL::addBuiltinBackends(peff::Alloc *selfAllocator) {
 #if CLCGHAL_HAS_OPENGL_BACKEND
-	registerBackend(GLBackend::alloc(selfAllocator));
+	Backend *glBackend = GLBackend::alloc(selfAllocator);
+	if (!glBackend)
+		return false;
+	if (!registerBackend(glBackend))
+		return false;
 #endif
 
 #if CLCGHAL_HAS_D3D11_BACKEND

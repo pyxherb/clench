@@ -33,31 +33,52 @@ uint32_t indices[] = {
 };
 
 int main(int argc, char **argv) {
-	if (!wsal::registerBuiltinWSALBackends(peff::getDefaultAlloc(), peff::getDefaultAlloc()))
+	wsal::WSAL myWsal(peff::getDefaultAlloc());
+	if (!myWsal.addBuiltinBackends(peff::getDefaultAlloc())) {
 		throw std::bad_alloc();
-	if (auto result = wsal::scanAndInitRegisteredWSALBackends();
-		result.has_value())
-		throw std::runtime_error((std::string) "Error initializing WSAL backend " + result->second);
+	}
 
-	ghal::registerBuiltinBackends(peff::getDefaultAlloc());
-	if (auto result = ghal::scanAndInitRegisteredBackends();
-		result.has_value())
-		throw std::runtime_error((std::string) "Error initializing GHAL backend " + result->second);
+	wsal::Backend *myWsalBackend = nullptr;
+	auto wsalEnumer = [](void *userData, wsal::Backend *backend) -> bool {
+		if (!backend->init()) {
+			return true;
+		}
 
-	if(!acri::registerBuiltinBackends(peff::getDefaultAlloc()))
+		*((wsal::Backend **)userData) = backend;
+		return false;
+	};
+
+	myWsal.enumBackends(&myWsalBackend, wsalEnumer);
+	if (!myWsalBackend)
+		throw std::runtime_error("No available WSAL backend");
+
+	ghal::GHAL myGhal(peff::getDefaultAlloc());
+	if (!myGhal.addBuiltinBackends(peff::getDefaultAlloc())) {
 		throw std::bad_alloc();
+	}
 
-	peff::List<std::string_view> preferredBackendList;
-	if (!preferredBackendList.build({ "opengl" }))
-		throw std::bad_alloc();
+	ghal::Backend *myGhalBackend = nullptr;
+	auto ghalEnumer = [](void *userData, ghal::Backend *backend) -> bool {
+		if (!backend->init()) {
+			return true;
+		}
+
+		*((ghal::Backend **)userData) = backend;
+		return false;
+	};
+
+	myGhal.enumBackends(&myGhalBackend, ghalEnumer);
+	if (!myGhalBackend)
+		throw std::runtime_error("No available GHAL backend");
+
 	{
 		ghal::Device *mainGhalDevice;
-		if (auto e = ghal::createDevice(mainGhalDevice, preferredBackendList))
+		if (auto e = myGhalBackend->createDevice(mainGhalDevice))
 			throw std::runtime_error(e->what());
 		g_mainGhalDevice = std::unique_ptr<ghal::Device, peff::DeallocableDeleter<ghal::Device>>(mainGhalDevice);
 	}
 
-	if (auto e = wsal::createWindow(
+	if (auto e = myWsalBackend->createWindow(
 			wsal::CREATEWINDOW_MIN |
 				wsal::CREATEWINDOW_MAX |
 				wsal::CREATEWINDOW_RESIZE,
@@ -78,9 +99,13 @@ int main(int argc, char **argv) {
 
 	g_mainNativeWindow->show();
 
+	if (!acri::registerBuiltinBackends(peff::getDefaultAlloc())) {
+		throw std::runtime_error("Error registering ACRI backends");
+	}
+
 	{
 		acri::Device *mainAcriDevice;
-		if(auto e = acri::createDevice(g_mainGhalDevice.get(), peff::getDefaultAlloc(), peff::getDefaultAlloc(), mainAcriDevice))
+		if (auto e = acri::createDevice(g_mainGhalDevice.get(), peff::getDefaultAlloc(), peff::getDefaultAlloc(), mainAcriDevice))
 			throw std::runtime_error(e->what());
 		g_mainAcriDevice = std::unique_ptr<acri::Device, peff::DeallocableDeleter<acri::Device>>(mainAcriDevice);
 	}
@@ -146,13 +171,9 @@ int main(int argc, char **argv) {
 	g_mainAcriDevice.reset();
 	g_mainGhalDevice.reset();
 
-	if (auto result = ghal::deinitInitedRegisteredBackends();
-		result.has_value())
-		throw std::runtime_error((std::string) "Error deinitializing GHAL backend " + result->second);
-	ghal::g_registeredBackends.clear();
+	if (!myGhalBackend->deinit())
+		throw std::runtime_error((std::string) "Error deinitializing the GHAL backend");
 
-	if (auto result = wsal::deinitInitedRegisteredWSALBackends();
-		result.has_value())
-		throw std::runtime_error((std::string) "Error deinitializing WSAL backend " + result->second);
-	wsal::g_registeredWSALBackends.clear();
+	if (!myWsalBackend->deinit())
+		throw std::runtime_error((std::string) "Error deinitializing the WSAL backend");
 }

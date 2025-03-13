@@ -44,27 +44,24 @@ namespace clench {
 			virtual void releaseMouseCapture(Window *window, Window *childWindow) = 0;
 		};
 
-		CLCWSAL_API extern peff::HashMap<std::string_view, peff::RcObjectPtr<Backend>> g_registeredWSALBackends;
+		using BackendPtr = std::unique_ptr<Backend, peff::DeallocableDeleter<Backend>>;
 
-		CLCWSAL_API void registerWSALBackend(Backend *backend);
-		CLCWSAL_API void unregisterWSALBackend(const char *id);
-		CLCWSAL_API Backend *getWSALBackend(const char *id);
-		CLCWSAL_API std::optional<std::pair<bool, const char *>> scanAndInitRegisteredWSALBackends();
-		CLCWSAL_API std::optional<std::pair<bool, const char *>> deinitInitedRegisteredWSALBackends();
-		CLCWSAL_API bool initRegisteredWSALBackend(const char *id);
-		CLCWSAL_API bool deinitRegisteredWSALBackend(const char *id);
+		typedef bool (*EnumBackendsProc)(void *userData, Backend *backend);
 
-		CLCWSAL_API bool registerBuiltinWSALBackends(peff::Alloc *selfAllocator, peff::Alloc *resourceAllocator);
+		class WSAL {
+		public:
+			peff::HashMap<std::string_view, BackendPtr> registeredBackends;
 
-		CLCWSAL_API base::ExceptionPtr createWindow(
-			CreateWindowFlags flags,
-			Window *parent,
-			int x,
-			int y,
-			int width,
-			int height,
-			Window *&windowOut,
-			const peff::List<std::string_view> &preferredBackendNames = peff::List<std::string_view>());
+			CLCWSAL_API WSAL(peff::Alloc *allocator);
+
+			[[nodiscard]] CLCWSAL_API bool addBuiltinBackends(peff::Alloc *allocator);
+
+			[[nodiscard]] CLCWSAL_API bool registerBackend(Backend *backend);
+			[[nodiscard]] CLCWSAL_API Backend *getBackend(const std::string_view &name);
+			[[nodiscard]] CLCWSAL_API bool unregisterBackend(const std::string_view &name);
+			CLCWSAL_API void enumBackends(void *userData, EnumBackendsProc enumProc);
+			CLCWSAL_API size_t getBackendNum();
+		};
 	}
 }
 
