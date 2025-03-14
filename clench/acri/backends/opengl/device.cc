@@ -593,19 +593,23 @@ CLCACRI_API void GLDeviceContext::fillEllipse(const EllipseParams &params, Brush
 	}*/
 	switch (brush->brushType) {
 		case BrushType::SolidColor: {
+			int x, y, width, height;
+			float minDepth, maxDepth;
+			ghalDeviceContext->getViewport(x, y, width, height, minDepth, maxDepth);
+
 			SolidColorBrush *b = (SolidColorBrush *)brush;
-			float vertices[] = {
-				params.origin.x - params.radiusX, params.origin.y - params.radiusY,
+			math::Vec2f vertices[] = {
+				uiCoordToGLDeviceCoord(params.origin.x - params.radiusX, params.origin.y - params.radiusY, width, height),
 
-				params.origin.x - params.radiusX, params.origin.y + params.radiusY,
+				uiCoordToGLDeviceCoord(params.origin.x - params.radiusX, params.origin.y + params.radiusY, width, height),
 
-				params.origin.x + params.radiusX, params.origin.y - params.radiusY,
+				uiCoordToGLDeviceCoord(params.origin.x + params.radiusX, params.origin.y - params.radiusY, width, height),
 
-				params.origin.x - params.radiusX, params.origin.y + params.radiusY,
+				uiCoordToGLDeviceCoord(params.origin.x - params.radiusX, params.origin.y + params.radiusY, width, height),
 
-				params.origin.x + params.radiusX, params.origin.y - params.radiusY,
+				uiCoordToGLDeviceCoord(params.origin.x + params.radiusX, params.origin.y - params.radiusY, width, height),
 
-				params.origin.x + params.radiusX, params.origin.y + params.radiusY
+				uiCoordToGLDeviceCoord(params.origin.x + params.radiusX, params.origin.y + params.radiusY, width, height)
 			};
 
 			std::lock_guard<std::mutex> ellipseSolidColorMutex(localDeviceResources.forEllipse.solidColorFillLock);
@@ -615,10 +619,6 @@ CLCACRI_API void GLDeviceContext::fillEllipse(const EllipseParams &params, Brush
 
 			EllipseSolidColorFillRenderInfo renderInfo;
 
-			int x, y, width, height;
-			float minDepth, maxDepth;
-			ghalDeviceContext->getViewport(x, y, width, height, minDepth, maxDepth);
-
 			renderInfo.color = b->color.vec;
 
 			renderInfo.resolution.x = width;
@@ -627,11 +627,9 @@ CLCACRI_API void GLDeviceContext::fillEllipse(const EllipseParams &params, Brush
 			renderInfo.offset.x = x;
 			renderInfo.offset.y = y;
 
-			renderInfo.origin.x = params.origin[0];
-			renderInfo.origin.y = params.origin[1];
+			renderInfo.origin = uiCoordToGLDeviceCoord(params.origin.x, params.origin.y, width, height);
 
-			renderInfo.radius.x = params.radiusX;
-			renderInfo.radius.y = params.radiusY;
+			renderInfo.radius = uiSizeToGLDeviceSize(params.radiusX, params.radiusY, width, height);
 
 			ghalDeviceContext->setData(localDeviceResources.forEllipse.solidColorFillUniformBuffer.get(), (void *)&renderInfo);
 

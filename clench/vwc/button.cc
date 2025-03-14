@@ -114,12 +114,12 @@ CLCVWC_API void DefaultButton::onDraw() {
 
 	acriDeviceContext->fillPolygon(polygonParams, pressedBackgroundBrush.get());
 
-	/*acri::EllipseParams ellipseParams;
-	ellipseParams.origin = { 0.0f, 0.0f };
-	ellipseParams.radiusX = 0.75f;
-	ellipseParams.radiusY = 0.75f;
+	acri::EllipseParams ellipseParams;
+	ellipseParams.origin = { 100.0f, 100.0f };
+	ellipseParams.radiusX = 70.0f;
+	ellipseParams.radiusY = 70.0f;
 
-	acriDeviceContext->drawEllipse(ellipseParams, pressedBackgroundBrush.get(), 1.0f);*/
+	acriDeviceContext->fillEllipse(ellipseParams, pressedBackgroundBrush.get());
 }
 
 CLCVWC_API void DefaultButton::onHover() {

@@ -106,6 +106,10 @@ namespace clench {
 		CLENCH_FORCEINLINE math::Vec2f uiCoordToGLDeviceCoord(float x, float y, float width, float height) {
 			return { (x / width) * 2.0f - 1.0f, (1.0f - y / height) * 2.0f - 1.0f };
 		}
+
+		CLENCH_FORCEINLINE math::Vec2f uiSizeToGLDeviceSize(float x, float y, float width, float height) {
+			return { x / width, y / height };
+		}
 	}
 }
 
