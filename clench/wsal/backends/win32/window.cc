@@ -124,7 +124,7 @@ CLCWSAL_API LRESULT CALLBACK Win32Window::_win32WndProc(HWND hWnd, UINT uMsg, WP
 
 CLCWSAL_API Win32Window::Win32Window(
 	Win32Backend *backend,
-	Win32WindowHandle nativeHandle) : NativeWindow(backend), nativeHandle(nativeHandle) {
+	Win32WindowHandle nativeHandle) : NativeWindow(backend), nativeHandle(nativeHandle), hoveredChildWindows(backend->resourceAllocator.get()) {
 	SetWindowLongPtr(nativeHandle, GWLP_USERDATA, (LONG_PTR)this);
 	backend->handleToWindowMap.insert(std::move(nativeHandle), this);
 }

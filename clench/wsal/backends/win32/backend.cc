@@ -32,7 +32,7 @@ CLCWSAL_API bool Win32Backend::doDeinit() {
 CLCWSAL_API Win32Backend::Win32Backend(
 	peff::Alloc *selfAllocator,
 	peff::Alloc *resourceAllocator)
-	: Backend("win32", selfAllocator, resourceAllocator) {
+	: Backend("win32", selfAllocator, resourceAllocator), handleToWindowMap(resourceAllocator), builtNativeKeyMap(resourceAllocator) {
 }
 CLCWSAL_API Win32Backend::~Win32Backend() {}
 
